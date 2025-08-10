@@ -129,7 +129,17 @@ class PDFProcessor:
                         )
                         webp_data = webp_buffer.getvalue()
                         
-                        # Create a unique blob name
+                        # CHECK FILE SIZE BEFORE UPLOADING
+                        file_size_kb = len(webp_data) / 1024
+                        if file_size_kb < 10:  # Skip if smaller than 10KB
+                            print(f"⏭️ Skipping small image on page {page_num + 1}, img {img_index} - {file_size_kb:.1f} KB < 10 KB")
+                            # Clean up
+                            webp_buffer.close()
+                            pil_image.close()
+                            pix = None
+                            continue  # Skip to next image
+                        
+                        # Only upload if size is acceptable
                         blob_name = f"{pdf_name}/page_{page_num + 1}_img_{img_index}.webp"
                         
                         # Save to Blob Storage
@@ -139,35 +149,27 @@ class PDFProcessor:
                         )
                         # Upload the WebP image data
                         blob_client.upload_blob(webp_data, overwrite=True)
-                        print(f"✅ Uploaded image to blob: {blob_name}")
+                        print(f"✅ Uploaded image to blob: {blob_name} ({file_size_kb:.1f} KB)")
                         
-                        # Check file size (from the WebP data in memory)
-                        file_size_kb = len(webp_data) / 1024
-                        if file_size_kb >= 10:  # 10KB
-                            account_url = self.blob_service_client.account_name
-                            image_url = f"https://{account_url}.blob.core.windows.net/{self.container_name}/{blob_name}"
-                            
-                            image_chunks.append({
-                                'content': '',  # Will be filled by captioning
-                                'type': 'image',
-                                'page_number': page_num + 1,
-                                'pdf_name': pdf_name,
-                                'image_path': image_url,
-                                'metadata': {
-                                    'width': pix.width,
-                                    'height': pix.height,
-                                    'image_index': img_index,
-                                    'file_size_kb': file_size_kb,
-                                    'format': 'webp'
-                                }
-                            })
-                        else:
-                            # Optionally delete the blob if it's too small
-                            try:
-                                blob_client.delete_blob()
-                                print(f"🗑️ Deleted small image blob: {blob_name} ({file_size_kb:.1f} KB)")
-                            except Exception as delete_error:
-                                print(f"⚠️ Could not delete small image blob: {delete_error}")
+                        # Create the public URL
+                        account_url = self.blob_service_client.account_name
+                        image_url = f"https://{account_url}.blob.core.windows.net/{self.container_name}/{blob_name}"
+                        
+                        # Add to image chunks
+                        image_chunks.append({
+                            'content': '',  # Will be filled by captioning
+                            'type': 'image',
+                            'page_number': page_num + 1,
+                            'pdf_name': pdf_name,
+                            'image_path': image_url,
+                            'metadata': {
+                                'width': pix.width,
+                                'height': pix.height,
+                                'image_index': img_index,
+                                'file_size_kb': file_size_kb,
+                                'format': 'webp'
+                            }
+                        })
                         
                         # Clean up
                         webp_buffer.close()

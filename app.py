@@ -61,34 +61,64 @@ def upload_pdf():
     try:
         print(f"📁 Starting processing for: {filename}")
         
-        # --- 1. Extract components ---
-        processor = PDFProcessor()
-        text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
-        table_chunks = processor.extract_tables_from_pdf(str(pdf_path), pdf_name)
-        image_chunks = processor.extract_images_from_pdf(str(pdf_path), pdf_name)
-
-        # --- 2. Caption images asynchronously ---
-        async def caption_and_store():
-            async with ImageCaptioner() as captioner:
-                print("🖼️ Starting asynchronous image captioning...")
-                captioned_images = await captioner.caption_images_async(image_chunks)
+        async def check_and_process():
+            async with PineconeVectorStore() as vector_store:
                 
-                all_chunks = text_chunks + table_chunks + captioned_images
-                print(f"📦 Starting storage of {len(all_chunks)} chunks...")
+                # 🎯 CACHE CHECK - This is the key optimization
+                pdf_exists = await vector_store.check_pdf_exists(pdf_name)
+                
+                if pdf_exists:
+                    # PDF already processed - skip all processing
+                    chunk_count = await vector_store.get_pdf_chunk_count(pdf_name)
+                    
+                    print(f"🚀 CACHE HIT! Skipping processing for '{pdf_name}'")
+                    print(f"📊 Estimated chunks in database: {chunk_count}")
+                    
+                    return {
+                        "message": "PDF already processed and available in database",
+                        "pdf_name": pdf_name,
+                        "cached": True,
+                        "estimated_chunks": chunk_count,
+                        "processing_time_saved": "~30-120 seconds"
+                    }
+                
+                # 🔄 CACHE MISS - Process normally
+                print(f"📝 CACHE MISS! Processing '{pdf_name}' for first time...")
+                
+                # Original processing logic
+                processor = PDFProcessor()
+                text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
+                table_chunks = processor.extract_tables_from_pdf(str(pdf_path), pdf_name)
+                image_chunks = processor.extract_images_from_pdf(str(pdf_path), pdf_name)
 
-                # --- 3. Embed and Store in Pinecone asynchronously ---
-                async with PineconeVectorStore() as vector_store:
+                async with ImageCaptioner() as captioner:
+                    print("🖼️ Starting asynchronous image captioning...")
+                    captioned_images = await captioner.caption_images_async(image_chunks)
+                    
+                    all_chunks = text_chunks + table_chunks + captioned_images
+                    print(f"📦 Starting storage of {len(all_chunks)} chunks...")
+
+                    # This stores everything in Pinecone with pdf_name metadata
                     await vector_store.store_chunks(all_chunks, pdf_name)
                     
                 print("🎉 PDF processing and storage completed.")
+                
+                return {
+                    "message": "PDF processed and stored successfully", 
+                    "pdf_name": pdf_name,
+                    "cached": False,
+                    "chunks_processed": len(all_chunks),
+                    "text_chunks": len(text_chunks),
+                    "table_chunks": len(table_chunks),
+                    "image_chunks": len(captioned_images)
+                }
 
-        asyncio.run(caption_and_store())
-        
-        return jsonify({"message": "PDF processed and stored successfully", "pdf_name": pdf_name})
+        result = asyncio.run(check_and_process())
+        return jsonify(result)
 
     except Exception as e:
         print(f"❌ Error processing PDF '{filename}': {e}")
-        traceback.print_exc() # Useful for debugging unexpected errors
+        traceback.print_exc()
         return jsonify({"error": f"Processing failed: {str(e)}"}), 500
 
 @app.route("/query", methods=["POST"])

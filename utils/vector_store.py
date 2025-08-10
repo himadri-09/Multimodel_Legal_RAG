@@ -334,7 +334,6 @@ class PineconeVectorStore:
         
         print(f"🎉 Successfully stored {len(vectors)} chunks in Pinecone")
     
-    @traceable(name="search_similar_chunks")
     async def search_similar_chunks(self, query: str, top_k: int = 5, pdf_name: str = None) -> List[Dict[str, Any]]:
         """Search for similar chunks"""
         print(f"🔍 Searching for top {top_k} chunks for query: '{query}'")
@@ -374,6 +373,63 @@ class PineconeVectorStore:
         
         print(f"✅ Found {len(results)} relevant chunks")
         return results
+    
+    async def check_pdf_exists(self, pdf_name: str) -> bool:
+        """
+        Check if PDF is already processed by looking for any vectors with this pdf_name
+        
+        How it works:
+        1. Query Pinecone with a dummy vector (all zeros)
+        2. Filter by pdf_name metadata
+        3. Ask for just 1 result (top_k=1)
+        4. If any match found, PDF exists
+        
+        Time: ~10-50ms regardless of database size
+        """
+        try:
+            print(f"🔍 Checking if PDF '{pdf_name}' exists in database...")
+            
+            response = self.index.query(
+                vector=[0.0] * EMBEDDING_DIMENSION,  # Dummy vector - don't care about similarity
+                top_k=1,                             # Just need to know if ANY exist
+                filter={'pdf_name': pdf_name},       # This is the key filter
+                include_metadata=False               # Don't need metadata, just existence
+            )
+            
+            exists = len(response['matches']) > 0
+            
+            if exists:
+                print(f"✅ PDF '{pdf_name}' found in database")
+            else:
+                print(f"❌ PDF '{pdf_name}' not found in database")
+                
+            return exists
+            
+        except Exception as e:
+            print(f"❌ Error checking PDF existence: {e}")
+            return False  # If error, assume not cached and process normally
+
+    async def get_pdf_chunk_count(self, pdf_name: str) -> int:
+        """
+        Get approximate number of chunks for this PDF
+        Useful for logging and verification
+        """
+        try:
+            # Query more results to get better count estimate
+            response = self.index.query(
+                vector=[0.0] * EMBEDDING_DIMENSION,
+                top_k=100,  # Get up to 100 to estimate total
+                filter={'pdf_name': pdf_name},
+                include_metadata=False
+            )
+            
+            count = len(response['matches'])
+            print(f"📊 Found ~{count} chunks for PDF '{pdf_name}' (sample)")
+            return count
+            
+        except Exception as e:
+            print(f"❌ Error getting chunk count: {e}")
+            return 0
     
     async def __aenter__(self):
         return self
