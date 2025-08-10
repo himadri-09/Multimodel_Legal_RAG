@@ -2,6 +2,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import asyncio
+import time
 from pathlib import Path
 from werkzeug.utils import secure_filename
 import traceback
@@ -42,7 +43,7 @@ def serve_static_files(filename):
 
 @app.route("/upload", methods=["POST"])
 def upload_pdf():
-    """Handle PDF upload, processing, and storage."""
+    """Handle PDF upload, processing, and storage with enhanced cache feedback."""
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
@@ -60,57 +61,90 @@ def upload_pdf():
 
     try:
         print(f"📁 Starting processing for: {filename}")
+        import time
+        start_time = time.time()
         
         async def check_and_process():
             async with PineconeVectorStore() as vector_store:
                 
-                # 🎯 CACHE CHECK - This is the key optimization
+                # 🎯 CACHE CHECK - Enhanced with better feedback
+                print(f"🔍 Checking cache for PDF: '{pdf_name}'")
                 pdf_exists = await vector_store.check_pdf_exists(pdf_name)
                 
                 if pdf_exists:
                     # PDF already processed - skip all processing
                     chunk_count = await vector_store.get_pdf_chunk_count(pdf_name)
+                    cache_end_time = time.time()
+                    cache_check_duration = cache_end_time - start_time
                     
                     print(f"🚀 CACHE HIT! Skipping processing for '{pdf_name}'")
                     print(f"📊 Estimated chunks in database: {chunk_count}")
+                    print(f"⚡ Cache check completed in {cache_check_duration:.2f}s")
+                    
+                    # Clean up uploaded file since we don't need it
+                    try:
+                        pdf_path.unlink()
+                        print(f"🧹 Cleaned up unnecessary uploaded file: {filename}")
+                    except Exception as cleanup_error:
+                        print(f"⚠️ Could not clean up file {filename}: {cleanup_error}")
                     
                     return {
-                        "message": "PDF already processed and available in database",
+                        "message": f"PDF '{pdf_name}' already processed and available in database",
                         "pdf_name": pdf_name,
                         "cached": True,
                         "estimated_chunks": chunk_count,
-                        "processing_time_saved": "~30-120 seconds"
+                        "processing_time_saved": "~30-120 seconds",
+                        "cache_check_duration": f"{cache_check_duration:.2f}s",
+                        "status": "cache_hit"
                     }
                 
-                # 🔄 CACHE MISS - Process normally
+                # 🔄 CACHE MISS - Process normally with enhanced logging
                 print(f"📝 CACHE MISS! Processing '{pdf_name}' for first time...")
+                processing_start = time.time()
                 
-                # Original processing logic
+                # Original processing logic with enhanced feedback
                 processor = PDFProcessor()
+                print(f"📄 Step 1/4: Extracting text from {pdf_name}...")
                 text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
+                
+                print(f"📊 Step 2/4: Extracting tables from {pdf_name}...")
                 table_chunks = processor.extract_tables_from_pdf(str(pdf_path), pdf_name)
+                
+                print(f"🖼️ Step 3/4: Extracting and uploading images from {pdf_name}...")
                 image_chunks = processor.extract_images_from_pdf(str(pdf_path), pdf_name)
 
                 async with ImageCaptioner() as captioner:
-                    print("🖼️ Starting asynchronous image captioning...")
+                    print(f"🤖 Step 4/4: AI captioning {len(image_chunks)} images...")
                     captioned_images = await captioner.caption_images_async(image_chunks)
                     
                     all_chunks = text_chunks + table_chunks + captioned_images
-                    print(f"📦 Starting storage of {len(all_chunks)} chunks...")
+                    print(f"📦 Storing {len(all_chunks)} total chunks in vector database...")
 
-                    # This stores everything in Pinecone with pdf_name metadata
+                    # Store everything in Pinecone with pdf_name metadata
                     await vector_store.store_chunks(all_chunks, pdf_name)
                     
-                print("🎉 PDF processing and storage completed.")
+                processing_end = time.time()
+                total_processing_time = processing_end - start_time
+                
+                print(f"🎉 PDF '{pdf_name}' processing completed in {total_processing_time:.2f}s")
+                
+                # Clean up uploaded file after successful processing
+                try:
+                    pdf_path.unlink()
+                    print(f"🧹 Cleaned up processed file: {filename}")
+                except Exception as cleanup_error:
+                    print(f"⚠️ Could not clean up file {filename}: {cleanup_error}")
                 
                 return {
-                    "message": "PDF processed and stored successfully", 
+                    "message": f"PDF '{pdf_name}' processed and stored successfully", 
                     "pdf_name": pdf_name,
                     "cached": False,
                     "chunks_processed": len(all_chunks),
                     "text_chunks": len(text_chunks),
                     "table_chunks": len(table_chunks),
-                    "image_chunks": len(captioned_images)
+                    "image_chunks": len(captioned_images),
+                    "processing_duration": f"{total_processing_time:.2f}s",
+                    "status": "newly_processed"
                 }
 
         result = asyncio.run(check_and_process())
@@ -119,7 +153,20 @@ def upload_pdf():
     except Exception as e:
         print(f"❌ Error processing PDF '{filename}': {e}")
         traceback.print_exc()
-        return jsonify({"error": f"Processing failed: {str(e)}"}), 500
+        
+        # Clean up file in case of error
+        try:
+            if pdf_path.exists():
+                pdf_path.unlink()
+                print(f"🧹 Cleaned up file after error: {filename}")
+        except Exception as cleanup_error:
+            print(f"⚠️ Could not clean up file after error: {cleanup_error}")
+            
+        return jsonify({
+            "error": f"Processing failed: {str(e)}",
+            "pdf_name": pdf_name,
+            "status": "error"
+        }), 500
 
 @app.route("/query", methods=["POST"])
 def handle_query():

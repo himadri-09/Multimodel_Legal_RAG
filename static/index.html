@@ -3,36 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PDF RAG System</title>
+  <title>PDF RAG System - Multi Upload</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>📄 PDF RAG System</h1>
-
-    <!-- Upload Section -->
-    <div class="section">
-      <h2>Upload PDF</h2>
-      <input type="file" id="pdf-upload" accept=".pdf" />
-      <button onclick="uploadPDF()">Upload</button>
-      <p id="upload-status"></p>
+    <div class="header">
+      <h1>📄 PDF RAG System</h1>
+      <p>Upload multiple PDFs and ask intelligent questions with smart caching</p>
     </div>
 
-    <!-- Query Section -->
-    <div class="section">
-      <h2>Ask a Question</h2>
-      <select id="pdf-select">
-        <option value="">All Documents</option>
-      </select>
-      <input type="text" id="query-input" placeholder="Ask something about the PDF..." />
-      <button onclick="askQuestion()">Ask</button>
-    </div>
+    <div class="content">
+      <!-- Upload Section -->
+      <div class="section">
+        <h2>📤 Upload PDFs</h2>
+        <div class="upload-area" id="upload-area">
+          <input type="file" id="pdf-upload" accept=".pdf" multiple />
+          <div class="upload-icon">📁</div>
+          <div class="upload-text">Click to select PDFs or drag & drop here</div>
+          <div class="upload-hint">Multiple files supported • Only PDF files allowed</div>
+        </div>
+        
+        <div class="file-list" id="file-list" style="display: none;"></div>
+        <button class="upload-btn" id="upload-btn" onclick="uploadPDFs()" disabled>
+          📤 Process Selected Files
+        </button>
+        
+        <div class="progress-bar" id="progress-bar" style="display: none;">
+          <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+        </div>
 
-    <!-- Answer Section -->
-    <div class="section">
-      <h2>Answer</h2>
-      <div id="answer"></div>
-      <div id="images"></div>
+        <div class="stats" id="upload-stats" style="display: none;">
+          <div class="stat-card">
+            <div class="stat-number" id="total-files">0</div>
+            <div class="stat-label">Total Files</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="cached-files">0</div>
+            <div class="stat-label">From Cache</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="processed-files">0</div>
+            <div class="stat-label">Newly Processed</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="time-saved">0s</div>
+            <div class="stat-label">Time Saved</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Query Section -->
+      <div class="section">
+        <h2>❓ Ask Questions</h2>
+        <div class="query-controls">
+          <select id="pdf-select">
+            <option value="">All Documents</option>
+          </select>
+          <input type="text" id="query-input" placeholder="Ask something about your PDFs..." />
+          <button class="ask-btn" onclick="askQuestion()">Ask</button>
+        </div>
+        
+        <div class="answer-area" id="answer-area">
+          <div style="color: #9ca3af; text-align: center; font-style: italic;">
+            Upload some PDFs and ask questions to get started
+          </div>
+        </div>
+        
+        <div class="images-grid" id="images-grid"></div>
+      </div>
     </div>
   </div>
 
