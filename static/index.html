@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF RAG System</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>📄 PDF RAG System</h1>
+
+    <!-- Upload Section -->
+    <div class="section">
+      <h2>Upload PDF</h2>
+      <input type="file" id="pdf-upload" accept=".pdf" />
+      <button onclick="uploadPDF()">Upload</button>
+      <p id="upload-status"></p>
+    </div>
+
+    <!-- Query Section -->
+    <div class="section">
+      <h2>Ask a Question</h2>
+      <select id="pdf-select">
+        <option value="">All Documents</option>
+      </select>
+      <input type="text" id="query-input" placeholder="Ask something about the PDF..." />
+      <button onclick="askQuestion()">Ask</button>
+    </div>
+
+    <!-- Answer Section -->
+    <div class="section">
+      <h2>Answer</h2>
+      <div id="answer"></div>
+      <div id="images"></div>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

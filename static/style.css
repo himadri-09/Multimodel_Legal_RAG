@@ -1,0 +1,50 @@
+/* style.css */
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  color: #333;
+}
+
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.section {
+  margin-bottom: 30px;
+}
+
+input[type="text"], input[type="file"], select, button {
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+button {
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+#answer, #images {
+  border: 1px solid #eee;
+  padding: 15px;
+  border-radius: 5px;
+  background: #f9f9f9;
+}
+
+img {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
