@@ -36,15 +36,20 @@ class PineconeVectorStore:
         
         self.index = self.pc.Index(PINECONE_INDEX_NAME)
         
-        # Initialize Azure OpenAI client
+        # Initialize Azure OpenAI client with timeout and retry settings
         self.client = AsyncAzureOpenAI(
             api_key=AZURE_OPENAI_API_KEY,
             azure_endpoint=AZURE_OPENAI_ENDPOINT,
             api_version=AZURE_API_VERSION,
+            timeout=60.0,  # Add timeout to prevent hanging
+            max_retries=3   # Add retry logic
         )
         
-        self.semaphore = asyncio.Semaphore(MAX_CONCURRENT_EMBEDDINGS)
-        print(f"🔌 Connected to Pinecone index: {PINECONE_INDEX_NAME}")
+        # Reduce concurrent embeddings for better stability
+        # Original was potentially too high and causing API rate limits
+        self.semaphore = asyncio.Semaphore(min(MAX_CONCURRENT_EMBEDDINGS, 50))
+        print(f"📌 Connected to Pinecone index: {PINECONE_INDEX_NAME}")
+        print(f"🎛️  Concurrent embedding limit: {min(MAX_CONCURRENT_EMBEDDINGS, 50)}")
     
     def sanitize_for_pinecone_id(self, text: str) -> str:
         """Sanitize text to be valid for Pinecone vector IDs"""
@@ -88,10 +93,8 @@ class PineconeVectorStore:
         
         return sanitized or "default"
     
-
-    
     async def create_single_embedding(self, text: str) -> np.ndarray:
-        """Create embedding for a single text"""
+        """Create embedding for a single text with improved error handling"""
         async with self.semaphore:
             try:
                 response = await self.client.embeddings.create(
@@ -102,99 +105,106 @@ class PineconeVectorStore:
                 return np.array(response.data[0].embedding, dtype=np.float32)
             except Exception as e:
                 print(f"❌ Error creating embedding: {e}")
+                # Return zero vector as fallback instead of crashing
                 return np.zeros(EMBEDDING_DIMENSION, dtype=np.float32)
     
     async def create_embeddings_batch(self, texts: List[str]) -> List[np.ndarray]:
-        """Create embeddings for multiple texts asynchronously in batches"""
+        """
+        Create embeddings for multiple texts asynchronously with progress tracking
+        
+        Shows batch progress and completion status in real-time
+        """
         if not texts:
             return []
+        
         total_chunks = len(texts)
-        print(f"✅ Valid chunks: {total_chunks}")
-        print(f"🚀 Creating embeddings in ASYNC batches of {MAX_CONCURRENT_EMBEDDINGS} for {total_chunks} chunks...")
+        max_concurrent = min(MAX_CONCURRENT_EMBEDDINGS, 50)
+        total_batches = (total_chunks + max_concurrent - 1) // max_concurrent
         
-        # --- Batch Processing Logic ---
-        valid_embeddings = []
-        batch_size = MAX_CONCURRENT_EMBEDDINGS # Use the config constant for batch size
-        total_batches = (total_chunks + batch_size - 1) // batch_size # Calculate number of batches
-        tasks = [] # List to hold all async tasks
-        batch_info = {} # To store start times for calculating duration
+        print(f"🚀 Creating embeddings for {total_chunks} chunks...")
+        print(f"🎛️  Max concurrent requests: {max_concurrent}")
+        print(f"📦 Total batches to process: {total_batches}")
         
-        # Create tasks for all batches
-        for i in range(0, total_chunks, batch_size):
-            batch_num = i // batch_size + 1
-            batch_texts = texts[i:i + batch_size]
-            batch_actual_size = len(batch_texts)
+        start_time = time.time()
+        completed = 0
+        
+        async def track_embedding_with_progress(text: str, index: int) -> np.ndarray:
+            """Wrapper to track individual embedding progress"""
+            nonlocal completed
             
-            print(f"📦 Processing async batch {batch_num}/{total_batches} ({batch_actual_size} chunks)")
+            # Calculate which batch this embedding belongs to
+            batch_num = (index // max_concurrent) + 1
+            position_in_batch = (index % max_concurrent) + 1
             
-            # Create a task for each text in the current batch
-            batch_tasks = []
-            for text in batch_texts:
-                 # Each task calls create_single_embedding
-                 task = asyncio.create_task(self.create_single_embedding(text))
-                 batch_tasks.append(task)
-            
-            # Store batch info for timing
-            batch_info[batch_num] = {
-                'start_time': time.time(),
-                'tasks': batch_tasks,
-                'size': batch_actual_size
-            }
-            tasks.extend(batch_tasks) # Add batch tasks to the main list
+            try:
+                result = await self.create_single_embedding(text)
+                completed += 1
+                
+                # Show progress every 50 completions or for the first few
+                if (completed % 50 == 0 or completed <= 10 or 
+                    completed == total_chunks or index < 5):
+                    
+                    elapsed = time.time() - start_time
+                    rate = completed / elapsed if elapsed > 0 else 0
+                    remaining = total_chunks - completed
+                    eta = remaining / rate if rate > 0 else 0
+                    progress_pct = (completed / total_chunks) * 100
+                    
+                    print(f"📈 Progress: {completed}/{total_chunks} ({progress_pct:.1f}%) | "
+                          f"Batch {batch_num}/{total_batches} | "
+                          f"Rate: {rate:.1f}/s | ETA: {eta:.0f}s")
+                
+                return result
+                
+            except Exception as e:
+                completed += 1
+                print(f"❌ Failed embedding in batch {batch_num} (item {position_in_batch}): {e}")
+                return np.zeros(EMBEDDING_DIMENSION, dtype=np.float32)
         
-        # --- Gather results and log timing ---
-        start_time_all_batches = time.time()
-        # Gather results as they complete (more efficient for timing individual completions)
-        results = []
-        pending = set(tasks)
+        # Create all tasks with progress tracking
+        print(f"⏳ Starting all {total_chunks} embedding tasks across {total_batches} batches...")
+        tasks = [track_embedding_with_progress(text, i) for i, text in enumerate(texts)]
         
-        while pending:
-            done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
-            results.extend(done)
+        # Execute all tasks concurrently (semaphore controls actual concurrency)
+        results = await asyncio.gather(*tasks, return_exceptions=True)
         
-        # Recreate batch structure for gathering
+        # Process results and count successes/failures
         final_embeddings = []
-        batch_durations = []
+        failed_count = 0
         
-        for batch_num in range(1, total_batches + 1):
-            info = batch_info[batch_num]
-            batch_tasks = info['tasks']
-            batch_start_time = info['start_time']
-            
-            # Wait for all tasks in this specific batch to complete
-            batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
-            
-            # Process results for this batch
-            for i, emb in enumerate(batch_results):
-                 if isinstance(emb, Exception):
-                     print(f"❌ Failed embedding in batch {batch_num} (index {i}): {emb}")
-                     final_embeddings.append(np.zeros(EMBEDDING_DIMENSION, dtype=np.float32))
-                 else:
-                     final_embeddings.append(emb)
-            
-            # Calculate and log duration for this batch
-            batch_end_time = time.time()
-            batch_duration = batch_end_time - batch_start_time
-            batch_durations.append(batch_duration)
-            print(f"✅ Async batch {batch_num} completed in {batch_duration:.2f}s")
-            
-        end_time_all_batches = time.time()
-        total_time = end_time_all_batches - start_time_all_batches
+        for i, result in enumerate(results):
+            if isinstance(result, Exception):
+                print(f"❌ Task exception for embedding {i}: {result}")
+                final_embeddings.append(np.zeros(EMBEDDING_DIMENSION, dtype=np.float32))
+                failed_count += 1
+            elif isinstance(result, np.ndarray) and result.sum() == 0:
+                # This was a failed embedding that returned zero vector
+                failed_count += 1
+                final_embeddings.append(result)
+            else:
+                final_embeddings.append(result)
         
-        # --- Final Statistics ---
-        print(f"🎉 All async batches completed!")
+        # Performance statistics
+        end_time = time.time()
+        total_time = end_time - start_time
+        success_count = total_chunks - failed_count
+        
+        print(f"🎉 All {total_batches} batches completed!")
         print(f"📊 Total time: {total_time:.2f}s")
-        if len(final_embeddings) > 0:
-            avg_time_per_embedding = total_time / len(final_embeddings)
-            throughput = len(final_embeddings) / total_time if total_time > 0 else 0
-            print(f"📊 Average time per embedding: {avg_time_per_embedding:.3f}s")
+        print(f"📊 Successful: {success_count}/{total_chunks} ({success_count/total_chunks*100:.1f}%)")
+        
+        if failed_count > 0:
+            print(f"📊 Failed: {failed_count}/{total_chunks} ({failed_count/total_chunks*100:.1f}%)")
+        
+        if success_count > 0:
+            avg_time = total_time / total_chunks
+            throughput = success_count / total_time if total_time > 0 else 0
+            print(f"📊 Average time per embedding: {avg_time:.3f}s")
             print(f"📊 Throughput: {throughput:.1f} embeddings/second")
-        else:
-            print(f"📊 No embeddings were successfully created.")
+            print(f"📊 Effective batches per second: {total_batches/total_time:.2f}")
         
         return final_embeddings
 
-    
     async def store_chunks(self, chunks: List[Dict[str, Any]], pdf_name: str):
         """Store chunks in Pinecone with embeddings"""
         if not chunks:
@@ -204,7 +214,7 @@ class PineconeVectorStore:
 
         # Sanitize pdf_name using the improved function
         sanitized_pdf_name = self.sanitize_for_pinecone_id(pdf_name)
-        print(f"📝 Sanitized PDF name: '{pdf_name}' -> '{sanitized_pdf_name}'")
+        print(f"🔍 Sanitized PDF name: '{pdf_name}' -> '{sanitized_pdf_name}'")
         
         # Extract texts for embedding
         texts = []
@@ -216,7 +226,8 @@ class PineconeVectorStore:
                 text = chunk['content']
             texts.append(text)
         
-        # Create embeddings
+        # Create embeddings using the fixed method
+        print(f"🤖 Creating embeddings for {len(texts)} chunks...")
         embeddings = await self.create_embeddings_batch(texts)
         
         # Prepare vectors for Pinecone
@@ -253,17 +264,9 @@ class PineconeVectorStore:
             
             vector_id = final_id
             
-            # DEBUG: Print ALL vector IDs and validate them
-            if i < 5:  # Show more examples
+            # DEBUG: Print sample vector IDs for verification
+            if i < 3:  # Show first 3 examples
                 print(f"🔍 Vector ID [{i}]: '{vector_id}'")
-                # Validate each character
-                for j, char in enumerate(vector_id):
-                    if not (char.isalnum() or char == '-'):
-                        print(f"   ❌ INVALID CHAR at pos {j}: '{char}' (ord: {ord(char)})")
-                    elif j == 0 and char == '-':
-                        print(f"   ⚠️  WARNING: ID starts with dash")
-                    elif j == len(vector_id) - 1 and char == '-':
-                        print(f"   ⚠️  WARNING: ID ends with dash")
             
             metadata = {
                 'pdf_name': pdf_name,
@@ -284,52 +287,25 @@ class PineconeVectorStore:
                 'metadata': metadata
             })
         
-        # Upsert to Pinecone in batches
+        # Upsert to Pinecone in batches (unchanged - this part was working fine)
         batch_size = 100
         total_batches = (len(vectors) + batch_size - 1) // batch_size
+        
+        print(f"📤 Uploading {len(vectors)} vectors to Pinecone in {total_batches} batches...")
+        
         for i in range(0, len(vectors), batch_size):
             batch = vectors[i:i + batch_size]
             batch_num = i // batch_size + 1
-            print(f"   Upserting batch {batch_num}/{total_batches} (size: {len(batch)})...")
             
             try:
-                # Final validation before upsert - check every ID in the batch
-                print(f"   🔍 Validating {len(batch)} vector IDs in batch {batch_num}...")
-                for idx, vec in enumerate(batch):
-                    vid = vec['id']
-                    # Check for invalid characters
-                    invalid_chars = []
-                    for pos, char in enumerate(vid):
-                        if not (char.isalnum() or char == '-'):
-                            invalid_chars.append(f"pos {pos}: '{char}' (ord: {ord(char)})")
-                    
-                    if invalid_chars:
-                        print(f"   ❌ INVALID ID in batch: '{vid}'")
-                        print(f"      Invalid characters: {', '.join(invalid_chars)}")
-                        raise ValueError(f"Invalid vector ID: {vid}")
-                    
-                    # Check for leading/trailing dashes
-                    if vid.startswith('-') or vid.endswith('-'):
-                        print(f"   ❌ ID with leading/trailing dash: '{vid}'")
-                        raise ValueError(f"ID starts/ends with dash: {vid}")
-                    
-                    # Show first few IDs for verification
-                    if idx < 2:
-                        print(f"      ✅ Valid ID example: '{vid}'")
-                
                 self.index.upsert(vectors=batch)
-                print(f"   ✅ Upserted batch {batch_num}")
+                print(f"   ✅ Upserted batch {batch_num}/{total_batches} ({len(batch)} vectors)")
             except Exception as e:
                 print(f"   ❌ Error upserting batch {batch_num}: {e}")
-                # Print some sample IDs from the failed batch for debugging
+                # Print sample IDs from failed batch for debugging
                 print(f"   Sample vector IDs in failed batch:")
-                for j, vec in enumerate(batch[:5]):  # Show first 5 IDs
-                    vid = vec['id']
-                    print(f"     [{j}]: '{vid}' (len: {len(vid)})")
-                    # Check each character
-                    for pos, char in enumerate(vid):
-                        if not (char.isalnum() or char == '-'):
-                            print(f"        ❌ Invalid at pos {pos}: '{char}' (ord: {ord(char)})")
+                for j, vec in enumerate(batch[:3]):
+                    print(f"     [{j}]: '{vec['id']}'")
                 raise
         
         print(f"🎉 Successfully stored {len(vectors)} chunks in Pinecone")

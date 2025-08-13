@@ -4,22 +4,28 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Combine apt-get commands for efficiency
+# Install system dependencies in a single layer
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # PyMuPDF dependencies
+    # PyMuPDF (fitz) dependencies
     libmupdf-dev \
     libfreetype6-dev \
     libjpeg-dev \
+    libpng-dev \
     zlib1g-dev \
+    # PIL/Pillow dependencies  
+    libtiff5-dev \
+    libwebp-dev \
+    libopenjp2-7-dev \
     # Build dependencies
     gcc \
     g++ \
     make \
     libffi-dev \
     libssl-dev \
-    # Optional: curl for health checks
+    # Utility tools
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
@@ -34,5 +40,6 @@ RUN mkdir -p uploads
 # Expose the port the app runs on
 EXPOSE 5000
 
+
 # Command to run the application
-CMD ["python", "app.py"]
+CMD ["python", "app.py", "--host", "0.0.0.0", "--port", "5000"]

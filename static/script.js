@@ -1,6 +1,17 @@
-// Updated script.js with multi-file upload and caching support
+// Fixed script.js with proper async processing handling
 let selectedFiles = [];
 let uploadedPDFs = new Set();
+
+// Configure marked.js for better rendering
+if (typeof marked !== 'undefined') {
+  marked.setOptions({
+    breaks: true,
+    gfm: true, // GitHub Flavored Markdown
+    tables: true,
+    sanitize: false,
+    headerIds: false
+  });
+}
 
 // Drag and drop functionality
 const uploadArea = document.getElementById('upload-area');
@@ -89,6 +100,7 @@ async function uploadPDFs() {
   let cachedFiles = 0;
   let processedFiles = 0;
   let totalTimeSaved = 0;
+  let hasErrors = false;
 
   // Update stats display
   document.getElementById('total-files').textContent = totalFiles;
@@ -120,59 +132,200 @@ async function uploadPDFs() {
       const data = await response.json();
 
       if (response.ok) {
-        uploadedPDFs.add(data.pdf_name);
-        
-        // Update dropdown if not already present
-        if (!Array.from(pdfSelect.options).some(opt => opt.value === data.pdf_name)) {
-          const option = document.createElement('option');
-          option.value = data.pdf_name;
-          option.textContent = data.pdf_name;
-          pdfSelect.appendChild(option);
-        }
-
-        // Update status and stats
-        if (data.cached) {
-          cachedFiles++;
-          statusElement.textContent = '⚡ From Cache';
-          statusElement.className = 'file-status status-cached';
-          if (data.processing_time_saved) {
-            const timeSaved = parseInt(data.processing_time_saved.match(/\d+/)[0]);
-            totalTimeSaved += timeSaved;
+        // FIXED: Properly handle both sync and async responses
+        if (data.requires_polling) {
+          // Large file - async processing
+          console.log(`🔄 Large file detected: ${file.name} - Starting polling for job ${data.job_id}`);
+          statusElement.textContent = '⏳ Processing in background...';
+          statusElement.className = 'file-status status-processing';
+          
+          // Poll for status
+          const finalResult = await pollProcessingStatus(data.job_id, statusElement);
+          if (finalResult && finalResult.result) {
+            updateFileStatusFromResult(finalResult.result, statusElement, fileName, pdfSelect);
+            updateStatsFromResult(finalResult.result);
+          } else {
+            statusElement.textContent = '❌ Processing failed';
+            statusElement.className = 'file-status status-error';
+            hasErrors = true;
           }
         } else {
-          processedFiles++;
-          statusElement.textContent = '✅ Processed';
-          statusElement.className = 'file-status status-complete';
+          // Small file - immediate result OR already cached
+          console.log(`⚡ Small file or cached: ${file.name} - Processing complete`);
+          updateFileStatusFromResult(data, statusElement, fileName, pdfSelect);
+          updateStatsFromResult(data);
         }
-
-        // Update live stats
-        document.getElementById('cached-files').textContent = cachedFiles;
-        document.getElementById('processed-files').textContent = processedFiles;
-        document.getElementById('time-saved').textContent = `${totalTimeSaved}s`;
-
       } else {
         statusElement.textContent = '❌ Error';
         statusElement.className = 'file-status status-error';
         console.error('Upload error:', data.error);
+        hasErrors = true;
       }
     } catch (error) {
       statusElement.textContent = '❌ Network Error';
       statusElement.className = 'file-status status-error';
       console.error('Network error:', error);
+      hasErrors = true;
     }
   }
+
+  // Update final stats
+  document.getElementById('cached-files').textContent = cachedFiles;
+  document.getElementById('processed-files').textContent = processedFiles;
+  document.getElementById('time-saved').textContent = `${totalTimeSaved}s`;
 
   // Reset UI
   uploadBtn.disabled = false;
   uploadBtn.textContent = '📤 Process Selected Files';
   progressBar.style.display = 'none';
-  selectedFiles = [];
-  fileInput.value = '';
   
-  // Show final summary for a few seconds then hide file list
+  // Better UX for showing results
+  if (hasErrors) {
+    console.log('Some files had errors - keeping file list visible');
+  } else {
+    showSuccessMessage(totalFiles, cachedFiles, processedFiles);
+    selectedFiles = [];
+    fileInput.value = '';
+    
+    setTimeout(() => {
+      if (confirm('Processing complete! Hide the results?')) {
+        fileList.style.display = 'none';
+      }
+    }, 8000);
+  }
+
+  function updateFileStatusFromResult(result, statusElement, fileName, pdfSelect) {
+    uploadedPDFs.add(result.pdf_name);
+    
+    // Update dropdown if not already present
+    if (!Array.from(pdfSelect.options).some(opt => opt.value === result.pdf_name)) {
+      const option = document.createElement('option');
+      option.value = result.pdf_name;
+      option.textContent = result.pdf_name;
+      pdfSelect.appendChild(option);
+    }
+
+    if (result.cached) {
+      cachedFiles++;
+      statusElement.textContent = '⚡ From Cache';
+      statusElement.className = 'file-status status-cached';
+    } else {
+      processedFiles++;
+      statusElement.textContent = '✅ Processed';
+      statusElement.className = 'file-status status-complete';
+    }
+  }
+
+  function updateStatsFromResult(result) {
+    if (result.processing_time_saved) {
+      const timeSaved = parseInt(result.processing_time_saved.match(/\d+/)[0]);
+      totalTimeSaved += timeSaved;
+    }
+  }
+}
+
+async function pollProcessingStatus(jobId, statusElement) {
+  const maxAttempts = 300; // 5 minutes max (increased from 2 minutes)
+  const pollInterval = 1000; // 1 second
+  let lastStage = '';
+  
+  console.log(`🔄 Starting polling for job ${jobId}`);
+  
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const response = await fetch(`/status/${jobId}`);
+      
+      if (!response.ok) {
+        console.error(`❌ Status check failed: HTTP ${response.status}`);
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
+        continue;
+      }
+      
+      const status = await response.json();
+      
+      // Log progress when stage changes
+      if (status.stage && status.stage !== lastStage) {
+        console.log(`📊 Job ${jobId}: ${status.stage}`);
+        lastStage = status.stage;
+      }
+      
+      // Update status display
+      if (status.stage) {
+        if (status.progress) {
+          const progressPercent = Math.round(status.progress * 100);
+          statusElement.textContent = `⏳ ${status.stage} (${progressPercent}%)`;
+        } else {
+          statusElement.textContent = `⏳ ${status.stage}`;
+        }
+      }
+      
+      // Check for completion
+      if (status.status === 'completed') {
+        console.log(`✅ Job ${jobId} completed successfully`);
+        return status;
+      } else if (status.status === 'cached') {
+        console.log(`⚡ Job ${jobId} was cached`);
+        return status;
+      } else if (status.status === 'failed') {
+        console.error(`❌ Job ${jobId} failed:`, status.error);
+        return null;
+      }
+      
+      // Continue polling
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      
+    } catch (error) {
+      console.error(`❌ Error polling job ${jobId}:`, error);
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+    }
+  }
+  
+  console.error(`❌ Polling timed out for job ${jobId} after ${maxAttempts} attempts`);
+  return null;
+}
+
+function showSuccessMessage(total, cached, processed) {
+  const message = document.createElement('div');
+  message.className = 'success-banner';
+  message.innerHTML = `
+    <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 15px; border-radius: 10px; margin: 10px 0;">
+      🎉 <strong>Processing Complete!</strong><br>
+      Total: ${total} files • Cached: ${cached} • Newly Processed: ${processed}
+    </div>
+  `;
+  
+  const fileList = document.getElementById('file-list');
+  fileList.insertBefore(message, fileList.firstChild);
+  
+  // Remove success message after 5 seconds
   setTimeout(() => {
-    fileList.style.display = 'none';
-  }, 3000);
+    if (message.parentNode) {
+      message.parentNode.removeChild(message);
+    }
+  }, 5000);
+}
+
+function renderMarkdown(text) {
+  // Check if marked.js is available
+  if (typeof marked !== 'undefined') {
+    return marked.parse(text);
+  }
+  
+  // Fallback: Basic HTML formatting if marked.js isn't available
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+    .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+    .replace(/### (.*?)$/gm, '<h3>$1</h3>') // H3 headers
+    .replace(/## (.*?)$/gm, '<h2>$1</h2>') // H2 headers
+    .replace(/# (.*?)$/gm, '<h1>$1</h1>') // H1 headers
+    .replace(/\n\n/g, '</p><p>') // Paragraphs
+    .replace(/\n/g, '<br>') // Line breaks
+    .replace(/^\s*[-*+]\s+(.*?)$/gm, '<li>$1</li>') // List items
+    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>') // Wrap lists
+    .replace(/\|(.+)\|/g, (match, content) => { // Tables (basic)
+      const cells = content.split('|').map(cell => `<td>${cell.trim()}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    });
 }
 
 async function askQuestion() {
@@ -205,13 +358,12 @@ async function askQuestion() {
     const data = await response.json();
 
     if (response.ok) {
-      // Display answer
+      // Display answer with proper markdown rendering
+      const renderedAnswer = renderMarkdown(data.answer);
+      
       answerArea.innerHTML = `
-        <div style="line-height: 1.6;">
-          <strong style="color: #1f2937; font-size: 1.1em;">Answer:</strong>
-          <div style="margin-top: 15px; color: #374151;">
-            ${data.answer.replace(/\n/g, '<br>')}
-          </div>
+        <div class="answer-content">
+          ${renderedAnswer}
         </div>
       `;
 

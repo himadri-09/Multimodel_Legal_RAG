@@ -44,15 +44,14 @@ class ResponseGenerator:
         context_text = "\n\n".join(context_parts)
 
         prompt = f"""
-        Based on the following context, answer the user's question concisely and accurately.
+        BBased on the following context, answer the user's question.
         Context:
         {context_text}
         Question: {query}
         Instructions:
-        - Answer only from the provided context
+        - Answer **only** from the provided context
         - Cite page numbers when relevant (e.g., "According to page 5...")
         - If information is missing, state so clearly
-        - Be concise but comprehensive
         """
 
         try:
@@ -114,7 +113,7 @@ class ResponseGenerator:
 
         # Final synthesis prompt
         prompt = f"""
-        Synthesize a final, clear, and concise answer to the original question using the provided sub-question answers.
+        You are tasked with combining multiple sub-answers into one comprehensive, coherent response.
 
         Original Question: {original_query}
 
@@ -122,13 +121,15 @@ class ResponseGenerator:
         {full_context}
 
         Instructions:
-        - Create a coherent response that directly answers the original question.
-        - Integrate information from the sub-question answers logically.
-        - Avoid simply repeating the sub-answers; summarize and combine them.
-        - If information is missing or irrelevant, omit it gracefully.
-        - Do not repeat the original question in the answer.
-        - Cite page numbers if relevant (e.g., "Based on information found on page 5...").
-        - Prioritize accuracy and clarity.
+        1. Synthesize the sub-answers into one comprehensive response
+        2. Ensure the final answer directly addresses the original question
+        3. Maintain consistency and avoid contradictions
+        4. Include all relevant information from the sub-answers
+        5. Present the information in a logical, well-structured manner
+        6. If sub-answers complement each other, integrate them smoothly
+        7. If there are any conflicts, note them appropriately
+
+        Provide a comprehensive final answer:
         """
 
         try:
