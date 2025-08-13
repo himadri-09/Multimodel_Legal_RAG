@@ -1,27 +1,29 @@
-# utils/pdf_processor.py - TEXT ONLY VERSION
+# utils/pdf_processor.py
+
 import fitz  # PyMuPDF
 from typing import List, Dict, Any
 from pathlib import Path
-
+from azure.storage.blob import BlobServiceClient
+import os
 from config import CHUNK_SIZE, CHUNK_OVERLAP
-from langsmith import traceable
 
 class PDFProcessor:
     def __init__(self):
-        # Removed Azure Blob Storage client since we're not processing images
-        print("📄 PDF Processor initialized - TEXT ONLY MODE")
+        connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+        if not connection_string:
+            raise ValueError("AZURE_STORAGE_CONNECTION_STRING environment variable is not set.")
+        self.blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        self.pdf_container_name = os.getenv("PDF_BLOB_CONTAINER", "rag-pdf-uploads")
 
-    def extract_text_from_pdf(self, pdf_path: str, pdf_name: str) -> List[Dict[str, Any]]:
-        """Extract text chunks from PDF"""
-        print(f"📖 Extracting text from: {pdf_name}")
-        doc = fitz.open(pdf_path)
+    def extract_text_from_pdf(self, local_pdf_path: str, pdf_name: str) -> List[Dict[str, Any]]:
+        """Extract plain text chunks from PDF."""
+        doc = fitz.open(local_pdf_path)
         text_chunks = []
         for page_num in range(len(doc)):
             page = doc.load_page(page_num)
-            text = page.get_text()
-            if text.strip():
-                print(f"   - Processing text on page {page_num + 1}")
-                # Split text into overlapping chunks
+            text = page.get_text().strip()
+            if text:
+                # Split into overlapping chunks
                 words = text.split()
                 for i in range(0, len(words), CHUNK_SIZE - CHUNK_OVERLAP):
                     chunk_words = words[i:i + CHUNK_SIZE]
@@ -37,11 +39,17 @@ class PDFProcessor:
                         }
                     })
         doc.close()
-        print(f"✅ Extracted {len(text_chunks)} text chunks")
         return text_chunks
-    
-    def extract_images_from_pdf(self, pdf_path: str, pdf_name: str) -> List[Dict[str, Any]]:
-        """IMAGE PROCESSING DISABLED - Returns empty list"""
-        print(f"🚫 Image processing disabled for: {pdf_name}")
-        print("📄 Running in TEXT-ONLY mode - skipping all images")
-        return []  # Return empty list instead of processing images
+
+    def upload_pdf_to_blob(self, local_pdf_path: str, filename: str) -> str:
+        """Upload original PDF to Azure Blob Storage and return the blob URL."""
+        blob_client = self.blob_service_client.get_blob_client(
+            container=self.pdf_container_name,
+            blob=filename
+        )
+        with open(local_pdf_path, "rb") as pdf_file:
+            blob_client.upload_blob(pdf_file, overwrite=True)
+        # Build the public URL (if stored as public)
+        account_url = self.blob_service_client.account_name
+        pdf_url = f"https://{account_url}.blob.core.windows.net/{self.pdf_container_name}/{filename}"
+        return pdf_url

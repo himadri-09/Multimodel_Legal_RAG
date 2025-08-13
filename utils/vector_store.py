@@ -406,6 +406,95 @@ class PineconeVectorStore:
         except Exception as e:
             print(f"❌ Error getting chunk count: {e}")
             return 0
+        
+    async def delete_pdf_vectors(self, pdf_name: str) -> Dict[str, Any]:
+        """
+        Delete all vectors for a specific PDF from Pinecone
+        Returns deletion status and statistics
+        """
+        try:
+            print(f"🗑️ Starting vector deletion for PDF: {pdf_name}")
+            
+            # Check how many vectors exist
+            chunk_count = await self.get_pdf_chunk_count(pdf_name)
+            print(f"📊 Found ~{chunk_count} chunks to delete")
+            
+            if chunk_count == 0:
+                return {
+                    "success": True,
+                    "deleted_count": 0,
+                    "message": f"No vectors found for PDF '{pdf_name}'"
+                }
+            
+            # Collect all vector IDs for this PDF
+            all_vector_ids = []
+            batch_size = 1000
+            
+            print(f"🔍 Collecting vector IDs...")
+            
+            for offset in range(0, max(chunk_count * 2, 2000), batch_size):
+                response = self.index.query(
+                    vector=[0.0] * EMBEDDING_DIMENSION,
+                    top_k=min(batch_size, 10000),
+                    filter={'pdf_name': pdf_name},
+                    include_metadata=False,
+                    include_values=False
+                )
+                
+                batch_ids = [match['id'] for match in response['matches']]
+                all_vector_ids.extend(batch_ids)
+                
+                print(f"   📦 Collected {len(batch_ids)} IDs (total: {len(all_vector_ids)})")
+                
+                if len(batch_ids) < batch_size:
+                    break
+            
+            if not all_vector_ids:
+                return {
+                    "success": True,
+                    "deleted_count": 0,
+                    "message": f"No vector IDs found for PDF '{pdf_name}'"
+                }
+            
+            # Delete vectors in batches
+            print(f"🗑️ Deleting {len(all_vector_ids)} vectors...")
+            
+            delete_batch_size = 1000
+            deleted_count = 0
+            failed_batches = 0
+            
+            for i in range(0, len(all_vector_ids), delete_batch_size):
+                batch_ids = all_vector_ids[i:i + delete_batch_size]
+                batch_num = i // delete_batch_size + 1
+                total_batches = (len(all_vector_ids) + delete_batch_size - 1) // delete_batch_size
+                
+                try:
+                    self.index.delete(ids=batch_ids)
+                    deleted_count += len(batch_ids)
+                    print(f"   ✅ Deleted batch {batch_num}/{total_batches}")
+                except Exception as e:
+                    failed_batches += 1
+                    print(f"   ❌ Failed batch {batch_num}: {e}")
+            
+            # Verify deletion
+            remaining_count = await self.get_pdf_chunk_count(pdf_name)
+            
+            return {
+                "success": deleted_count > 0,
+                "deleted_count": deleted_count,
+                "total_found": len(all_vector_ids),
+                "failed_batches": failed_batches,
+                "remaining_vectors": remaining_count,
+                "message": f"Deleted {deleted_count}/{len(all_vector_ids)} vectors for '{pdf_name}'"
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "deleted_count": 0,
+                "error": str(e),
+                "message": f"Error deleting vectors for '{pdf_name}': {str(e)}"
+            }
     
     async def __aenter__(self):
         return self
