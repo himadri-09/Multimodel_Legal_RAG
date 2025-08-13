@@ -1,0 +1,6 @@
+.env
+dockerfile
+data/
+uploads/
+__pycache__/
+utils/__pycache__/
