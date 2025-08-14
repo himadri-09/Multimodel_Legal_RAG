@@ -1,4 +1,4 @@
-# app.py (simplified, backend-only)
+# app.py - Updated with Cosmos DB integration
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -16,8 +16,7 @@ from utils.pdf_processor import PDFProcessor
 from utils.vector_store import PineconeVectorStore
 from utils.query_processor import QueryProcessor
 from utils.response_generator import ResponseGenerator
-
-from typing import Dict, List
+from utils.cosmos_document_manager import CosmosDocumentManager, DocumentStatus  # 🆕
 
 app = Flask(__name__)
 CORS(app, origins="*")
@@ -34,29 +33,48 @@ class ProcessingStatus:
     CACHED = "cached"
 
 async def process_pdf_async(job_id: str, pdf_path: Path, pdf_name: str,
-                           filename: str) -> Dict[str, Any]:
-    """Async PDF processing: upload to blob, extract/chunk text, embed/store in Pinecone."""
+                           filename: str, file_size_mb: float, blob_url: str) -> Dict[str, Any]:
+    """Async PDF processing with Cosmos DB tracking"""
     try:
         job = processing_jobs[job_id]
         job["status"] = ProcessingStatus.PROCESSING
         job["stage"] = "Initializing"
 
-        processor = PDFProcessor()
+        # 🆕 Initialize Cosmos DB manager
+        async with CosmosDocumentManager() as cosmos_manager:
+            
+            # 🆕 Update status to processing in Cosmos DB
+            await cosmos_manager.update_document_status(
+                pdf_name, 
+                DocumentStatus.PROCESSING,
+                processing_stage="Extracting text"
+            )
 
-        # 1. Upload PDF to Blob Storage
-        job["stage"] = "Uploading PDF to blob storage"
-        blob_url = processor.upload_pdf_to_blob(str(pdf_path), filename)
-        job["blob_url"] = blob_url
+            processor = PDFProcessor()
 
-        # 2. Extract text chunks
-        job["stage"] = "Extracting text"
-        text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
+            # Extract text chunks (blob upload already done)
+            job["stage"] = "Extracting text"
+            text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
 
-        # 3. Store chunks in vector DB
-        async with PineconeVectorStore() as vector_store:
+            # 🆕 Update status: embedding
+            await cosmos_manager.update_document_status(
+                pdf_name, 
+                DocumentStatus.PROCESSING,
+                processing_stage="Creating embeddings"
+            )
+
+            # Store chunks in vector DB
             job["stage"] = "Storing chunks"
-            await vector_store.store_chunks(text_chunks, pdf_name)
-            chunk_count = await vector_store.get_pdf_chunk_count(pdf_name)
+            async with PineconeVectorStore() as vector_store:
+                await vector_store.store_chunks(text_chunks, pdf_name)
+                chunk_count = len(text_chunks)  # We know the count from text_chunks
+
+            # 🆕 Update status to completed in Cosmos DB
+            await cosmos_manager.update_document_status(
+                pdf_name, 
+                DocumentStatus.ANALYZED,
+                chunk_count=chunk_count
+            )
 
         # Clean up
         try:
@@ -72,6 +90,7 @@ async def process_pdf_async(job_id: str, pdf_path: Path, pdf_name: str,
             "text_chunks": len(text_chunks),
             "status": "completed"
         }
+        
         job.update({
             "status": ProcessingStatus.COMPLETED,
             "result": result,
@@ -81,6 +100,17 @@ async def process_pdf_async(job_id: str, pdf_path: Path, pdf_name: str,
         return result
 
     except Exception as e:
+        # 🆕 Update status to failed in Cosmos DB
+        try:
+            async with CosmosDocumentManager() as cosmos_manager:
+                await cosmos_manager.update_document_status(
+                    pdf_name, 
+                    DocumentStatus.FAILED,
+                    error_message=str(e)
+                )
+        except:
+            pass  # Don't let Cosmos errors break the main error handling
+        
         job.update({
             "status": ProcessingStatus.FAILED,
             "error": str(e),
@@ -92,18 +122,18 @@ async def process_pdf_async(job_id: str, pdf_path: Path, pdf_name: str,
             pass
         raise
 
-def run_async_processing(job_id, pdf_path, pdf_name, filename):
+def run_async_processing(job_id, pdf_path, pdf_name, filename, file_size_mb, blob_url):
     """Run async processing in a thread."""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     result = loop.run_until_complete(
-        process_pdf_async(job_id, pdf_path, pdf_name, filename))
+        process_pdf_async(job_id, pdf_path, pdf_name, filename, file_size_mb, blob_url))
     loop.close()
     return result
 
 @app.route("/upload", methods=["POST"])
 def upload_pdf():
-    """Backend endpoint: upload, process, and store a PDF."""
+    """Upload, process, and store a PDF with Cosmos DB tracking"""
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
     file = request.files["file"]
@@ -112,141 +142,213 @@ def upload_pdf():
     if not file.filename.lower().endswith(".pdf"):
         return jsonify({"error": "Only PDFs are allowed"}), 400
 
-    # File size sanity check
+    # File size check
     file.seek(0, 2)  # End
     file_size = file.tell()
     file.seek(0)     # Reset
-
-    # [Optional] Add max size check here
+    file_size_mb = round(file_size / (1024 * 1024), 2)
 
     filename = secure_filename(file.filename)
     pdf_name = Path(filename).stem
     pdf_path = UPLOADS_DIR / filename
     file.save(pdf_path)
 
-    # Start async job
-    job_id = str(uuid.uuid4())
-    processing_jobs[job_id] = {
-        "job_id": job_id,
-        "pdf_name": pdf_name,
-        "status": ProcessingStatus.PENDING,
-        "start_time": time.time(),
-        "file_size_mb": round(file_size / (1024 * 1024), 2)
-    }
-    thread = threading.Thread(
-        target=run_async_processing,
-        args=(job_id, pdf_path, pdf_name, filename),
-        daemon=True)
-    thread.start()
-    return jsonify({
-        "job_id": job_id,
-        "message": "Processing started",
-        "status": "started",
-        "check_status_url": f"/status/{job_id}"
-    })
-    
+    async def create_cosmos_record_and_upload():
+        # Upload to blob storage first
+        processor = PDFProcessor()
+        blob_url = processor.upload_pdf_to_blob(str(pdf_path), filename)
+        
+        # 🆕 Create record in Cosmos DB
+        async with CosmosDocumentManager() as cosmos_manager:
+            # Check if already exists
+            existing_doc = await cosmos_manager.get_document_by_pdf_name(pdf_name)
+            if existing_doc:
+                if existing_doc["status"] == DocumentStatus.ANALYZED:
+                    return {
+                        "status": "cached",
+                        "message": f"PDF '{pdf_name}' already processed",
+                        "blob_url": blob_url
+                    }
+            
+            # Create new record
+            await cosmos_manager.create_document_record(
+                pdf_name=pdf_name,
+                file_name=filename,
+                file_size_mb=file_size_mb,
+                blob_url=blob_url
+            )
+        
+        return {"blob_url": blob_url, "status": "created"}
+
+    try:
+        # Create Cosmos record synchronously
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        cosmos_result = loop.run_until_complete(create_cosmos_record_and_upload())
+        loop.close()
+        
+        # Check if already processed (cached)
+        if cosmos_result.get("status") == "cached":
+            try:
+                pdf_path.unlink()  # Clean up uploaded file
+            except:
+                pass
+            return jsonify({
+                "job_id": None,
+                "message": cosmos_result["message"],
+                "status": "cached",
+                "pdf_name": pdf_name
+            })
+
+        # Start async processing job
+        job_id = str(uuid.uuid4())
+        processing_jobs[job_id] = {
+            "job_id": job_id,
+            "pdf_name": pdf_name,
+            "file_name": filename,  # 🆕 Add file_name for UI
+            "status": ProcessingStatus.PENDING,
+            "start_time": time.time(),
+            "file_size_mb": file_size_mb
+        }
+        
+        thread = threading.Thread(
+            target=run_async_processing,
+            args=(job_id, pdf_path, pdf_name, filename, file_size_mb, cosmos_result["blob_url"]),
+            daemon=True)
+        thread.start()
+        
+        return jsonify({
+            "job_id": job_id,
+            "message": "Processing started",
+            "status": "started",
+            "check_status_url": f"/status/{job_id}",
+            "pdf_name": pdf_name,
+            "file_name": filename
+        })
+        
+    except Exception as e:
+        try:
+            pdf_path.unlink()
+        except:
+            pass
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/documents", methods=["GET"])
 def get_all_documents():
-    """Get all processed PDFs from blob storage and their status."""
+    """🚀 FAST: Get all documents from Cosmos DB (no vector queries)"""
     try:
-        processor = PDFProcessor()
+        async def fetch_from_cosmos():
+            async with CosmosDocumentManager() as cosmos_manager:
+                return await cosmos_manager.get_all_documents()
         
-        # Get all blobs from the container
-        container_client = processor.blob_service_client.get_container_client(
-            processor.pdf_container_name
-        )
+        # Get documents from Cosmos DB
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        cosmos_documents = loop.run_until_complete(fetch_from_cosmos())
+        loop.close()
         
+        # Format for frontend
         documents = []
-        for blob in container_client.list_blobs():
-            # Get blob properties
-            blob_client = processor.blob_service_client.get_blob_client(
-                container=processor.pdf_container_name,
-                blob=blob.name
-            )
-            properties = blob_client.get_blob_properties()
-            
-            # Check if PDF is processed in vector store
-            pdf_name = Path(blob.name).stem
-            async def check_status():
-                async with PineconeVectorStore() as vector_store:
-                    exists = await vector_store.check_pdf_exists(pdf_name)
-                    chunk_count = await vector_store.get_pdf_chunk_count(pdf_name) if exists else 0
-                    return exists, chunk_count
-            
-            is_processed, chunk_count = asyncio.run(check_status())
+        for doc in cosmos_documents:
+            # Map Cosmos DB status to frontend status
+            status_mapping = {
+                DocumentStatus.PENDING: "Processing",
+                DocumentStatus.PROCESSING: "Processing", 
+                DocumentStatus.ANALYZED: "Analyzed",
+                DocumentStatus.FAILED: "Failed"
+            }
             
             documents.append({
-                "id": blob.name,
-                "name": blob.name,
-                "pdf_name": pdf_name,
-                "date": properties.creation_time.strftime("%Y-%m-%d"),
-                "size": f"{properties.size / (1024 * 1024):.1f} MB",
-                "status": "Analyzed" if is_processed else "Failed",
-                "chunk_count": chunk_count,
-                "blob_url": f"https://{processor.blob_service_client.account_name}.blob.core.windows.net/{processor.pdf_container_name}/{blob.name}"
+                "id": doc["file_name"],  # Use file_name as ID for blob operations
+                "name": doc["file_name"],
+                "pdf_name": doc["pdf_name"],
+                "date": doc["created_at"][:10],  # Extract date from ISO timestamp
+                "size": f"{doc['file_size_mb']} MB",
+                "status": status_mapping.get(doc["status"], "Unknown"),
+                "chunk_count": doc.get("chunk_count", 0),
+                "blob_url": doc.get("blob_url", ""),
+                "processing_stage": doc.get("processing_stage"),
+                "error_message": doc.get("error_message")
             })
         
+        print(f"📋 Retrieved {len(documents)} documents from Cosmos DB (FAST)")
         return jsonify({"documents": documents})
-    
+        
+    except Exception as e:
+        print(f"❌ Error fetching documents: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/documents/processed", methods=["GET"])  
+def get_processed_documents():
+    """🚀 FAST: Get only processed documents from Cosmos DB"""
+    try:
+        async def fetch_processed():
+            async with CosmosDocumentManager() as cosmos_manager:
+                return await cosmos_manager.get_processed_documents()
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        processed_docs = loop.run_until_complete(fetch_processed())
+        loop.close()
+        
+        print(f"📋 Retrieved {len(processed_docs)} processed documents (FAST)")
+        return jsonify({"documents": processed_docs})
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route("/documents/<document_id>", methods=["DELETE"])
 def delete_document(document_id):
-    """Delete document from blob storage and vector database."""
+    """Delete document from blob storage, vector database, and Cosmos DB"""
     try:
         processor = PDFProcessor()
         pdf_name = Path(document_id).stem
         
+        async def delete_from_all_sources():
+            async with CosmosDocumentManager() as cosmos_manager, \
+                       PineconeVectorStore() as vector_store:
+                
+                # Delete from Cosmos DB first to get metadata
+                cosmos_doc = await cosmos_manager.get_document_by_pdf_name(pdf_name)
+                cosmos_deleted = await cosmos_manager.delete_document(pdf_name)
+                
+                # Delete from vector database
+                vector_result = await vector_store.delete_pdf_vectors(pdf_name)
+                
+                return cosmos_deleted, vector_result, cosmos_doc
+        
+        # Execute deletions
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        cosmos_deleted, vector_result, cosmos_doc = loop.run_until_complete(delete_from_all_sources())
+        loop.close()
+        
         # Delete from blob storage
-        blob_client = processor.blob_service_client.get_blob_client(
-            container=processor.pdf_container_name,
-            blob=document_id
-        )
-        blob_client.delete_blob()
-        
-        # Delete from vector database
-        async def delete_vectors():
-            async with PineconeVectorStore() as vector_store:
-                return await vector_store.delete_pdf_vectors(pdf_name)
-        
-        vector_result = asyncio.run(delete_vectors())
+        blob_deleted = True
+        try:
+            blob_client = processor.blob_service_client.get_blob_client(
+                container=processor.pdf_container_name,
+                blob=document_id
+            )
+            blob_client.delete_blob()
+        except Exception as e:
+            print(f"⚠️  Blob deletion warning: {e}")
+            blob_deleted = False
         
         return jsonify({
             "message": "Document deleted successfully",
             "pdf_name": pdf_name,
-            "blob_deleted": True,
+            "cosmos_deleted": cosmos_deleted,
+            "blob_deleted": blob_deleted,
             "vector_deletion": vector_result
         })
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/documents/processed", methods=["GET"])
-def get_processed_documents():
-    """Get only processed documents for chat dropdown."""
-    try:
-        all_docs_response = get_all_documents()
-        all_docs = all_docs_response.get_json()
-        
-        if "documents" in all_docs:
-            processed_docs = [
-                {"id": doc["pdf_name"], "name": doc["name"]} 
-                for doc in all_docs["documents"] 
-                if doc["status"] == "Analyzed"
-            ]
-            return jsonify({"documents": processed_docs})
-        
-        return jsonify({"documents": []})
-    
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
 @app.route("/status/<job_id>", methods=["GET"])
 def get_job_status(job_id):
-    """Check processing job status."""
+    """Check processing job status - unchanged"""
     job = processing_jobs.get(job_id)
     if not job:
         return jsonify({"error": "Job not found"}), 404
@@ -258,7 +360,7 @@ def get_job_status(job_id):
 
 @app.route("/query", methods=["POST"])
 def handle_query():
-    """Backend endpoint: query stored chunks."""
+    """Query endpoint - unchanged (still uses vector DB for search)"""
     data = request.get_json()
     query = data.get("query")
     pdf_name = data.get("pdf_name")
@@ -303,6 +405,25 @@ def handle_query():
         return jsonify(result)
     except Exception as e:
         traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+# 🆕 New endpoint for Cosmos DB statistics (optional)
+@app.route("/statistics", methods=["GET"])
+def get_statistics():
+    """Get processing statistics from Cosmos DB"""
+    try:
+        async def get_stats():
+            async with CosmosDocumentManager() as cosmos_manager:
+                return await cosmos_manager.get_processing_statistics()
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        stats = loop.run_until_complete(get_stats())
+        loop.close()
+        
+        return jsonify(stats)
+        
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @app.route("/health", methods=["GET"])

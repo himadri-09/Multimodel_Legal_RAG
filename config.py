@@ -13,6 +13,18 @@ AZURE_EMBEDDING_DEPLOYMENT_NAME = os.getenv("AZURE_EMBEDDING_DEPLOYMENT_NAME")
 # REMOVED: AZURE_VISION_DEPLOYMENT_NAME (not needed for text-only)
 AZURE_API_VERSION = os.getenv("AZURE_API_VERSION", "2024-02-15-preview")
 
+# 🆕 Cosmos DB Configuration
+COSMOS_ENDPOINT = os.getenv("COSMOS_ENDPOINT") 
+COSMOS_KEY = os.getenv("COSMOS_KEY")  
+COSMOS_DATABASE_NAME = os.getenv("COSMOS_DATABASE_NAME", "rag_pdf_system")
+COSMOS_CONTAINER_NAME = os.getenv("COSMOS_CONTAINER_NAME", "document_metadata")
+
+# Validate required Cosmos DB settings
+if not COSMOS_ENDPOINT or not COSMOS_KEY:
+    raise ValueError(
+        "Cosmos DB configuration missing. Please set COSMOS_ENDPOINT and COSMOS_KEY environment variables."
+    )
+
 # Pinecone Configuration
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
