@@ -1,4 +1,4 @@
-# app.py - Updated with Cosmos DB integration
+# app.py - Updated with neon DB integration
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -16,7 +16,7 @@ from utils.pdf_processor import PDFProcessor
 from utils.vector_store import PineconeVectorStore
 from utils.query_processor import QueryProcessor
 from utils.response_generator import ResponseGenerator
-from utils.cosmos_document_manager import CosmosDocumentManager, DocumentStatus  # 🆕
+from utils.neon_document_manager import NeonDocumentManager, DocumentStatus 
 
 app = Flask(__name__)
 CORS(app, origins="*")
@@ -32,19 +32,35 @@ class ProcessingStatus:
     FAILED = "failed"
     CACHED = "cached"
 
+# Initialize connection pool on startup
+def initialize_db_pool():
+    """Initialize database connection pool on app startup"""
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(NeonDocumentManager.get_pool())
+        loop.close()
+        print("Database connection pool initialized")
+    except Exception as e:
+        print(f"Warning: Database initialization failed: {e}")
+
+# Initialize immediately when the app starts
+with app.app_context():
+    initialize_db_pool()
+
 async def process_pdf_async(job_id: str, pdf_path: Path, pdf_name: str,
                            filename: str, file_size_mb: float, blob_url: str) -> Dict[str, Any]:
-    """Async PDF processing with Cosmos DB tracking"""
+    """Async PDF processing with neon DB tracking"""
     try:
         job = processing_jobs[job_id]
         job["status"] = ProcessingStatus.PROCESSING
         job["stage"] = "Initializing"
 
-        # 🆕 Initialize Cosmos DB manager
-        async with CosmosDocumentManager() as cosmos_manager:
+        # 🆕 Initialize neon DB manager
+        async with NeonDocumentManager() as neon_manager:
             
-            # 🆕 Update status to processing in Cosmos DB
-            await cosmos_manager.update_document_status(
+            # 🆕 Update status to processing in neon DB
+            await neon_manager.update_document_status(
                 pdf_name, 
                 DocumentStatus.PROCESSING,
                 processing_stage="Extracting text"
@@ -57,7 +73,7 @@ async def process_pdf_async(job_id: str, pdf_path: Path, pdf_name: str,
             text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
 
             # 🆕 Update status: embedding
-            await cosmos_manager.update_document_status(
+            await neon_manager.update_document_status(
                 pdf_name, 
                 DocumentStatus.PROCESSING,
                 processing_stage="Creating embeddings"
@@ -69,8 +85,8 @@ async def process_pdf_async(job_id: str, pdf_path: Path, pdf_name: str,
                 await vector_store.store_chunks(text_chunks, pdf_name)
                 chunk_count = len(text_chunks)  # We know the count from text_chunks
 
-            # 🆕 Update status to completed in Cosmos DB
-            await cosmos_manager.update_document_status(
+            # 🆕 Update status to completed in neon DB
+            await neon_manager.update_document_status(
                 pdf_name, 
                 DocumentStatus.ANALYZED,
                 chunk_count=chunk_count
@@ -100,16 +116,16 @@ async def process_pdf_async(job_id: str, pdf_path: Path, pdf_name: str,
         return result
 
     except Exception as e:
-        # 🆕 Update status to failed in Cosmos DB
+        # 🆕 Update status to failed in Neon DB
         try:
-            async with CosmosDocumentManager() as cosmos_manager:
-                await cosmos_manager.update_document_status(
+            async with NeonDocumentManager() as neon_manager:
+                await neon_manager.update_document_status(
                     pdf_name, 
                     DocumentStatus.FAILED,
                     error_message=str(e)
                 )
         except:
-            pass  # Don't let Cosmos errors break the main error handling
+            pass  # Don't let neon errors break the main error handling
         
         job.update({
             "status": ProcessingStatus.FAILED,
@@ -133,7 +149,7 @@ def run_async_processing(job_id, pdf_path, pdf_name, filename, file_size_mb, blo
 
 @app.route("/upload", methods=["POST"])
 def upload_pdf():
-    """Upload, process, and store a PDF with Cosmos DB tracking"""
+    """Upload, process, and store a PDF with neon DB tracking"""
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
     file = request.files["file"]
@@ -153,15 +169,15 @@ def upload_pdf():
     pdf_path = UPLOADS_DIR / filename
     file.save(pdf_path)
 
-    async def create_cosmos_record_and_upload():
+    async def create_neon_record_and_upload():
         # Upload to blob storage first
         processor = PDFProcessor()
         blob_url = processor.upload_pdf_to_blob(str(pdf_path), filename)
         
-        # 🆕 Create record in Cosmos DB
-        async with CosmosDocumentManager() as cosmos_manager:
+        # 🆕 Create record in neon DB
+        async with NeonDocumentManager() as neon_manager:
             # Check if already exists
-            existing_doc = await cosmos_manager.get_document_by_pdf_name(pdf_name)
+            existing_doc = await neon_manager.get_document_by_pdf_name(pdf_name)
             if existing_doc:
                 if existing_doc["status"] == DocumentStatus.ANALYZED:
                     return {
@@ -171,7 +187,7 @@ def upload_pdf():
                     }
             
             # Create new record
-            await cosmos_manager.create_document_record(
+            await neon_manager.create_document_record(
                 pdf_name=pdf_name,
                 file_name=filename,
                 file_size_mb=file_size_mb,
@@ -181,21 +197,21 @@ def upload_pdf():
         return {"blob_url": blob_url, "status": "created"}
 
     try:
-        # Create Cosmos record synchronously
+        # Create neon record synchronously
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        cosmos_result = loop.run_until_complete(create_cosmos_record_and_upload())
+        neon_result = loop.run_until_complete(create_neon_record_and_upload())
         loop.close()
         
         # Check if already processed (cached)
-        if cosmos_result.get("status") == "cached":
+        if neon_result.get("status") == "cached":
             try:
                 pdf_path.unlink()  # Clean up uploaded file
             except:
                 pass
             return jsonify({
                 "job_id": None,
-                "message": cosmos_result["message"],
+                "message": neon_result["message"],
                 "status": "cached",
                 "pdf_name": pdf_name
             })
@@ -213,7 +229,7 @@ def upload_pdf():
         
         thread = threading.Thread(
             target=run_async_processing,
-            args=(job_id, pdf_path, pdf_name, filename, file_size_mb, cosmos_result["blob_url"]),
+            args=(job_id, pdf_path, pdf_name, filename, file_size_mb, neon_result["blob_url"]),
             daemon=True)
         thread.start()
         
@@ -235,34 +251,39 @@ def upload_pdf():
 
 @app.route("/documents", methods=["GET"])
 def get_all_documents():
-    """🚀 FAST: Get all documents from Cosmos DB (no vector queries)"""
+    """🚀 FAST: Get all documents from neon DB (no vector queries)"""
     try:
-        async def fetch_from_cosmos():
-            async with CosmosDocumentManager() as cosmos_manager:
-                return await cosmos_manager.get_all_documents()
+        async def fetch_from_neon():
+            async with NeonDocumentManager() as neon_manager:
+                return await neon_manager.get_all_documents()
         
-        # Get documents from Cosmos DB
+        # Get documents from neon DB
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        cosmos_documents = loop.run_until_complete(fetch_from_cosmos())
+        neon_documents = loop.run_until_complete(fetch_from_neon())
         loop.close()
         
         # Format for frontend
         documents = []
-        for doc in cosmos_documents:
-            # Map Cosmos DB status to frontend status
+        for doc in neon_documents:
+            # Map neon DB status to frontend status
             status_mapping = {
                 DocumentStatus.PENDING: "Processing",
                 DocumentStatus.PROCESSING: "Processing", 
                 DocumentStatus.ANALYZED: "Analyzed",
                 DocumentStatus.FAILED: "Failed"
             }
-            
+            # Handle datetime conversion
+            created_at = doc["created_at"]
+            if hasattr(created_at, 'date'):
+                date_str = created_at.date().isoformat()
+            else:
+                date_str = str(created_at)[:10]
             documents.append({
                 "id": doc["file_name"],  # Use file_name as ID for blob operations
                 "name": doc["file_name"],
                 "pdf_name": doc["pdf_name"],
-                "date": doc["created_at"][:10],  # Extract date from ISO timestamp
+                "date": date_str,
                 "size": f"{doc['file_size_mb']} MB",
                 "status": status_mapping.get(doc["status"], "Unknown"),
                 "chunk_count": doc.get("chunk_count", 0),
@@ -271,7 +292,7 @@ def get_all_documents():
                 "error_message": doc.get("error_message")
             })
         
-        print(f"📋 Retrieved {len(documents)} documents from Cosmos DB (FAST)")
+        print(f"📋 Retrieved {len(documents)} documents from neon DB (FAST)")
         return jsonify({"documents": documents})
         
     except Exception as e:
@@ -280,11 +301,11 @@ def get_all_documents():
 
 @app.route("/documents/processed", methods=["GET"])  
 def get_processed_documents():
-    """🚀 FAST: Get only processed documents from Cosmos DB"""
+    """🚀 FAST: Get only processed documents from neon DB"""
     try:
         async def fetch_processed():
-            async with CosmosDocumentManager() as cosmos_manager:
-                return await cosmos_manager.get_processed_documents()
+            async with NeonDocumentManager() as neon_manager:
+                return await neon_manager.get_processed_documents()
         
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -296,31 +317,36 @@ def get_processed_documents():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+# Add cleanup on app shutdown
+@app.teardown_appcontext
+def close_db_connections(error):
+    """Don't close connection pool on each request - it's persistent"""
+    pass
 
 @app.route("/documents/<document_id>", methods=["DELETE"])
 def delete_document(document_id):
-    """Delete document from blob storage, vector database, and Cosmos DB"""
+    """Delete document from blob storage, vector database, and neon DB"""
     try:
         processor = PDFProcessor()
         pdf_name = Path(document_id).stem
         
         async def delete_from_all_sources():
-            async with CosmosDocumentManager() as cosmos_manager, \
+            async with NeonDocumentManager() as neon_manager, \
                        PineconeVectorStore() as vector_store:
                 
-                # Delete from Cosmos DB first to get metadata
-                cosmos_doc = await cosmos_manager.get_document_by_pdf_name(pdf_name)
-                cosmos_deleted = await cosmos_manager.delete_document(pdf_name)
+                # Delete from neon DB first to get metadata
+                neon_doc = await neon_manager.get_document_by_pdf_name(pdf_name)
+                neon_deleted = await neon_manager.delete_document(pdf_name)
                 
                 # Delete from vector database
                 vector_result = await vector_store.delete_pdf_vectors(pdf_name)
                 
-                return cosmos_deleted, vector_result, cosmos_doc
+                return neon_deleted, vector_result, neon_doc
         
         # Execute deletions
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        cosmos_deleted, vector_result, cosmos_doc = loop.run_until_complete(delete_from_all_sources())
+        neon_deleted, vector_result, neon_doc = loop.run_until_complete(delete_from_all_sources())
         loop.close()
         
         # Delete from blob storage
@@ -338,7 +364,7 @@ def delete_document(document_id):
         return jsonify({
             "message": "Document deleted successfully",
             "pdf_name": pdf_name,
-            "cosmos_deleted": cosmos_deleted,
+            "neon_deleted": neon_deleted,
             "blob_deleted": blob_deleted,
             "vector_deletion": vector_result
         })
@@ -407,14 +433,14 @@ def handle_query():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-# 🆕 New endpoint for Cosmos DB statistics (optional)
+# 🆕 New endpoint for neon DB statistics (optional)
 @app.route("/statistics", methods=["GET"])
 def get_statistics():
-    """Get processing statistics from Cosmos DB"""
+    """Get processing statistics from neon DB"""
     try:
         async def get_stats():
-            async with CosmosDocumentManager() as cosmos_manager:
-                return await cosmos_manager.get_processing_statistics()
+            async with NeonDocumentManager() as neon_manager:
+                return await neon_manager.get_processing_statistics()
         
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)

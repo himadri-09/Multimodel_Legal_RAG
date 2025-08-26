@@ -1,5 +1,4 @@
 .env
-dockerfile
 data/
 uploads/
 __pycache__/
