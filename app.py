@@ -64,9 +64,6 @@ class QueryResponse(BaseModel):
     images: list[dict]
     sources: list[dict]
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 @app.get("/", include_in_schema=False)
 async def index():
     """Serve the main HTML page."""
@@ -363,7 +360,7 @@ async def handle_query(request: QueryRequest):
     Query the processed PDF documents.
     
     - **query**: The question to ask
-    - **pdf_name**: Optional - limit search to specific PDF
+    - **pdf_name**: Optional - limit search to specific PDF and without the .pdf extension
     
     Returns answer with relevant images and source citations.
     """
