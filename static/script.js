@@ -225,7 +225,7 @@ async function uploadPDFs() {
 }
 
 async function pollProcessingStatus(jobId, statusElement) {
-  const maxAttempts = 300; // 5 minutes max (increased from 2 minutes)
+  const maxAttempts = 600; // 10 minutes max (10 * 60 seconds)
   const pollInterval = 1000; // 1 second
   let lastStage = '';
   
