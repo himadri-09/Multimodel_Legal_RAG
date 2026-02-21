@@ -1,8 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import JSONResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional, List, Dict
 import asyncio
 import time
 from pathlib import Path
@@ -47,27 +47,27 @@ class ProcessingStatus:
 # Pydantic models for request/response validation
 class QueryRequest(BaseModel):
     query: str
-    pdf_name: str | None = None
+    pdf_name: Optional[str] = None
 
 class UploadResponse(BaseModel):
-    job_id: str | None = None
+    job_id: Optional[str] = None
     message: str
     status: str
     requires_polling: bool = False
-    check_status_url: str | None = None
-    file_size_mb: str | None = None
-    cached: bool | None = None
-    chunks_processed: int | None = None
+    check_status_url: Optional[str] = None
+    file_size_mb: Optional[str] = None
+    cached: Optional[bool] = None
+    chunks_processed: Optional[int] = None
 
 class QueryResponse(BaseModel):
     answer: str
-    images: list[dict]
-    sources: list[dict]
+    images: List[Dict]
+    sources: List[Dict]
 
 @app.get("/", include_in_schema=False)
 async def index():
-    """Serve the main HTML page."""
-    return FileResponse("static/index.html")
+    """API root endpoint."""
+    return {"message": "Legal RAG API", "docs": "/docs", "health": "/health"}
 
 @app.get("/health", tags=["Health"])
 async def health_check():
@@ -450,4 +450,4 @@ async def handle_query(request: QueryRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
