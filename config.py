@@ -23,6 +23,11 @@ LANGCHAIN_ENDPOINT = os.getenv("LANGCHAIN_ENDPOINT")
 LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY")
 LANGCHAIN_PROJECT = os.getenv("LANGCHAIN_PROJECT")
 
+# Supabase Configuration
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")  # Service role key for backend (bypasses RLS)
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")  # Anon key (for reference only)
+
 # Processing Configuration
 EMBEDDING_DIMENSION = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))

@@ -18,6 +18,49 @@ class PDFProcessor:
             raise ValueError("AZURE_STORAGE_CONNECTION_STRING environment variable is not set.")
         self.blob_service_client = BlobServiceClient.from_connection_string(connection_string)
         self.container_name = "rag-pdf-images"
+        self.pdf_container_name = "rag-pdf-uploads"
+
+    def upload_pdf_to_blob(self, pdf_path: str, user_id: str, filename: str) -> str:
+        """
+        Upload original PDF to Azure Blob Storage organized by user ID
+
+        Args:
+            pdf_path: Local path to the PDF file
+            user_id: User's UUID (for folder organization)
+            filename: Original filename
+
+        Returns:
+            str: Blob URL of the uploaded PDF
+        """
+        try:
+            # Create blob path: {user_id}/{filename}
+            blob_name = f"{user_id}/{filename}"
+
+            print(f"📤 Uploading PDF to blob storage: {blob_name}")
+
+            # Read PDF file
+            with open(pdf_path, 'rb') as pdf_file:
+                pdf_data = pdf_file.read()
+
+            # Get blob client
+            blob_client = self.blob_service_client.get_blob_client(
+                container=self.pdf_container_name,
+                blob=blob_name
+            )
+
+            # Upload PDF
+            blob_client.upload_blob(pdf_data, overwrite=True, content_type='application/pdf')
+
+            # Construct blob URL
+            account_name = self.blob_service_client.account_name
+            blob_url = f"https://{account_name}.blob.core.windows.net/{self.pdf_container_name}/{blob_name}"
+
+            print(f"✅ PDF uploaded successfully to: {blob_url}")
+            return blob_url
+
+        except Exception as e:
+            print(f"❌ Error uploading PDF to blob storage: {e}")
+            raise
 
     def extract_text_from_pdf(self, pdf_path: str, pdf_name: str) -> List[Dict[str, Any]]:
         """Extract text chunks from PDF"""

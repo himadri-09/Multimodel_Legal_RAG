@@ -4,4 +4,5 @@ data/
 uploads/
 __pycache__/
 utils/__pycache__/
-venv/
+routers/__pycache__/
+.venv/

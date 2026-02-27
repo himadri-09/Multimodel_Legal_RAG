@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -9,17 +9,19 @@ from pathlib import Path
 from werkzeug.utils import secure_filename
 import traceback
 import uuid
-from config import UPLOADS_DIR 
+from config import UPLOADS_DIR
 from utils.pdf_processor import PDFProcessor
 from utils.image_captioner import ImageCaptioner
 from utils.vector_store import PineconeVectorStore
 from utils.query_processor import QueryProcessor
 from utils.response_generator import ResponseGenerator
+from utils.auth import get_current_user
+from utils.database import DatabaseManager
 
 app = FastAPI(
     title="PDF RAG System API",
-    description="A RAG system for PDF documents with image support and caching",
-    version="1.0.0"
+    description="A RAG system for PDF documents with authentication, image support, and caching",
+    version="2.0.0"
 )
 
 # CORS
@@ -33,9 +35,6 @@ app.add_middleware(
 
 # Ensure directories exist
 UPLOADS_DIR.mkdir(exist_ok=True)
-
-# Global dictionary to track processing jobs
-processing_jobs = {}
 
 class ProcessingStatus:
     PENDING = "pending"
@@ -60,6 +59,7 @@ class UploadResponse(BaseModel):
     chunks_processed: Optional[int] = None
 
 class QueryResponse(BaseModel):
+    conversation_id: Optional[str] = None
     answer: str
     images: List[Dict]
     sources: List[Dict]
@@ -74,152 +74,181 @@ async def health_check():
     """Simple health check endpoint"""
     return {"status": "healthy"}
 
-async def process_pdf_sync(pdf_path, pdf_name, filename):
+async def process_pdf_sync(pdf_path, pdf_name, filename, user_id: str):
     """Synchronous PDF processing for small files"""
-    print(f"📄 Starting synchronous processing for: {filename}")
+    print(f"📄 Starting synchronous processing for: {filename} (user: {user_id})")
     start_time = time.time()
-    
-    async with PineconeVectorStore() as vector_store:
-        # CACHE CHECK
-        print(f"🔍 Checking cache for PDF: '{pdf_name}'")
-        pdf_exists = await vector_store.check_pdf_exists(pdf_name)
-        
-        if pdf_exists:
-            chunk_count = await vector_store.get_pdf_chunk_count(pdf_name)
-            cache_end_time = time.time()
-            cache_check_duration = cache_end_time - start_time
-            
-            print(f"🚀 CACHE HIT! Skipping processing for '{pdf_name}'")
-            
-            # Clean up file
-            try:
-                pdf_path.unlink()
-                print(f"🧹 Cleaned up unnecessary uploaded file: {filename}")
-            except Exception as cleanup_error:
-                print(f"⚠️ Could not clean up file {filename}: {cleanup_error}")
-            
-            return {
-                "message": f"PDF '{pdf_name}' already processed and available in database",
-                "pdf_name": pdf_name,
-                "cached": True,
-                "estimated_chunks": chunk_count,
-                "processing_time_saved": "~30-120 seconds",
-                "cache_check_duration": f"{cache_check_duration:.2f}s",
-                "status": "cache_hit"
-            }
-        
-        # PROCESS NEW PDF
-        print(f"🔥 CACHE MISS! Processing '{pdf_name}' for first time...")
-        
-        processor = PDFProcessor()
-        print(f"📝 Step 1/3: Extracting text from {pdf_name}...")
-        text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
-        
-        print(f"🖼️ Step 2/3: Extracting and uploading images from {pdf_name}...")
-        image_chunks = processor.extract_images_from_pdf(str(pdf_path), pdf_name)
 
-        async with ImageCaptioner() as captioner:
-            print(f"🤖 Step 3/3: AI captioning {len(image_chunks)} images...")
-            captioned_images = await captioner.caption_images_async(image_chunks)
-            
-            # Combine and store
-            all_chunks = text_chunks + captioned_images
-            print(f"📦 Storing {len(all_chunks)} total chunks in vector database...")
+    db = DatabaseManager()
 
-            await vector_store.store_chunks(all_chunks, pdf_name)
-            
-        processing_end = time.time()
-        total_processing_time = processing_end - start_time
-        
-        print(f"🎉 PDF '{pdf_name}' processing completed in {total_processing_time:.2f}s")
-        
-        # Clean up file
-        try:
-            pdf_path.unlink()
-            print(f"🧹 Cleaned up processed file: {filename}")
-        except Exception as cleanup_error:
-            print(f"⚠️ Could not clean up file {filename}: {cleanup_error}")
-        
-        return {
-            "message": f"PDF '{pdf_name}' processed and stored successfully", 
-            "pdf_name": pdf_name,
-            "cached": False,
-            "chunks_processed": len(all_chunks),
-            "text_chunks": len(text_chunks),
-            "image_chunks": len(captioned_images),
-            "processing_duration": f"{total_processing_time:.2f}s",
-            "status": "newly_processed"
-        }
+    # Database cache check is already done in upload endpoint
+    # Proceed directly to processing
+    print(f"🔥 Processing '{pdf_name}' for user {user_id}...")
 
-@app.post("/upload", 
+    processor = PDFProcessor()
+
+    # Upload PDF to blob storage before processing
+    try:
+        blob_url = processor.upload_pdf_to_blob(str(pdf_path), user_id, filename)
+        print(f"💾 PDF stored in blob: {blob_url}")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not upload PDF to blob storage: {e}")
+        # Continue processing even if blob upload fails
+    print(f"📝 Step 1/3: Extracting text from {pdf_name}...")
+    text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
+
+    print(f"🖼️ Step 2/3: Extracting and uploading images from {pdf_name}...")
+    image_chunks = processor.extract_images_from_pdf(str(pdf_path), pdf_name)
+
+    async with ImageCaptioner() as captioner:
+        print(f"🤖 Step 3/3: AI captioning {len(image_chunks)} images...")
+        captioned_images = await captioner.caption_images_async(image_chunks)
+
+        # Combine and store in Pinecone
+        all_chunks = text_chunks + captioned_images
+        print(f"📦 Storing {len(all_chunks)} total chunks in vector database...")
+
+        async with PineconeVectorStore() as vector_store:
+            await vector_store.store_chunks(all_chunks, pdf_name, user_id)
+
+    processing_end = time.time()
+    total_processing_time = processing_end - start_time
+
+    print(f"🎉 PDF '{pdf_name}' processing completed in {total_processing_time:.2f}s")
+
+    # Update database status
+    await db.update_pdf_status(
+        user_id, pdf_name, "completed",
+        chunks_count=len(all_chunks)
+    )
+
+    # Clean up file
+    try:
+        pdf_path.unlink()
+        print(f"🧹 Cleaned up processed file: {filename}")
+    except Exception as cleanup_error:
+        print(f"⚠️ Could not clean up file {filename}: {cleanup_error}")
+
+    return {
+        "message": f"PDF '{pdf_name}' processed and stored successfully",
+        "pdf_name": pdf_name,
+        "cached": False,
+        "chunks_processed": len(all_chunks),
+        "text_chunks": len(text_chunks),
+        "image_chunks": len(captioned_images),
+        "processing_duration": f"{total_processing_time:.2f}s",
+        "status": "newly_processed"
+    }
+
+@app.post("/upload",
     response_model=UploadResponse,
     tags=["PDF Processing"],
     summary="Upload and process a PDF document")
-async def upload_pdf(file: UploadFile = File(...)):
+async def upload_pdf(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
     """
     Upload a PDF file for processing.
-    
+
     - **file**: PDF file to upload (max 50MB)
-    
+
+    Requires authentication via Bearer token.
     Returns job_id for large files (>5MB) which requires polling /status endpoint.
     Small files are processed synchronously and return results immediately.
     """
+    user_id = current_user["id"]
+
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
 
     # Read file content to check size
     content = await file.read()
     file_size = len(content)
-    
+
     max_size = 50 * 1024 * 1024  # 50MB
     if file_size > max_size:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail=f"File too large. Maximum size is {max_size // (1024*1024)}MB"
         )
 
     filename = secure_filename(file.filename)
     pdf_name = Path(filename).stem
     pdf_path = UPLOADS_DIR / filename
-    
+
+    # Check if user already uploaded this PDF
+    db = DatabaseManager()
+    if await db.check_user_pdf_exists(user_id, pdf_name):
+        print(f"✅ PDF '{pdf_name}' already exists for user {user_id}, returning cached response")
+
+        # Get existing PDF info
+        pdf_info = await db.get_pdf_info(user_id, pdf_name)
+
+        if pdf_info and pdf_info.get("upload_status") == "completed":
+            return UploadResponse(
+                message=f"PDF '{pdf_name}' already exists and is ready for queries",
+                status="already_exists",
+                cached=True,
+                chunks_processed=pdf_info.get("chunks_count", 0),
+                requires_polling=False
+            )
+        else:
+            # PDF exists but processing failed or incomplete
+            raise HTTPException(
+                status_code=400,
+                detail=f"PDF '{pdf_name}' exists but processing is incomplete or failed. Please try with a different name."
+            )
+
     # Write file
     with open(pdf_path, "wb") as f:
         f.write(content)
 
+    # Log PDF upload to database
+    await db.log_pdf_upload(
+        user_id=user_id,
+        pdf_name=pdf_name,
+        original_filename=filename,
+        file_size_bytes=file_size,
+        upload_status="processing"
+    )
+
     # For small files (< 5MB), process synchronously
     small_file_threshold = 5 * 1024 * 1024  # 5MB
-    
+
     if file_size < small_file_threshold:
-        print(f"📄 Small file ({file_size/1024/1024:.1f}MB), processing synchronously")
+        print(f"📄 Small file ({file_size/1024/1024:.1f}MB), processing synchronously (user: {user_id})")
         try:
-            result = await process_pdf_sync(pdf_path, pdf_name, filename)
+            result = await process_pdf_sync(pdf_path, pdf_name, filename, user_id)
             return result
         except Exception as e:
             print(f"❌ Error processing PDF: {e}")
             traceback.print_exc()
-            
+
+            # Update database status to failed
+            await db.update_pdf_status(user_id, pdf_name, "failed", 0)
+
             try:
                 if pdf_path.exists():
                     pdf_path.unlink()
             except:
                 pass
-                
+
             raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
-    
-    # For large files, async processing
+
+    # For large files, async processing with database tracking
     job_id = str(uuid.uuid4())
-    processing_jobs[job_id] = {
-        "job_id": job_id,
-        "filename": filename,
-        "pdf_name": pdf_name,
-        "status": ProcessingStatus.PENDING,
-        "stage": "Queued",
-        "progress": 0.0,
-        "start_time": time.time(),
-    }
+
+    # Create job in database instead of in-memory dict
+    await db.create_processing_job(
+        job_id=job_id,
+        user_id=user_id,
+        pdf_name=pdf_name,
+        filename=filename
+    )
 
     # Start background task
-    asyncio.create_task(process_pdf_background(job_id, pdf_path, pdf_name, filename))
+    asyncio.create_task(process_pdf_background(job_id, pdf_path, pdf_name, filename, user_id))
 
     return {
         "job_id": job_id,
@@ -230,146 +259,351 @@ async def upload_pdf(file: UploadFile = File(...)):
         "file_size_mb": f"{file_size/1024/1024:.1f}"
     }
 
-async def process_pdf_background(job_id, pdf_path, pdf_name, filename):
+async def process_pdf_background(job_id, pdf_path, pdf_name, filename, user_id: str):
     """Background task for processing large PDFs"""
-    try:
-        print(f"📄 Starting async processing for job {job_id}: {filename}")
-        
-        processing_jobs[job_id]["status"] = ProcessingStatus.PROCESSING
-        processing_jobs[job_id]["stage"] = "Initializing"
-        
-        async with PineconeVectorStore() as vector_store:
-            # CACHE CHECK
-            print(f"🔍 Checking cache for PDF: '{pdf_name}'")
-            processing_jobs[job_id]["stage"] = "Checking cache"
-            
-            pdf_exists = await vector_store.check_pdf_exists(pdf_name)
-            
-            if pdf_exists:
-                chunk_count = await vector_store.get_pdf_chunk_count(pdf_name)
-                print(f"🚀 CACHE HIT! Skipping processing for '{pdf_name}'")
-                
-                try:
-                    pdf_path.unlink()
-                except Exception as e:
-                    print(f"⚠️ Could not clean up file: {e}")
-                
-                processing_jobs[job_id].update({
-                    "status": ProcessingStatus.CACHED,
-                    "stage": "Completed (cached)",
-                    "end_time": time.time(),
-                    "result": {
-                        "message": f"PDF '{pdf_name}' already in database",
-                        "pdf_name": pdf_name,
-                        "cached": True,
-                        "estimated_chunks": chunk_count,
-                        "status": "cache_hit"
-                    }
-                })
-                return
-            
-            # PROCESS NEW PDF
-            print(f"🔥 Processing '{pdf_name}' for first time...")
-            processor = PDFProcessor()
-            
-            processing_jobs[job_id]["stage"] = "Extracting text"
-            processing_jobs[job_id]["progress"] = 0.2
-            text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
-            
-            processing_jobs[job_id]["stage"] = "Processing images"
-            processing_jobs[job_id]["progress"] = 0.4
-            image_chunks = processor.extract_images_from_pdf(str(pdf_path), pdf_name)
+    db = DatabaseManager()
 
-            async with ImageCaptioner() as captioner:
-                processing_jobs[job_id]["stage"] = f"Captioning {len(image_chunks)} images"
-                processing_jobs[job_id]["progress"] = 0.6
-                captioned_images = await captioner.caption_images_async(image_chunks)
-                
-                all_chunks = text_chunks + captioned_images
-                processing_jobs[job_id]["stage"] = f"Storing {len(all_chunks)} chunks"
-                processing_jobs[job_id]["progress"] = 0.9
-                await vector_store.store_chunks(all_chunks, pdf_name)
-                processing_jobs[job_id]["progress"] = 1.0
-            
-            try:
-                pdf_path.unlink()
-            except Exception as e:
-                print(f"⚠️ Cleanup error: {e}")
-            
-            result = {
-                "message": f"PDF '{pdf_name}' processed successfully", 
-                "pdf_name": pdf_name,
-                "cached": False,
-                "chunks_processed": len(all_chunks),
-                "text_chunks": len(text_chunks),
-                "image_chunks": len(captioned_images),
-                "status": "newly_processed"
-            }
-            
-            processing_jobs[job_id].update({
-                "status": ProcessingStatus.COMPLETED,
-                "stage": "Completed",
-                "end_time": time.time(),
-                "result": result
-            })
+    try:
+        print(f"📄 Starting async processing for job {job_id}: {filename} (user: {user_id})")
+
+        await db.update_processing_job(job_id, status="processing", stage="Initializing", progress=0.1)
+
+        # Database cache check is already done in upload endpoint
+        # Proceed directly to processing
+        print(f"🔥 Processing '{pdf_name}' for user {user_id}...")
+
+        processor = PDFProcessor()
+
+        # Upload PDF to blob storage before processing
+        try:
+            await db.update_processing_job(job_id, stage="Uploading to blob storage", progress=0.15)
+            blob_url = processor.upload_pdf_to_blob(str(pdf_path), user_id, filename)
+            print(f"💾 PDF stored in blob: {blob_url}")
+        except Exception as e:
+            print(f"⚠️ Warning: Could not upload PDF to blob storage: {e}")
+            # Continue processing even if blob upload fails
+
+        print(f"📝 Step 1/3: Extracting text from {pdf_name}...")
+        await db.update_processing_job(job_id, stage="Extracting text", progress=0.2)
+        text_chunks = processor.extract_text_from_pdf(str(pdf_path), pdf_name)
+
+        print(f"🖼️ Step 2/3: Extracting and uploading images from {pdf_name}...")
+        await db.update_processing_job(job_id, stage="Processing images", progress=0.4)
+        image_chunks = processor.extract_images_from_pdf(str(pdf_path), pdf_name)
+
+        async with ImageCaptioner() as captioner:
+            print(f"🤖 Step 3/3: AI captioning {len(image_chunks)} images...")
+            await db.update_processing_job(job_id, stage=f"Captioning {len(image_chunks)} images", progress=0.6)
+            captioned_images = await captioner.caption_images_async(image_chunks)
+
+            all_chunks = text_chunks + captioned_images
+            print(f"📦 Storing {len(all_chunks)} total chunks in vector database...")
+            await db.update_processing_job(job_id, stage=f"Storing {len(all_chunks)} chunks", progress=0.9)
+
+            async with PineconeVectorStore() as vector_store:
+                await vector_store.store_chunks(all_chunks, pdf_name, user_id)
+
+        print(f"🎉 PDF '{pdf_name}' processing completed")
+
+        # Update database status
+        await db.update_pdf_status(user_id, pdf_name, "completed", chunks_count=len(all_chunks))
+
+        try:
+            pdf_path.unlink()
+            print(f"🧹 Cleaned up processed file: {filename}")
+        except Exception as e:
+            print(f"⚠️ Cleanup error: {e}")
+
+        result = {
+            "message": f"PDF '{pdf_name}' processed successfully",
+            "pdf_name": pdf_name,
+            "cached": False,
+            "chunks_processed": len(all_chunks),
+            "text_chunks": len(text_chunks),
+            "image_chunks": len(captioned_images),
+            "status": "newly_processed"
+        }
+
+        await db.update_processing_job(
+            job_id,
+            status="completed",
+            stage="Completed",
+            progress=1.0,
+            result=result
+        )
 
     except Exception as e:
         print(f"❌ Error in background processing: {e}")
         traceback.print_exc()
-        
+
+        # Update database status to failed
+        await db.update_pdf_status(user_id, pdf_name, "failed", 0)
+
         try:
             if pdf_path.exists():
                 pdf_path.unlink()
         except:
             pass
-        
-        processing_jobs[job_id].update({
-            "status": ProcessingStatus.FAILED,
-            "stage": "Failed",
-            "end_time": time.time(),
-            "error": str(e)
-        })
+
+        await db.update_processing_job(
+            job_id,
+            status="failed",
+            stage="Failed",
+            progress=0.0,
+            error=str(e)
+        )
 
 @app.get("/status/{job_id}",
     tags=["PDF Processing"],
     summary="Check processing job status")
-async def get_processing_status(job_id: str):
+async def get_processing_status(
+    job_id: str,
+    current_user: dict = Depends(get_current_user)
+):
     """
     Check the status of a PDF processing job.
-    
+
     - **job_id**: The job ID returned from the upload endpoint
+
+    Requires authentication via Bearer token.
+    Users can only check status of their own jobs.
     """
-    if job_id not in processing_jobs:
-        raise HTTPException(status_code=404, detail="Job not found")
-    
-    job = processing_jobs[job_id].copy()
-    
-    # Calculate elapsed time
-    if job.get("start_time"):
-        end_time = job.get("end_time", time.time())
-        job["elapsed_time"] = f"{end_time - job['start_time']:.2f}s"
-    
+    user_id = current_user["id"]
+    db = DatabaseManager()
+
+    job = await db.get_processing_job(job_id, user_id)
+
+    if not job:
+        raise HTTPException(
+            status_code=404,
+            detail="Job not found or you don't have permission to access it"
+        )
+
     return job
+
+@app.get("/documents",
+    tags=["Documents"],
+    summary="List all uploaded PDFs")
+async def list_documents(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get list of all PDFs uploaded by the current user.
+
+    Returns:
+        List of PDFs with metadata (name, upload date, status, size, etc.)
+
+    Requires authentication via Bearer token.
+    """
+    user_id = current_user["id"]
+
+    db = DatabaseManager()
+    documents = await db.get_user_pdfs(user_id)
+
+    return {
+        "documents": documents,
+        "total_count": len(documents)
+    }
+
+@app.get("/documents/processed",
+    tags=["Documents"],
+    summary="List successfully processed PDFs")
+async def list_processed_documents(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get list of successfully processed PDFs (status = 'completed').
+
+    Returns:
+        Simplified list of completed PDFs with id and name only
+
+    Requires authentication via Bearer token.
+    """
+    user_id = current_user["id"]
+
+    db = DatabaseManager()
+    all_documents = await db.get_user_pdfs(user_id)
+
+    # Filter for completed documents and format response
+    processed_documents = [
+        {
+            "id": doc.get("id"),
+            "name": doc.get("pdf_name")
+        }
+        for doc in all_documents
+        if doc.get("upload_status") == "completed"
+    ]
+
+    return {
+        "documents": processed_documents
+    }
+
+@app.get("/conversations",
+    tags=["Chat History"],
+    summary="List all conversation sessions")
+async def list_conversations(
+    limit: int = 50,
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all conversation sessions for the current user.
+
+    - **limit**: Maximum number of conversations to return (default: 50)
+    - **offset**: Number of conversations to skip for pagination (default: 0)
+
+    Returns:
+        List of conversations ordered by most recent first, with message count
+
+    Requires authentication via Bearer token.
+    """
+    user_id = current_user["id"]
+    db = DatabaseManager()
+
+    conversations = await db.get_conversations(user_id, limit=limit, offset=offset)
+
+    # Add message_count to each conversation
+    for conversation in conversations:
+        messages = await db.get_conversation_messages(
+            conversation["id"],
+            user_id,
+            limit=1000  # Get all messages to count
+        )
+        conversation["message_count"] = len(messages)
+
+    return {
+        "conversations": conversations,
+        "total_count": len(conversations)
+    }
+
+@app.get("/conversations/{conversation_id}/messages",
+    tags=["Chat History"],
+    summary="Get conversation message history")
+async def get_conversation_history(
+    conversation_id: str,
+    limit: int = 100,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all messages in a specific conversation.
+
+    - **conversation_id**: UUID of the conversation
+    - **limit**: Maximum number of messages to return (default: 100)
+
+    Returns:
+        List of messages (user and assistant) ordered chronologically
+
+    Requires authentication via Bearer token.
+    Users can only access their own conversation history.
+    """
+    user_id = current_user["id"]
+    db = DatabaseManager()
+
+    messages = await db.get_conversation_messages(conversation_id, user_id, limit=limit)
+
+    if not messages:
+        # Verify conversation exists and belongs to user
+        conversations = await db.get_conversations(user_id)
+        conversation_exists = any(c["id"] == conversation_id for c in conversations)
+
+        if not conversation_exists:
+            raise HTTPException(
+                status_code=404,
+                detail="Conversation not found or you don't have permission to access it"
+            )
+
+    return {
+        "conversation_id": conversation_id,
+        "messages": messages,
+        "message_count": len(messages)
+    }
+
+@app.delete("/conversations/{conversation_id}",
+    tags=["Chat History"],
+    summary="Delete a conversation")
+async def delete_conversation(
+    conversation_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Delete a conversation and all its messages.
+
+    - **conversation_id**: UUID of the conversation to delete
+
+    Returns:
+        Success message
+
+    Requires authentication via Bearer token.
+    Users can only delete their own conversations.
+    Messages are automatically cascade deleted.
+    """
+    user_id = current_user["id"]
+    db = DatabaseManager()
+
+    success = await db.delete_conversation(conversation_id, user_id)
+
+    if not success:
+        raise HTTPException(
+            status_code=404,
+            detail="Conversation not found or you don't have permission to delete it"
+        )
+
+    return {
+        "message": "Conversation deleted successfully",
+        "conversation_id": conversation_id
+    }
 
 @app.post("/query",
     response_model=QueryResponse,
     tags=["Querying"],
     summary="Query processed PDFs")
-async def handle_query(request: QueryRequest):
+async def handle_query(
+    request: QueryRequest,
+    conversation_id: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
     """
     Query the processed PDF documents.
-    
+
     - **query**: The question to ask
-    - **pdf_name**: Optional - limit search to specific PDF and without the .pdf extension
-    
+    - **pdf_name**: Optional - limit search to specific PDF (without .pdf extension)
+    - **conversation_id**: Optional - continue existing conversation
+
+    Requires authentication via Bearer token.
+    Users can only query their own PDFs.
+    Conversation history is automatically saved.
+
     Returns answer with relevant images and source citations.
     """
+    user_id = current_user["id"]
+
     if not request.query:
         raise HTTPException(status_code=400, detail="Query is required")
 
+    db = DatabaseManager()
+
+    # Create or get conversation
+    if not conversation_id:
+        # Create new conversation with query as title (first 50 chars)
+        conversation_title = request.query[:50] + "..." if len(request.query) > 50 else request.query
+        conversation_id = await db.create_conversation(user_id, conversation_title)
+        print(f"📝 Created new conversation: {conversation_id}")
+    else:
+        print(f"📝 Continuing conversation: {conversation_id}")
+
+    # Log user question
+    await db.add_message(
+        conversation_id=conversation_id,
+        user_id=user_id,
+        role="user",
+        content=request.query,
+        query=request.query,
+        pdf_name=request.pdf_name
+    )
+
     try:
-        print(f"❓ Handling query: '{request.query}'")
-        
+        print(f"❓ Handling query: '{request.query}' (user: {user_id})")
+
         async with QueryProcessor() as query_processor, \
                    PineconeVectorStore() as vector_store, \
                    ResponseGenerator() as response_generator:
@@ -378,13 +612,14 @@ async def handle_query(request: QueryRequest):
             sub_queries = await query_processor.decompose_query(request.query)
             print(f"🧩 Decomposed into {len(sub_queries)} sub-queries")
 
-            # 2. Process sub-queries
+            # 2. Process sub-queries with user_id filter
             sub_answers = []
             all_relevant_chunks = []
 
             for i, sq in enumerate(sub_queries):
+                # CRITICAL: Pass user_id to ensure data isolation
                 chunks = await vector_store.search_similar_chunks(
-                    sq, top_k=5, pdf_name=request.pdf_name
+                    sq, top_k=5, pdf_name=request.pdf_name, user_id=user_id
                 )
                 all_relevant_chunks.extend(chunks)
 
@@ -396,8 +631,20 @@ async def handle_query(request: QueryRequest):
                 })
 
             if not sub_answers:
+                no_result_msg = "No relevant information found in your uploaded PDFs."
+
+                # Log assistant response even if no results
+                await db.add_message(
+                    conversation_id=conversation_id,
+                    user_id=user_id,
+                    role="assistant",
+                    content=no_result_msg,
+                    query=request.query
+                )
+
                 return {
-                    "answer": "No relevant information found.",
+                    "conversation_id": conversation_id,
+                    "answer": no_result_msg,
                     "images": [],
                     "sources": []
                 }
@@ -409,11 +656,11 @@ async def handle_query(request: QueryRequest):
             final_result = await response_generator.combine_sub_answers(
                 request.query, sub_answers
             )
-            
+
             # 5. Extract images
             images = []
             seen_urls = set()
-            
+
             for chunk in final_chunks:
                 if chunk.get("type") == "image":
                     url = chunk.get("image_path")
@@ -430,15 +677,29 @@ async def handle_query(request: QueryRequest):
                 {
                     "type": c["type"],
                     "page": c["page_number"],
-                    "content_preview": c["content"][:100] + "..." 
+                    "content_preview": c["content"][:100] + "..."
                         if len(c["content"]) > 100 else c["content"],
                 }
-                for c in final_chunks 
+                for c in final_chunks
             ]
 
+            final_answer = final_result.get("answer", "Unable to generate answer") \
+                if isinstance(final_result, dict) else str(final_result)
+
+            # Log assistant response with sources and images
+            await db.add_message(
+                conversation_id=conversation_id,
+                user_id=user_id,
+                role="assistant",
+                content=final_answer,
+                query=request.query,
+                sources=sources,
+                images=images
+            )
+
             return {
-                "answer": final_result.get("answer", "Unable to generate answer") 
-                    if isinstance(final_result, dict) else str(final_result),
+                "conversation_id": conversation_id,
+                "answer": final_answer,
                 "images": images,
                 "sources": sources
             }
@@ -446,6 +707,17 @@ async def handle_query(request: QueryRequest):
     except Exception as e:
         print(f"❌ Error: {e}")
         traceback.print_exc()
+
+        # Log error as assistant message for debugging
+        error_msg = "I encountered an error processing your query. Please try again."
+        await db.add_message(
+            conversation_id=conversation_id,
+            user_id=user_id,
+            role="assistant",
+            content=error_msg,
+            query=request.query
+        )
+
         raise HTTPException(status_code=500, detail=f"Query processing failed: {str(e)}")
 
 if __name__ == "__main__":

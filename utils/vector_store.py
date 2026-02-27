@@ -205,12 +205,12 @@ class PineconeVectorStore:
         
         return final_embeddings
 
-    async def store_chunks(self, chunks: List[Dict[str, Any]], pdf_name: str):
-        """Store chunks in Pinecone with embeddings"""
+    async def store_chunks(self, chunks: List[Dict[str, Any]], pdf_name: str, user_id: str):
+        """Store chunks in Pinecone with embeddings and user isolation"""
         if not chunks:
             return
-        
-        print(f"📦 Storing {len(chunks)} chunks for PDF: {pdf_name}")
+
+        print(f"📦 Storing {len(chunks)} chunks for PDF: {pdf_name} (user: {user_id})")
 
         # Sanitize pdf_name using the improved function
         sanitized_pdf_name = self.sanitize_for_pinecone_id(pdf_name)
@@ -236,8 +236,9 @@ class PineconeVectorStore:
         for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
             # Use improved sanitization
             chunk_type = self.sanitize_for_pinecone_id(chunk.get('type', 'unknown'))
-            page_num = self.sanitize_for_pinecone_id(str(chunk.get('page_number', '0')))
-            
+            # Don't sanitize page numbers - they're already integers and safe
+            page_num = str(chunk.get('page_number', 0))
+
             # Create a unique vector ID
             base_id = f"{sanitized_pdf_name}-{chunk_type}-page{page_num}-{i}"
             
@@ -270,6 +271,7 @@ class PineconeVectorStore:
             
             metadata = {
                 'pdf_name': pdf_name,
+                'user_id': user_id,  # CRITICAL: User isolation
                 'type': chunk['type'],
                 'page_number': chunk['page_number'],
                 'content': chunk['content'][:1000],  # Truncate for metadata size limit
@@ -310,24 +312,28 @@ class PineconeVectorStore:
         
         print(f"🎉 Successfully stored {len(vectors)} chunks in Pinecone")
     
-    async def search_similar_chunks(self, query: str, top_k: int = 5, pdf_name: str = None) -> List[Dict[str, Any]]:
-        """Search for similar chunks"""
-        print(f"🔍 Searching for top {top_k} chunks for query: '{query}'")
-        
+    async def search_similar_chunks(self, query: str, top_k: int = 5, pdf_name: str = None, user_id: str = None) -> List[Dict[str, Any]]:
+        """Search for similar chunks with user isolation"""
+        # CRITICAL: Always require user_id for security
+        if not user_id:
+            raise ValueError("user_id is required for search to ensure data isolation")
+
+        print(f"🔍 Searching for top {top_k} chunks for query: '{query}' (user: {user_id})")
+
         # Create query embedding
         query_embedding = await self.create_single_embedding(query)
-        
-        # Build filter
-        filter_dict = {}
+
+        # Build filter - ALWAYS include user_id
+        filter_dict = {'user_id': user_id}  # User isolation enforced
         if pdf_name:
             filter_dict['pdf_name'] = pdf_name
-        
+
         # Search in Pinecone
         search_response = self.index.query(
             vector=query_embedding.tolist(),
             top_k=top_k,
             include_metadata=True,
-            filter=filter_dict if filter_dict else None
+            filter=filter_dict
         )
         
         # Convert to chunks format
@@ -350,44 +356,44 @@ class PineconeVectorStore:
         print(f"✅ Found {len(results)} relevant chunks")
         return results
     
-    async def check_pdf_exists(self, pdf_name: str) -> bool:
+    async def check_pdf_exists(self, pdf_name: str, user_id: str) -> bool:
         """
-        Check if PDF is already processed by looking for any vectors with this pdf_name
-        
+        Check if PDF is already processed for this user
+
         How it works:
         1. Query Pinecone with a dummy vector (all zeros)
-        2. Filter by pdf_name metadata
+        2. Filter by pdf_name AND user_id metadata (critical for user isolation)
         3. Ask for just 1 result (top_k=1)
-        4. If any match found, PDF exists
-        
+        4. If any match found, PDF exists for this user
+
         Time: ~10-50ms regardless of database size
         """
         try:
-            print(f"🔍 Checking if PDF '{pdf_name}' exists in database...")
-            
+            print(f"🔍 Checking if PDF '{pdf_name}' exists for user {user_id}...")
+
             response = self.index.query(
                 vector=[0.0] * EMBEDDING_DIMENSION,  # Dummy vector - don't care about similarity
                 top_k=1,                             # Just need to know if ANY exist
-                filter={'pdf_name': pdf_name},       # This is the key filter
+                filter={'pdf_name': pdf_name, 'user_id': user_id},  # Both filters for security
                 include_metadata=False               # Don't need metadata, just existence
             )
-            
+
             exists = len(response['matches']) > 0
-            
+
             if exists:
-                print(f"✅ PDF '{pdf_name}' found in database")
+                print(f"✅ PDF '{pdf_name}' found in database for user {user_id}")
             else:
-                print(f"❌ PDF '{pdf_name}' not found in database")
-                
+                print(f"❌ PDF '{pdf_name}' not found in database for user {user_id}")
+
             return exists
-            
+
         except Exception as e:
             print(f"❌ Error checking PDF existence: {e}")
             return False  # If error, assume not cached and process normally
 
-    async def get_pdf_chunk_count(self, pdf_name: str) -> int:
+    async def get_pdf_chunk_count(self, pdf_name: str, user_id: str) -> int:
         """
-        Get approximate number of chunks for this PDF
+        Get approximate number of chunks for this PDF for a specific user
         Useful for logging and verification
         """
         try:
@@ -395,14 +401,14 @@ class PineconeVectorStore:
             response = self.index.query(
                 vector=[0.0] * EMBEDDING_DIMENSION,
                 top_k=100,  # Get up to 100 to estimate total
-                filter={'pdf_name': pdf_name},
+                filter={'pdf_name': pdf_name, 'user_id': user_id},  # Filter by both
                 include_metadata=False
             )
-            
+
             count = len(response['matches'])
-            print(f"📊 Found ~{count} chunks for PDF '{pdf_name}' (sample)")
+            print(f"📊 Found ~{count} chunks for PDF '{pdf_name}' (user: {user_id}, sample)")
             return count
-            
+
         except Exception as e:
             print(f"❌ Error getting chunk count: {e}")
             return 0
