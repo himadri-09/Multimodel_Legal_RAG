@@ -18,23 +18,51 @@ class QueryProcessor:
         )
     
     @traceable(name="decompose_query")
-    async def decompose_query(self, query: str) -> List[str]:
-        """Decompose complex query into sub-questions"""
+    async def decompose_query(self, query: str, conversation_history: List[Dict[str, Any]] = None) -> List[str]:
+        """Decompose complex query into sub-questions with conversation context"""
         print(f"🧩 Decomposing query: '{query}'")
-        
+
+        # Build conversation context if available
+        conversation_context = ""
+        if conversation_history and len(conversation_history) > 0:
+            history_parts = []
+            # Show recent conversation (reversed for chronological order)
+            for msg in reversed(conversation_history):  # Use all messages from history
+                role = msg.get("role", "user")
+                content = msg.get("content", "")
+                if role == "user":
+                    history_parts.append(f"User: {content}")
+                else:
+                    history_parts.append(f"Assistant: {content[:200]}...")  # Truncate long responses
+
+            conversation_context = f"""
+        Previous Conversation:
+        {chr(10).join(history_parts)}
+        """
+            print(f"💬 Using conversation context with {len(conversation_history)} previous messages")
+
         prompt = f"""
-        Break down this complex question into 2-4 simpler, focused sub-questions that together would answer the original query.
-        
-        Original query: "{query}"
-        
-        Each sub-question should:
-        1. Be independently answerable
-        2. Focus on one specific aspect
-        3. Be clear and concise
-        4. Together cover all aspects of the original query
-        
+        {conversation_context}
+
+        Current Query: "{query}"
+
+        Instructions:
+        1. If the query has unclear references like "this", "it", "that", "these", resolve them using the conversation history
+        2. Break down the query into 2-4 simpler, focused sub-questions
+        3. Each sub-question should:
+           - Be independently answerable
+           - Include full context (no pronouns like "it" or "this")
+           - Focus on one specific aspect
+           - Be clear and concise
+
         Return ONLY a JSON array of sub-questions.
-        Example: ["What is X?", "How does Y work?", "What are the benefits of Z?"]
+
+        Examples:
+        - If previous question was about "Multi-Head Attention" and current query is "what is the use of this"
+          → ["What are the applications of Multi-Head Attention?", "What are the benefits of using Multi-Head Attention?"]
+
+        - If query is "explain contract law"
+          → ["What is contract law?", "What are the key principles of contract law?", "How does contract law work in practice?"]
         """
         
         try:

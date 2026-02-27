@@ -16,8 +16,8 @@ class ResponseGenerator:
         )
 
     @traceable(name="generate_answer_for_subquery")
-    async def generate_answer_for_subquery(self, query: str, context_chunks: List[Dict[str, Any]]) -> str:
-        """Generate answer for a single sub-query"""
+    async def generate_answer_for_subquery(self, query: str, context_chunks: List[Dict[str, Any]], conversation_history: List[Dict[str, Any]] = None) -> str:
+        """Generate answer for a single sub-query with optional conversation context"""
         if not context_chunks:
             return "No relevant information found for this query."
 
@@ -69,9 +69,9 @@ class ResponseGenerator:
             return f"Error generating answer for sub-query: {query}"
 
     @traceable(name="combine_sub_answers")
-    async def combine_sub_answers(self, original_query: str, sub_query_answers: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def combine_sub_answers(self, original_query: str, sub_query_answers: List[Dict[str, Any]], conversation_history: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
-        Combine answers from sub-queries into a final coherent answer.
+        Combine answers from sub-queries into a final coherent answer with conversation context.
         Also return referenced images.
         """
         if not sub_query_answers:

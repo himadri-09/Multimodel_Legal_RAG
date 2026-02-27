@@ -47,6 +47,7 @@ class ProcessingStatus:
 class QueryRequest(BaseModel):
     query: str
     pdf_name: Optional[str] = None
+    conversation_id: Optional[str] = None  # Add conversation_id to request body
 
 class UploadResponse(BaseModel):
     job_id: Optional[str] = None
@@ -559,7 +560,6 @@ async def delete_conversation(
     summary="Query processed PDFs")
 async def handle_query(
     request: QueryRequest,
-    conversation_id: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """
@@ -567,7 +567,7 @@ async def handle_query(
 
     - **query**: The question to ask
     - **pdf_name**: Optional - limit search to specific PDF (without .pdf extension)
-    - **conversation_id**: Optional - continue existing conversation
+    - **conversation_id**: Optional - continue existing conversation (pass in request body)
 
     Requires authentication via Bearer token.
     Users can only query their own PDFs.
@@ -583,6 +583,7 @@ async def handle_query(
     db = DatabaseManager()
 
     # Create or get conversation
+    conversation_id = request.conversation_id
     if not conversation_id:
         # Create new conversation with query as title (first 50 chars)
         conversation_title = request.query[:50] + "..." if len(request.query) > 50 else request.query
@@ -591,7 +592,15 @@ async def handle_query(
     else:
         print(f"📝 Continuing conversation: {conversation_id}")
 
-    # Log user question
+    # Retrieve conversation history BEFORE adding current message (last 4 messages = 2 turns)
+    conversation_history = await db.get_conversation_messages(
+        conversation_id=conversation_id,
+        user_id=user_id,
+        limit=4
+    )
+    print(f"💬 Retrieved {len(conversation_history)} previous messages for context")
+
+    # Log user question AFTER retrieving history
     await db.add_message(
         conversation_id=conversation_id,
         user_id=user_id,
@@ -608,8 +617,8 @@ async def handle_query(
                    PineconeVectorStore() as vector_store, \
                    ResponseGenerator() as response_generator:
 
-            # 1. Decompose query
-            sub_queries = await query_processor.decompose_query(request.query)
+            # 1. Decompose query with conversation context
+            sub_queries = await query_processor.decompose_query(request.query, conversation_history)
             print(f"🧩 Decomposed into {len(sub_queries)} sub-queries")
 
             # 2. Process sub-queries with user_id filter
@@ -623,7 +632,9 @@ async def handle_query(
                 )
                 all_relevant_chunks.extend(chunks)
 
-                answer = await response_generator.generate_answer_for_subquery(sq, chunks)
+                answer = await response_generator.generate_answer_for_subquery(
+                    sq, chunks, conversation_history
+                )
                 sub_answers.append({
                     "sub_query": sq,
                     "answer": answer,
@@ -654,7 +665,7 @@ async def handle_query(
 
             # 4. Combine answers
             final_result = await response_generator.combine_sub_answers(
-                request.query, sub_answers
+                request.query, sub_answers, conversation_history
             )
 
             # 5. Extract images
