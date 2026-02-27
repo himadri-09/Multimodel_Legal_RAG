@@ -439,6 +439,74 @@ async def list_processed_documents(
         "documents": processed_documents
     }
 
+@app.delete("/documents/{document_id}",
+    tags=["Documents"],
+    summary="Delete a document")
+async def delete_document(
+    document_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Delete a document and all its vectors from the system.
+
+    - **document_id**: UUID of the document to delete
+
+    This will:
+    1. Delete all vectors from Pinecone vector store
+    2. Delete the document record from the database
+
+    Returns:
+        Success message
+
+    Requires authentication via Bearer token.
+    Users can only delete their own documents.
+    """
+    user_id = current_user["id"]
+    db = DatabaseManager()
+
+    # Get all user documents to find the one with this ID
+    all_documents = await db.get_user_pdfs(user_id)
+    document = next((doc for doc in all_documents if doc.get("id") == document_id), None)
+
+    if not document:
+        raise HTTPException(
+            status_code=404,
+            detail="Document not found or you don't have permission to delete it"
+        )
+
+    pdf_name = document.get("pdf_name")
+
+    try:
+        # Delete vectors from Pinecone
+        async with PineconeVectorStore() as vector_store:
+            vector_deleted = await vector_store.delete_pdf_vectors(pdf_name, user_id)
+            if not vector_deleted:
+                print(f"⚠️  Warning: Failed to delete vectors for {pdf_name}, continuing with database deletion")
+
+        # Delete from database
+        db_deleted = await db.delete_user_pdf(user_id, pdf_name)
+        if not db_deleted:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to delete document from database"
+            )
+
+        return {
+            "message": f"Document '{pdf_name}' deleted successfully",
+            "document_id": document_id,
+            "pdf_name": pdf_name
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error deleting document: {e}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to delete document: {str(e)}"
+        )
+
 @app.get("/conversations",
     tags=["Chat History"],
     summary="List all conversation sessions")

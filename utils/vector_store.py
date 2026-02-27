@@ -289,28 +289,102 @@ class PineconeVectorStore:
                 'metadata': metadata
             })
         
-        # Upsert to Pinecone in batches (unchanged - this part was working fine)
-        batch_size = 100
+        # Upsert to Pinecone in batches with retry logic
+        batch_size = 50  # Reduced from 100 for better reliability
         total_batches = (len(vectors) + batch_size - 1) // batch_size
-        
+
         print(f"📤 Uploading {len(vectors)} vectors to Pinecone in {total_batches} batches...")
-        
+
+        failed_batches = []
+        start_upload_time = time.time()
+
         for i in range(0, len(vectors), batch_size):
             batch = vectors[i:i + batch_size]
             batch_num = i // batch_size + 1
-            
-            try:
-                self.index.upsert(vectors=batch)
-                print(f"   ✅ Upserted batch {batch_num}/{total_batches} ({len(batch)} vectors)")
-            except Exception as e:
-                print(f"   ❌ Error upserting batch {batch_num}: {e}")
-                # Print sample IDs from failed batch for debugging
-                print(f"   Sample vector IDs in failed batch:")
-                for j, vec in enumerate(batch[:3]):
-                    print(f"     [{j}]: '{vec['id']}'")
-                raise
-        
-        print(f"🎉 Successfully stored {len(vectors)} chunks in Pinecone")
+
+            # Retry logic with exponential backoff
+            max_retries = 3
+            retry_delay = 2  # Start with 2 seconds
+
+            for attempt in range(max_retries):
+                try:
+                    batch_start = time.time()
+
+                    # CRITICAL: Use synchronous upsert and force wait for completion
+                    response = self.index.upsert(vectors=batch, async_req=False)
+
+                    # Add small delay to ensure Pinecone processes the batch
+                    await asyncio.sleep(0.5)
+
+                    batch_duration = time.time() - batch_start
+                    print(f"   ✅ Upserted batch {batch_num}/{total_batches} ({len(batch)} vectors) in {batch_duration:.2f}s")
+
+                    # Verify upload every 5 batches
+                    if batch_num % 5 == 0 or batch_num == total_batches:
+                        await asyncio.sleep(1)  # Give Pinecone time to index
+                        stats = self.index.describe_index_stats()
+                        total_vectors = stats.get('total_vector_count', 0)
+                        print(f"   📊 Pinecone total vectors: {total_vectors}")
+
+                    break  # Success, exit retry loop
+
+                except Exception as e:
+                    if attempt < max_retries - 1:
+                        # Not the last attempt, retry
+                        print(f"   ⚠️  Batch {batch_num} failed (attempt {attempt + 1}/{max_retries}): {e}")
+                        print(f"   ⏳ Retrying in {retry_delay}s...")
+                        await asyncio.sleep(retry_delay)
+                        retry_delay *= 2  # Exponential backoff
+                    else:
+                        # Last attempt failed, log and continue
+                        print(f"   ❌ Batch {batch_num} failed after {max_retries} attempts: {e}")
+                        print(f"   Sample vector IDs in failed batch:")
+                        for j, vec in enumerate(batch[:3]):
+                            print(f"     [{j}]: '{vec['id']}'")
+                        failed_batches.append((batch_num, batch, str(e)))
+
+        # Final verification - CRITICAL for debugging
+        print(f"⏳ Waiting 3s for Pinecone to finish indexing...")
+        await asyncio.sleep(3)
+
+        try:
+            final_stats = self.index.describe_index_stats()
+            total_vectors = final_stats.get('total_vector_count', 0)
+            print(f"📊 Final Pinecone index stats: {total_vectors} total vectors")
+
+            # Verify user's vectors
+            user_filter_stats = self.index.query(
+                vector=[0.0] * EMBEDDING_DIMENSION,
+                top_k=1,
+                filter={'user_id': user_id, 'pdf_name': pdf_name},
+                include_metadata=False
+            )
+            user_vectors_exist = len(user_filter_stats.get('matches', [])) > 0
+
+            if user_vectors_exist:
+                print(f"✅ Verified: Vectors for user {user_id} / PDF '{pdf_name}' exist in Pinecone")
+            else:
+                print(f"❌ WARNING: No vectors found for user {user_id} / PDF '{pdf_name}' after upload!")
+                raise Exception("Vector upload verification failed - no vectors found in Pinecone")
+
+        except Exception as e:
+            print(f"⚠️  Could not verify upload: {e}")
+
+        # Report results
+        total_upload_time = time.time() - start_upload_time
+        success_count = total_batches - len(failed_batches)
+
+        if failed_batches:
+            print(f"⚠️  Upload completed with errors:")
+            print(f"   ✅ Successful: {success_count}/{total_batches} batches")
+            print(f"   ❌ Failed: {len(failed_batches)}/{total_batches} batches")
+            for batch_num, _, error in failed_batches:
+                print(f"      - Batch {batch_num}: {error[:100]}")
+            # Raise exception if too many failures
+            if len(failed_batches) > total_batches * 0.5:
+                raise Exception(f"More than 50% of batches failed ({len(failed_batches)}/{total_batches})")
+        else:
+            print(f"🎉 Successfully stored all {len(vectors)} chunks in Pinecone (took {total_upload_time:.2f}s)")
     
     async def search_similar_chunks(self, query: str, top_k: int = 5, pdf_name: str = None, user_id: str = None) -> List[Dict[str, Any]]:
         """Search for similar chunks with user isolation"""
@@ -412,9 +486,36 @@ class PineconeVectorStore:
         except Exception as e:
             print(f"❌ Error getting chunk count: {e}")
             return 0
-    
+
+    async def delete_pdf_vectors(self, pdf_name: str, user_id: str) -> bool:
+        """
+        Delete all vectors for a specific PDF and user from Pinecone
+
+        Args:
+            pdf_name: PDF name to delete
+            user_id: User ID for isolation
+
+        Returns:
+            bool: True if deletion was successful
+        """
+        try:
+            print(f"🗑️  Deleting vectors for PDF '{pdf_name}' (user: {user_id})...")
+
+            # Delete by metadata filter
+            # Pinecone supports deleting by filter (pdf_name + user_id)
+            delete_response = self.index.delete(
+                filter={'pdf_name': pdf_name, 'user_id': user_id}
+            )
+
+            print(f"✅ Successfully deleted vectors for PDF '{pdf_name}' (user: {user_id})")
+            return True
+
+        except Exception as e:
+            print(f"❌ Error deleting vectors: {e}")
+            return False
+
     async def __aenter__(self):
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.client.close()
