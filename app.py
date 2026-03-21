@@ -18,10 +18,13 @@ from utils.response_generator import ResponseGenerator
 from utils.auth import get_current_user
 from utils.database import DatabaseManager
 
+# ── NEW: web crawl router ──────────────────────────────────────────
+from routers.crawl import router as crawl_router
+
 app = FastAPI(
     title="PDF RAG System API",
-    description="A RAG system for PDF documents with authentication, image support, and caching",
-    version="2.0.0"
+    description="A RAG system for PDF documents and websites with authentication, image support, and caching",
+    version="2.1.0"
 )
 
 # CORS
@@ -32,6 +35,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Register routers ───────────────────────────────────────────────
+app.include_router(crawl_router)
 
 # Ensure directories exist
 UPLOADS_DIR.mkdir(exist_ok=True)
@@ -408,15 +414,16 @@ async def list_documents(
 
 @app.get("/documents/processed",
     tags=["Documents"],
-    summary="List successfully processed PDFs")
+    summary="List successfully processed PDFs and crawled sites")
 async def list_processed_documents(
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Get list of successfully processed PDFs (status = 'completed').
+    Get list of successfully processed PDFs and crawled websites
+    (status = 'completed'). Used to populate query dropdowns.
 
     Returns:
-        Simplified list of completed PDFs with id and name only
+        Simplified list with id, name, and source_type
 
     Requires authentication via Bearer token.
     """
@@ -425,11 +432,12 @@ async def list_processed_documents(
     db = DatabaseManager()
     all_documents = await db.get_user_pdfs(user_id)
 
-    # Filter for completed documents and format response
     processed_documents = [
         {
-            "id": doc.get("id"),
-            "name": doc.get("pdf_name")
+            "id":          doc.get("id"),
+            "name":        doc.get("pdf_name"),
+            # source_type added by crawl_schema.sql migration; default 'pdf' for old rows
+            "source_type": doc.get("source_type", "pdf"),
         }
         for doc in all_documents
         if doc.get("upload_status") == "completed"
@@ -625,20 +633,20 @@ async def delete_conversation(
 @app.post("/query",
     response_model=QueryResponse,
     tags=["Querying"],
-    summary="Query processed PDFs")
+    summary="Query processed PDFs and crawled websites")
 async def handle_query(
     request: QueryRequest,
     current_user: dict = Depends(get_current_user)
 ):
     """
-    Query the processed PDF documents.
+    Query the processed PDF documents and crawled websites.
 
     - **query**: The question to ask
-    - **pdf_name**: Optional - limit search to specific PDF (without .pdf extension)
+    - **pdf_name**: Optional - limit search to specific PDF or site slug (without .pdf extension)
     - **conversation_id**: Optional - continue existing conversation (pass in request body)
 
     Requires authentication via Bearer token.
-    Users can only query their own PDFs.
+    Users can only query their own content.
     Conversation history is automatically saved.
 
     Returns answer with relevant images and source citations.
@@ -710,7 +718,7 @@ async def handle_query(
                 })
 
             if not sub_answers:
-                no_result_msg = "No relevant information found in your uploaded PDFs."
+                no_result_msg = "No relevant information found in your uploaded PDFs or crawled websites."
 
                 # Log assistant response even if no results
                 await db.add_message(
@@ -751,16 +759,23 @@ async def handle_query(
                             "caption": chunk.get("content", "")
                         })
 
-            # 6. Prepare sources
-            sources = [
-                {
+            # 6. Prepare sources — include source_url for web chunks
+            sources = []
+            for c in final_chunks:
+                source = {
                     "type": c["type"],
                     "page": c["page_number"],
-                    "content_preview": c["content"][:100] + "..."
-                        if len(c["content"]) > 100 else c["content"],
+                    "content_preview": (
+                        c["content"][:100] + "..."
+                        if len(c["content"]) > 100 else c["content"]
+                    ),
                 }
-                for c in final_chunks
-            ]
+                # Add web source URL if present in metadata
+                meta = c.get("metadata", {})
+                if meta.get("source_type") == "web" and meta.get("source_url"):
+                    source["source_url"] = meta["source_url"]
+                    source["page_title"] = meta.get("page_title", "")
+                sources.append(source)
 
             final_answer = final_result.get("answer", "Unable to generate answer") \
                 if isinstance(final_result, dict) else str(final_result)
