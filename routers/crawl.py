@@ -107,7 +107,7 @@ async def _process_crawl_job(
         await _update_job(db, job_id, stage=f"Chunking {len(pages)} pages", progress=0.42)
 
         chunker     = WebChunker()
-        text_chunks = chunker.chunk_pages(pages)
+        text_chunks = chunker.chunk_pages(pages, site_slug)
 
         t_chunk = time.time() - pipeline_start
         print(f"\n[STEP 2/4] ✅ DONE  text_chunks={len(text_chunks)}  ({t_chunk:.1f}s elapsed)")
