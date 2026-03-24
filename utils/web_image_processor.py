@@ -10,7 +10,7 @@ from PIL import Image
 from azure.storage.blob import BlobServiceClient
 import os
 
-from utils.image_captioner import ImageCaptioner
+# from utils.image_captioner import ImageCaptioner  # disabled for web crawl
 
 MIN_IMAGE_BYTES = 10 * 1024  # 10 KB
 
@@ -77,22 +77,19 @@ class WebImageProcessor:
         if not uploaded:
             return []
 
-        # ── Caption ──────────────────────────────────────────────────
-        print(f"      🤖 captioning {len(uploaded)} images…")
-        t1 = time.time()
+        # ── Caption (disabled for web crawl — re-enable when needed) ──
+        # print(f"      🤖 captioning {len(uploaded)} images…")
+        # t1 = time.time()
+        # async with ImageCaptioner() as captioner:
+        #     captioned = await captioner.caption_images_async(uploaded)
+        # caption_ok = sum(1 for c in captioned if c.get("content") and
+        #                  not c["content"].startswith("Image from page"))
+        # print(f"      ✅ captioned: {caption_ok}/{len(captioned)} successful  ({time.time()-t1:.1f}s)")
+        # return captioned
 
-        async with ImageCaptioner() as captioner:
-            captioned = await captioner.caption_images_async(uploaded)
-
-        caption_ok = sum(1 for c in captioned if c.get("content") and
-                         not c["content"].startswith("Image from page"))
-
-        print(
-            f"      ✅ captioned: {caption_ok}/{len(captioned)} successful  "
-            f"({time.time()-t1:.1f}s)"
-        )
-
-        return captioned
+        # Return uploaded chunks as-is — blob URL + metadata stored, no caption
+        print(f"      ✅ {len(uploaded)} images stored (captioning skipped)")
+        return uploaded
 
     # ------------------------------------------------------------------
 

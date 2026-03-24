@@ -2,10 +2,12 @@
 import asyncio
 import re
 import time
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Set
 from urllib.parse import urljoin, urlparse
 
+import aiohttp
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
 from crawl4ai.extraction_strategy import NoExtractionStrategy
 
@@ -51,6 +53,19 @@ class WebCrawler:
         depth_stats: dict[int, int] = {}
 
         queue: asyncio.Queue = asyncio.Queue()
+
+        # ── Step 0: Seed from sitemap (catches pages not linked anywhere) ──
+        sitemap_urls = await self._discover_from_sitemap(start_url, base_domain)
+        if sitemap_urls:
+            print(f"\n🗺️  SITEMAP  found {len(sitemap_urls)} URLs — seeding queue at depth 1")
+            for u in sitemap_urls:
+                norm = self._normalize_url(u)
+                if self._is_allowed(norm, start_url, base_domain):
+                    await queue.put((norm, 1))
+        else:
+            print(f"\n🗺️  SITEMAP  not found or empty — relying on link discovery only")
+
+        # Always start from root at depth 0
         await queue.put((start_url, 0))
 
         browser_cfg = BrowserConfig(headless=True, verbose=False)
@@ -145,6 +160,93 @@ class WebCrawler:
         print(f"{'='*60}\n")
 
         return results
+
+    # ------------------------------------------------------------------
+    # Sitemap discovery
+    # ------------------------------------------------------------------
+
+    async def _discover_from_sitemap(self, start_url: str, base_domain: str) -> List[str]:
+        """
+        Try to fetch sitemap.xml (and sitemap_index.xml).
+        Returns a flat list of all page URLs found that belong to base_domain.
+        Falls back gracefully — never raises.
+        """
+        candidates = [
+            f"{base_domain}/sitemap.xml",
+            f"{base_domain}/sitemap_index.xml",
+            f"{base_domain}/sitemap-index.xml",
+            f"{base_domain}/sitemap/sitemap.xml",
+        ]
+
+        found: List[str] = []
+
+        async with aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=10)
+        ) as session:
+            for sitemap_url in candidates:
+                urls = await self._fetch_sitemap(session, sitemap_url, base_domain, depth=0)
+                if urls:
+                    found = urls
+                    print(f"   ✅ sitemap: {sitemap_url}  ({len(found)} URLs)")
+                    break
+                else:
+                    print(f"   ⚪ sitemap: {sitemap_url}  (not found)")
+
+        return found
+
+    async def _fetch_sitemap(
+        self,
+        session: aiohttp.ClientSession,
+        sitemap_url: str,
+        base_domain: str,
+        depth: int,
+    ) -> List[str]:
+        """
+        Fetch one sitemap URL. Handles both regular sitemaps (<url><loc>)
+        and sitemap indexes (<sitemap><loc>) recursively (max 2 levels).
+        """
+        if depth > 2:
+            return []
+
+        try:
+            async with session.get(sitemap_url) as resp:
+                if resp.status != 200:
+                    return []
+                text = await resp.text()
+        except Exception:
+            return []
+
+        try:
+            root = ET.fromstring(text)
+        except ET.ParseError:
+            return []
+
+        # Strip XML namespace for simpler tag matching
+        ns_re = re.compile(r"\{[^}]+\}")
+        tag = lambda el: ns_re.sub("", el.tag)
+
+        urls: List[str] = []
+
+        for child in root:
+            child_tag = tag(child)
+
+            if child_tag == "sitemap":
+                # Sitemap index — recurse into each child sitemap
+                for sub in child:
+                    if tag(sub) == "loc" and sub.text:
+                        sub_urls = await self._fetch_sitemap(
+                            session, sub.text.strip(), base_domain, depth + 1
+                        )
+                        urls.extend(sub_urls)
+
+            elif child_tag == "url":
+                for sub in child:
+                    if tag(sub) == "loc" and sub.text:
+                        loc = sub.text.strip()
+                        if loc.startswith(base_domain):
+                            urls.append(loc)
+
+        return urls
 
     # ------------------------------------------------------------------
 
