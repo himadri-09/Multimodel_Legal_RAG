@@ -13,7 +13,6 @@ from utils.auth import get_current_user
 from utils.database import DatabaseManager
 from utils.web_crawler import WebCrawler
 from utils.web_chunker import WebChunker
-from utils.web_image_processor import WebImageProcessor
 from utils.vector_store import PineconeVectorStore
 
 
@@ -80,7 +79,7 @@ async def _process_crawl_job(
         print(f"{'#'*60}")
 
         # ── Step 1: Crawl ─────────────────────────────────────────────
-        print(f"\n[STEP 1/4] CRAWLING")
+        print(f"\n[STEP 1/3] CRAWLING")
         await _update_job(db, job_id, status="processing", stage="Crawling website", progress=0.05)
 
         pages_done = 0
@@ -88,7 +87,7 @@ async def _process_crawl_job(
         async def progress_cb(done, found):
             nonlocal pages_done
             pages_done = done
-            pct = min(0.05 + (done / max(max_pages, 1)) * 0.35, 0.40)
+            pct = min(0.05 + (done / max(max_pages, 1)) * 0.45, 0.50)
             await _update_job(db, job_id,
                               stage=f"Crawled {done}/{found} pages",
                               progress=round(pct, 2))
@@ -100,73 +99,33 @@ async def _process_crawl_job(
             raise ValueError("No pages were successfully crawled from the given URL.")
 
         t_crawl = time.time() - pipeline_start
-        print(f"\n[STEP 1/4] ✅ DONE  pages={len(pages)}  ({t_crawl:.1f}s elapsed)")
+        print(f"\n[STEP 1/3] ✅ DONE  pages={len(pages)}  ({t_crawl:.1f}s elapsed)")
 
         # ── Step 2: Chunk text ────────────────────────────────────────
-        print(f"\n[STEP 2/4] CHUNKING TEXT")
-        await _update_job(db, job_id, stage=f"Chunking {len(pages)} pages", progress=0.42)
+        print(f"\n[STEP 2/3] CHUNKING TEXT")
+        await _update_job(db, job_id, stage=f"Chunking {len(pages)} pages", progress=0.55)
 
         chunker     = WebChunker()
         text_chunks = chunker.chunk_pages(pages, site_slug)
 
         t_chunk = time.time() - pipeline_start
-        print(f"\n[STEP 2/4] ✅ DONE  text_chunks={len(text_chunks)}  ({t_chunk:.1f}s elapsed)")
+        print(f"\n[STEP 2/3] ✅ DONE  text_chunks={len(text_chunks)}  ({t_chunk:.1f}s elapsed)")
 
-        # ── Step 3: Images ────────────────────────────────────────────
-        pages_with_images = [p for p in pages if p.image_urls]
-        total_raw_images  = sum(len(p.image_urls) for p in pages)
-
-        print(f"\n[STEP 3/4] IMAGE PROCESSING")
-        print(f"   Pages with images : {len(pages_with_images)}/{len(pages)}")
-        print(f"   Total image URLs  : {total_raw_images}")
-        await _update_job(db, job_id,
-                          stage=f"Processing images ({len(pages_with_images)} pages)",
-                          progress=0.50)
-
-        image_processor  = WebImageProcessor()
-        all_image_chunks = []
-
-        for page_idx, page in enumerate(pages):
-            if not page.image_urls:
-                continue
-
-            img_chunks = await image_processor.process_page_images(
-                image_urls=page.image_urls,
-                source_url=page.url,
-                page_slug=site_slug,
-                page_number=page_idx + 1,
-            )
-            all_image_chunks.extend(img_chunks)
-
-            if page_idx % 10 == 0:
-                pct = 0.50 + (page_idx / len(pages)) * 0.20
-                await _update_job(db, job_id,
-                                  stage=f"Images: {page_idx+1}/{len(pages)} pages",
-                                  progress=round(pct, 2))
-
-        t_img = time.time() - pipeline_start
-        print(f"\n[STEP 3/4] ✅ DONE  image_chunks={len(all_image_chunks)}  "
-              f"({t_img:.1f}s elapsed)")
-
-        # ── Step 4: Store in Pinecone ─────────────────────────────────
-        all_chunks = text_chunks + all_image_chunks
-
-        print(f"\n[STEP 4/4] STORING IN VECTOR DB")
-        print(f"   Text chunks   : {len(text_chunks)}")
-        print(f"   Image chunks  : {len(all_image_chunks)}")
-        print(f"   Total chunks  : {len(all_chunks)}")
-        print(f"   site_slug     : {site_slug}")
-        print(f"   user_id       : {user_id}")
+        # ── Step 3: Store in Pinecone ─────────────────────────────────
+        print(f"\n[STEP 3/3] STORING IN VECTOR DB")
+        print(f"   Text chunks : {len(text_chunks)}")
+        print(f"   site_slug   : {site_slug}")
+        print(f"   user_id     : {user_id}")
 
         await _update_job(db, job_id,
-                          stage=f"Storing {len(all_chunks)} chunks in vector DB",
-                          progress=0.72)
+                          stage=f"Storing {len(text_chunks)} chunks in vector DB",
+                          progress=0.70)
 
         async with PineconeVectorStore() as vector_store:
-            await vector_store.store_chunks(all_chunks, site_slug, user_id)
+            await vector_store.store_chunks(text_chunks, site_slug, user_id)
 
         t_store = time.time() - pipeline_start
-        print(f"\n[STEP 4/4] ✅ DONE  ({t_store:.1f}s elapsed)")
+        print(f"\n[STEP 3/3] ✅ DONE  ({t_store:.1f}s elapsed)")
 
         # ── Persist to Supabase user_pdfs ────────────────────────────
         await db.log_pdf_upload(
@@ -175,14 +134,14 @@ async def _process_crawl_job(
             original_filename=start_url,
             file_size_bytes=0,
             upload_status="processing",
-            source_type="web",        # ← marks this as a crawled site
-            source_url=start_url,     # ← stores the original root URL
+            source_type="web",
+            source_url=start_url,
         )
         await db.update_pdf_status(
             user_id=user_id,
             pdf_name=site_slug,
             status="completed",
-            chunks_count=len(all_chunks),
+            chunks_count=len(text_chunks),
         )
 
         # ── Final summary ─────────────────────────────────────────────
@@ -192,8 +151,8 @@ async def _process_crawl_job(
             "site_slug":     site_slug,
             "pages_crawled": len(pages),
             "text_chunks":   len(text_chunks),
-            "image_chunks":  len(all_image_chunks),
-            "total_chunks":  len(all_chunks),
+            "image_chunks":  0,
+            "total_chunks":  len(text_chunks),
             "elapsed_s":     round(total_elapsed, 1),
             "status":        "completed",
         }
@@ -208,8 +167,7 @@ async def _process_crawl_job(
         print(f"🎉 PIPELINE COMPLETE  job={job_id}")
         print(f"   Pages crawled  : {len(pages)}")
         print(f"   Text chunks    : {len(text_chunks)}")
-        print(f"   Image chunks   : {len(all_image_chunks)}")
-        print(f"   Total stored   : {len(all_chunks)}")
+        print(f"   Total stored   : {len(text_chunks)}")
         print(f"   Total time     : {total_elapsed:.1f}s")
         print(f"{'#'*60}\n")
 

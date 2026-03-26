@@ -259,7 +259,7 @@ class WebCrawler:
 
                 title     = result.metadata.get("title", "") or urlparse(url).path or url
                 markdown  = self._clean_markdown(result.markdown or "")
-                img_urls  = self._extract_image_urls(result, url)
+                img_urls  = []
 
                 discovered = [
                     urljoin(url, li.get("href", ""))
