@@ -32,9 +32,8 @@ except ImportError:
 
 COHERE_API_KEY    = os.getenv("COHERE_API_KEY", "")
 RERANK_MODEL      = "rerank-english-v3.0"
-RERANK_TOP_N      = 6      # final chunks sent to LLM after reranking
+RERANK_TOP_N      = 10      # final chunks sent to LLM after reranking
 RERANK_MAX_INPUT  = 40     # max chunks fed into reranker (from hybrid pool)
-
 
 class Reranker:
     """
@@ -42,7 +41,7 @@ class Reranker:
 
     Usage:
         reranker = Reranker()
-        final_chunks = reranker.rerank(query, candidate_chunks, top_k=6)
+        final_chunks = reranker.rerank(query, candidate_chunks, top_k=10)
     """
 
     def __init__(self):
@@ -75,7 +74,7 @@ class Reranker:
 
         Args:
             query:  Original user query
-            chunks: Candidate chunks (output of hybrid retrieval / MMR)
+            chunks: Candidate chunks (output of hybrid retrieval)
             top_k:  Number of chunks to return after reranking
 
         Returns:
@@ -94,27 +93,51 @@ class Reranker:
             t0   = time.time()
             docs = [c['content'] for c in candidates]
 
+            # Ask for more than top_k so we can log the score distribution
+            # and catch cases where all scores are very low
+            request_n = min(len(candidates), max(top_k + 4, 10))
+
             response = self.client.rerank(
                 query=query,
                 documents=docs,
-                top_n=min(top_k, len(candidates)),
+                top_n=request_n,
                 model=RERANK_MODEL,
-                return_documents=False,   # we already have docs locally
+                return_documents=False,
             )
 
             # Map reranker results back to original chunks
-            reranked = []
+            all_reranked = []
             for result in response.results:
                 chunk = dict(candidates[result.index])
                 chunk['rerank_score']     = result.relevance_score
-                chunk['similarity_score'] = result.relevance_score  # unify score field
-                reranked.append(chunk)
+                chunk['similarity_score'] = result.relevance_score
+                all_reranked.append(chunk)
 
-            elapsed = time.time() - t0
-            print(
-                f"✅ Reranker: {len(candidates)} → {len(reranked)} chunks "
-                f"in {elapsed:.2f}s | top score: {reranked[0]['rerank_score']:.3f}"
-            )
+            elapsed   = time.time() - t0
+            top_score = all_reranked[0]['rerank_score'] if all_reranked else 0
+
+            # ── Debug: log all reranker scores ───────────────────────────────
+            print(f"Reranker scores ({len(candidates)} → {len(all_reranked)} in {elapsed:.2f}s):")
+            for i, r in enumerate(all_reranked[:10]):
+                url     = r.get('source_url', '')[:50]
+                preview = r.get('content', '')[:80].replace('\n', ' ')
+                marker  = " ←" if i < top_k else ""
+                print(f"  [{i+1}] score={r['rerank_score']:.4f}  {url}{marker}")
+                print(f"       {preview!r}")
+
+            # ── Warn if all scores are very low ───────────────────────────────
+            # Low scores mean the right chunks may not be in the candidate pool
+            # — suggests a retrieval problem, not a reranking problem
+            if top_score < 0.05:
+                print(
+                    f"⚠️  Reranker top score is very low ({top_score:.4f}) — "
+                    f"the answer may not be in the crawled content, "
+                    f"or the relevant page was not crawled."
+                )
+
+            # Return top_k
+            reranked = all_reranked[:top_k]
+            print(f"✅ Reranker: {len(candidates)} → {len(reranked)} chunks | top score: {top_score:.3f}")
             return reranked
 
         except Exception as e:

@@ -478,16 +478,31 @@ JSON array:"""
                 "abstained": True,
             }
 
+        # ── Build numbered context ────────────────────────────────────────────
         context_parts = []
         for i, chunk in enumerate(chunks):
             content    = chunk.get('content', '').strip()
             source_url = chunk.get('source_url', '')
             page_title = chunk.get('page_title', '')
             label      = page_title or source_url or f"Source {i+1}"
+            rerank_score = chunk.get('rerank_score', chunk.get('similarity_score', 0))
             context_parts.append(f"[{i+1}] {label}\n{content}")
 
         context_text = "\n\n---\n\n".join(context_parts)
 
+        # ── LangSmith debug trace — logs exact chunks sent to LLM ────────────
+        print(f"\n{'─'*55}")
+        print(f"LLM INPUT — query: {query[:80]}")
+        print(f"Chunks sent: {len(chunks)}")
+        for i, chunk in enumerate(chunks):
+            score = chunk.get('rerank_score', chunk.get('similarity_score', 0))
+            url   = chunk.get('source_url', '')
+            words = len(chunk.get('content', '').split())
+            print(f"  [{i+1}] score={score:.3f} words={words} url={url[:60]}")
+            print(f"       preview: {chunk.get('content', '')[:120].strip()!r}")
+        print(f"{'─'*55}\n")
+
+        # ── Conversation context ──────────────────────────────────────────────
         conv_ctx = ""
         if conversation_history:
             parts = []
@@ -496,23 +511,28 @@ JSON array:"""
                 parts.append(f"{role}: {msg.get('content', '')[:300]}")
             conv_ctx = "Conversation so far:\n" + "\n".join(parts) + "\n\n"
 
-        system_prompt = """You are a documentation assistant. Answer questions strictly from the provided context.
+        # ── FIX: relaxed grounding prompt ─────────────────────────────────────
+        # Old prompt told LLM to say "I couldn't find" whenever context was
+        # incomplete — even when context had partial answers. This caused false
+        # abstentions. New prompt instructs partial answers when possible and
+        # reserves "not found" only for truly missing information.
+        system_prompt = """You are a documentation assistant for CodePup AI. Answer questions using the provided documentation context.
 
 Rules:
-- Answer ONLY from the provided context. Do not use outside knowledge.
-- If the context does not contain enough information, respond with exactly:
-  "I couldn't find that in the documentation."
+- Use ONLY information from the provided context. Do not use outside knowledge.
+- If the context contains relevant information, answer directly and completely — even if it only partially answers the question.
 - Cite sources using [1], [2] etc. when referencing specific sections.
 - Be concise and direct. No padding or filler.
-- For code, CLI commands, or config values — use code blocks.
-- Never fabricate API names, flags, configuration values, or URLs."""
+- For code, CLI commands, or config values — always use code blocks.
+- Never fabricate specific numbers, API names, flags, or URLs not present in context.
+- Only say "I couldn't find that in the documentation" if the context contains NO relevant information at all — not if it contains partial information."""
 
         user_prompt = f"""{conv_ctx}Documentation context:
 {context_text}
 
 Question: {query}
 
-Answer (strictly from the documentation above):"""
+Answer based on the documentation above. If the context has relevant information, use it even if incomplete:"""
 
         try:
             response = await self.client.chat.completions.create(
@@ -523,13 +543,30 @@ Answer (strictly from the documentation above):"""
                 ],
                 temperature=0.2,
             )
-            answer    = response.choices[0].message.content.strip()
-            abstained = any(p in answer.lower() for p in [
-                "couldn't find",
+            answer = response.choices[0].message.content.strip()
+
+            # ── FIX: smarter abstention detection ─────────────────────────────
+            # Only mark as abstained if:
+            # 1. Answer contains abstention phrase AND
+            # 2. Answer is short (< 60 words) — a real answer with a caveat
+            #    like "while the docs don't cover X, they do say Y" should NOT
+            #    be marked as abstained
+            abstention_phrases = [
+                "couldn't find that",
                 "not in the documentation",
-                "not covered",
-                "cannot find",
-            ])
+                "not covered in the documentation",
+                "cannot find that",
+                "no information about",
+                "not mentioned in the documentation",
+            ]
+            answer_words     = len(answer.split())
+            has_abstention   = any(p in answer.lower() for p in abstention_phrases)
+            abstained        = has_abstention and answer_words < 60
+
+            # Debug log
+            print(f"LLM OUTPUT — words={answer_words} has_abstention={has_abstention} abstained={abstained}")
+            print(f"  Answer preview: {answer[:200]!r}")
+
             return {"answer": answer, "abstained": abstained}
 
         except Exception as e:

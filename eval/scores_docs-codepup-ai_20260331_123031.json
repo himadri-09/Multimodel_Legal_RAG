@@ -1,0 +1,2918 @@
+{
+  "summary": {
+    "slug": "docs-codepup-ai",
+    "timestamp": "20260331_123031",
+    "systems": {
+      "rag": {
+        "overall": {
+          "faithfulness": 0.552,
+          "answer_relevancy": 0.718,
+          "context_precision": 0.276,
+          "resolution_rate": 0.611,
+          "latency_avg": 10.834,
+          "latency_p50": 10.341,
+          "latency_p95": 14.373,
+          "abstention_rate": 0.375,
+          "error_rate": 0.0,
+          "n": 80
+        },
+        "by_type": {
+          "troubleshoot": {
+            "faithfulness": 0.062,
+            "answer_relevancy": 0.062,
+            "context_precision": 0.025,
+            "resolution_rate": 0.044,
+            "n": 16
+          },
+          "simple": {
+            "faithfulness": 0.587,
+            "answer_relevancy": 0.928,
+            "context_precision": 0.278,
+            "resolution_rate": 0.766,
+            "n": 32
+          },
+          "comparison": {
+            "faithfulness": 0.375,
+            "answer_relevancy": 0.5,
+            "context_precision": 0.1,
+            "resolution_rate": 0.425,
+            "n": 8
+          },
+          "out_of_scope": {
+            "faithfulness": 1.0,
+            "answer_relevancy": 1.0,
+            "context_precision": 1.0,
+            "resolution_rate": 1.0,
+            "n": 8
+          },
+          "multi_part": {
+            "faithfulness": 0.838,
+            "answer_relevancy": 0.919,
+            "context_precision": 0.25,
+            "resolution_rate": 0.769,
+            "n": 16
+          }
+        }
+      },
+      "fin": {
+        "overall": {
+          "faithfulness": 0.076,
+          "answer_relevancy": 0.92,
+          "context_precision": 0.076,
+          "resolution_rate": 0.782,
+          "abstention_rate": 0.076,
+          "error_rate": 0.013,
+          "n": 79
+        },
+        "by_type": {
+          "troubleshoot": {
+            "faithfulness": 0.0,
+            "answer_relevancy": 0.875,
+            "context_precision": 0.0,
+            "resolution_rate": 0.669,
+            "n": 16
+          },
+          "simple": {
+            "faithfulness": 0.0,
+            "answer_relevancy": 0.938,
+            "context_precision": 0.0,
+            "resolution_rate": 0.775,
+            "n": 32
+          },
+          "comparison": {
+            "faithfulness": 0.0,
+            "answer_relevancy": 0.963,
+            "context_precision": 0.0,
+            "resolution_rate": 0.812,
+            "n": 8
+          },
+          "out_of_scope": {
+            "faithfulness": 0.857,
+            "answer_relevancy": 0.714,
+            "context_precision": 0.857,
+            "resolution_rate": 0.714,
+            "n": 7
+          },
+          "multi_part": {
+            "faithfulness": 0.0,
+            "answer_relevancy": 1.0,
+            "context_precision": 0.0,
+            "resolution_rate": 0.925,
+            "n": 16
+          }
+        }
+      }
+    }
+  },
+  "scored_results": [
+    {
+      "question": "What are the steps to publish a project from the CodePup AI interface, and how can I ensure that it is continuously updated after publishing?",
+      "question_type": "multi_part",
+      "gold_answer": "To publish from CodePup AI: open your project, make sure the preview is available and error free, then click Share (top right) → Generate shareable URL. That gives you a live link you can share. \nFor continuous updates: every time you modify your app and re deploy, the same project URL stays active and automatically shows the latest deployment (older builds are replaced, not kept).\nIf you restore an older version and want that version live, go back to Share → Generate shareable URL again - the same link will update to reflect the restored version.",
+      "source_url": "https://docs.codepup.ai/features/publish",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.4,
+        "resolution_rate": 0.7,
+        "latency": 13.592,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer accurately reflects the steps to publish a project and the information about continuous updates, both of which are supported by the retrieved context.",
+          "answer_relevancy": "The answer directly and completely addresses the steps to publish a project and explains how to ensure continuous updates after publishing.",
+          "context_precision": "Some sources may contain relevant information about publishing projects, but others, like the portfolio website guide, are not directly related to the question.",
+          "resolution_rate": "The AI answer provides a correct and actionable response for publishing a project, but it lacks specific details about generating a shareable URL and the process for restoring older versions, which are key aspects of the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed steps and information about publishing a project and continuous updates, but there is no retrieved context to support any of the claims made.",
+          "answer_relevancy": "The answer directly and completely addresses the steps to publish a project and explains how to ensure continuous updates after publishing.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer fully resolves the user's question by providing clear, actionable steps for publishing a project and ensuring continuous updates, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What steps do I need to follow to enter my Resend API Key and Stripe Secret Key when starting a new project on Codepup AI?",
+      "question_type": "multi_part",
+      "gold_answer": "To enter your Resend API Key and Stripe Secret Key when starting a new project on Codepup AI, follow these steps:\n\n1. Start a new project by typing your project idea in the prompt box.\n2. Select **E-Commerce Store (fullstack + payment)**.\n3. Enter your Resend API Key in the designated field.\n4. Enter your Stripe Secret Key in the appropriate field. \n\nMake sure to verify your sender email for improved email deliverability.",
+      "source_url": "https://docs.codepup.ai/integration/resend-integration",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.4,
+        "resolution_rate": 1.0,
+        "latency": 14.373,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the steps to enter the Resend API Key and Stripe Secret Key as supported by the retrieved context, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The response directly and completely addresses the question by providing clear steps to enter the Resend API Key and Stripe Secret Key in Codepup AI.",
+          "context_precision": "Some sources may contain relevant information about API keys and integration, but not all are directly focused on entering the Resend API Key and Stripe Secret Key specifically.",
+          "resolution_rate": "The AI answer correctly outlines the steps to enter the Resend API Key and Stripe Secret Key, matches the key facts from the gold answer, and provides actionable instructions that would help the user accomplish their goal."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed steps and information about entering API keys that are not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely addresses the question by providing clear steps to enter the Resend API Key and Stripe Secret Key when starting a new project on Codepup AI.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides clear, actionable steps that align well with the gold answer, including the process for entering the API keys and additional helpful information about where to find them."
+        }
+      }
+    },
+    {
+      "question": "What are the health benefits of incorporating spinach into my diet?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "source_url": "",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 9.454,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly identified the question as out-of-scope and declined to answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly declined to answer the out-of-scope question and suggested rephrasing or asking something else."
+        }
+      }
+    },
+    {
+      "question": "What are the available paid plans for CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "The available paid plans for CodePup AI are:\nPlan\tMonthly Credits\tMonthly Billing\tAnnual Billing (Discounted)\nBasic\t100\t$25\t$250 ($21/month)\nPro\t220\t$50\t$500 ($42/month)\nAdvance\t1,100\t$200\t$2,000 ($167/month)\nAdditionally, there are Custom Credits available for paid users, where $10 equals 40 credits, and users can choose any amount in $10 increments up to $200",
+      "source_url": "https://docs.codepup.ai/introduction/plans-and-credits",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 10.341,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the available paid plans for CodePup AI as outlined in the retrieved context, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The answer directly and completely lists the available paid plans for CodePup AI, including details about monthly and annual billing.",
+          "context_precision": "The source 'Plans and Credits | CodePup AI' directly addresses the question about available paid plans for CodePup AI, making it highly relevant.",
+          "resolution_rate": "The AI answer correctly lists the available paid plans for CodePup AI, matches the key facts in the gold answer, and provides the necessary information for the user to understand their options."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed information about paid plans for CodePup AI, but there is no retrieved context to support any of the claims made, making the answer entirely unsupported.",
+          "answer_relevancy": "The answer directly and completely addresses the question about the available paid plans for CodePup AI, providing detailed information on each plan and additional options.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question about available paid plans for CodePup AI.",
+          "resolution_rate": "The AI answer provides the main paid plans and their monthly costs, but it lacks clarity in formatting and does not explicitly mention the annual billing options or the specific discounts, which are key details in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What steps do I need to follow to manage my data through Codepup AI's CMS without needing a Supabase account, and how does project deletion affect my data?",
+      "question_type": "multi_part",
+      "gold_answer": "You don’t need a Supabase account at all. Codepup AI creates and manages the Supabase backend for you automatically when you create a project, so you can manage your data entirely through our CMS.\nTo manage your data:\nOpen your project, then click the database icon in the top right to open the CMS.\nPick a table from the left sidebar, then add, edit, or delete records in the main panel.\nOr use the AI Assistant to bulk insert data by describing what you want in plain English.\nProject deletion: deleting a Codepup AI project also deletes the associated Supabase project and all its data, so export anything you need first.",
+      "source_url": "https://docs.codepup.ai/integration/supabase-integration",
+      "rag": {
+        "faithfulness": 0.7,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 12.718,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer provides steps to manage data through Codepup AI's CMS, which aligns with the context, but it incorrectly implies that project deletion affects Supabase data without clarifying that the context primarily discusses Supabase integration.",
+          "answer_relevancy": "The response directly and completely addresses the question by outlining the steps to manage data through Codepup AI's CMS without a Supabase account and explains the impact of project deletion on data.",
+          "context_precision": "The retrieved sources focus on Supabase integration, which is not relevant to managing data through Codepup AI's CMS without a Supabase account or the implications of project deletion on data.",
+          "resolution_rate": "The AI answer correctly outlines the steps to manage data through Codepup AI's CMS without needing a Supabase account and accurately explains the implications of project deletion, matching the key facts in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains information about managing data and project deletion that is not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly addresses the steps to manage data through Codepup AI's CMS without needing a Supabase account and explains the impact of project deletion on data.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer fully resolves the user's question, matches the key facts in the gold answer, and provides clear, actionable steps for managing data and understanding project deletion."
+        }
+      }
+    },
+    {
+      "question": "What does CodePup AI do?",
+      "question_type": "simple",
+      "gold_answer": "CodePup AI is an AI-powered developer assistant that turns ideas into fully functional, production-ready web applications in minutes by building code, design, and deployment in one seamless workflow.",
+      "source_url": "https://docs.codepup.ai",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 0.7,
+        "latency": 10.176,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately describes CodePup AI as a no-code, AI-powered platform that allows users to create and manage websites or web apps, generating responsive designs and clean code, and includes features like backend logic, database, authentication, and integrations, all of which are supported by the retrieved context.",
+          "answer_relevancy": "The response directly and completely addresses the question by explaining what CodePup AI does, including its features and capabilities.",
+          "context_precision": "All retrieved sources are relevant and provide information about CodePup AI.",
+          "resolution_rate": "The AI answer is mostly correct and actionable, providing a detailed description of CodePup AI's capabilities, but it introduces the term 'no-code' which is not mentioned in the gold answer, leading to a minor gap in alignment."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about CodePup AI that is not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely explains what CodePup AI does, detailing its functionality and unique features.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer accurately describes CodePup AI's functionality, matching the key facts in the gold answer and providing additional details that enhance understanding."
+        }
+      }
+    },
+    {
+      "question": "What are environment variables, and how can I open the Key Tab to update my API key?",
+      "question_type": "multi_part",
+      "gold_answer": "Environment variables are secret values your project uses to connect to external services, such as Stripe for payments or Resend for emails. They are stored securely on the server and are never exposed in your frontend code or the browser.\n\nTo open the Key Tab and update your API key, follow these steps:\n\nClick the Key tab.\nEnter your new API key in the relevant field.\nLeave other fields empty if you want to keep existing values intact",
+      "source_url": "https://docs.codepup.ai/features/environmental-variables",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.7,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 11.879,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately describes environment variables as secret values used for connecting to external services and provides a clear, step-by-step method for updating the API key, which aligns with the retrieved context.",
+          "answer_relevancy": "The answer provides a definition of environment variables and instructions for updating an API key, but it lacks detail on how to specifically open the Key Tab.",
+          "context_precision": "The retrieved source does not provide information on how to open the Key Tab to update an API key, making it irrelevant to the question.",
+          "resolution_rate": "The AI answer correctly explains what environment variables are and provides clear, actionable steps to open the Key Tab and update the API key, matching the gold answer well."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains information about environment variables and the process to open the Key Tab, but there is no retrieved context to support any of these claims, making the answer entirely unsupported.",
+          "answer_relevancy": "The answer directly and completely addresses both parts of the question regarding environment variables and how to open the Key Tab to update the API key.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question about environment variables and updating an API key.",
+          "resolution_rate": "The AI answer correctly explains what environment variables are and provides detailed, actionable steps to open the Key Tab and update the API key, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What types of recurring emails can be sent using the scheduled reports feature?",
+      "question_type": "simple",
+      "gold_answer": "The scheduled reports feature can send daily summaries, weekly performance reports, monthly analytics, and quarterly reviews.",
+      "source_url": "https://docs.codepup.ai/use-cases/internal-tools",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 9.781,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The retrieved context does not provide any information about the types of recurring emails that can be sent using the scheduled reports feature, making the AI answer unsupported.",
+          "answer_relevancy": "The response directly and completely addresses the question by listing specific types of recurring emails that can be sent using the scheduled reports feature.",
+          "context_precision": "The retrieved sources do not contain any relevant information about recurring emails or the scheduled reports feature.",
+          "resolution_rate": "The AI answer correctly lists the types of recurring emails that can be sent using the scheduled reports feature, matching the gold answer accurately and providing actionable information."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about types of recurring emails that can be sent using the scheduled reports feature, but there is no retrieved context provided to support any of these claims.",
+          "answer_relevancy": "The response directly and completely addresses the question by listing various types of recurring emails that can be sent using the scheduled reports feature.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question.",
+          "resolution_rate": "The AI answer provides a detailed list of recurring emails that can be sent using the scheduled reports feature, which includes daily, weekly, monthly, and quarterly reports. However, it introduces additional types of reports that are not mentioned in the gold answer, which may lead to some confusion."
+        }
+      }
+    },
+    {
+      "question": "Why is the payment integration process stuck and not completing any tasks in the chat?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific reasons for the payment integration process being stuck or not completing tasks in the chat.",
+      "source_url": "https://docs.codepup.ai/integration/stripe-integration",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.017,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information from the retrieved context and fails to address the question about the payment integration process.",
+          "answer_relevancy": "The response does not address the question about the payment integration process being stuck; it only states a lack of information in the documentation.",
+          "context_precision": "The retrieved sources do not provide relevant information regarding the payment integration process or its issues.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance to help the user troubleshoot the payment integration issue, nor does it address the user's question."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information from the retrieved context, as there were no sources retrieved. It introduces a new action (routing to a human team) that is not supported by any context.",
+          "answer_relevancy": "The response does not address the question about the payment integration process being stuck; it only indicates a handoff to a human team without providing any relevant information.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question.",
+          "resolution_rate": "The AI answer does not address the user's question about why the payment integration process is stuck and does not provide any actionable information, leaving the user unblocked."
+        }
+      }
+    },
+    {
+      "question": "Why is my analytics dashboard not displaying any traffic data?",
+      "question_type": "troubleshoot",
+      "gold_answer": "Your analytics dashboard may not be displaying any traffic data due to a lack of visitors, sessions, or pageviews, possibly because your project hasn't been shared or promoted yet. Additionally, ensure that the tracking code is correctly implemented on your site.",
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.544,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer states it couldn't find information in the documentation, which contradicts the expectation that the retrieved context should provide relevant information about the analytics dashboard.",
+          "answer_relevancy": "The response does not address the question about why the analytics dashboard is not displaying traffic data and instead indicates a lack of information.",
+          "context_precision": "The retrieved sources do not contain relevant information about analytics dashboards or traffic data issues.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance to resolve the user's issue, and it fails to address the key factors mentioned in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer introduces specific reasons and steps for fixing the issue that are not supported by the retrieved context, which contains no information.",
+          "answer_relevancy": "The answer directly addresses the question by explaining why the analytics dashboard is not displaying traffic data and provides clear steps to resolve the issue.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly identifies that the analytics dashboard won't show data until the website is live and provides actionable steps to resolve the issue, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "Why can't I see the Key tab in the Codepup AI toolbar?",
+      "question_type": "simple",
+      "gold_answer": "You can't see the Key tab in the Codepup AI toolbar because your project has not been generated or deployed at least once.",
+      "source_url": "https://docs.codepup.ai/features/environmental-variables",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 9.376,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer accurately reflects the information that the Key tab is only visible after the project has been generated and mentions the requirement of deploying the project, which is supported by the retrieved context.",
+          "answer_relevancy": "The answer directly addresses the question by explaining why the Key tab is not visible and provides a specific condition that must be met for it to appear.",
+          "context_precision": "The retrieved sources do not provide relevant information regarding the visibility of the Key tab in the Codepup AI toolbar.",
+          "resolution_rate": "The AI answer correctly explains that the Key tab is only visible after the project has been generated and deployed, matching the key facts in the gold answer and providing actionable guidance."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains specific details about the Key tab and project deployment that are not supported by the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The response directly and completely addresses the question about the visibility of the Key tab in the Codepup AI toolbar, explaining the conditions under which it appears.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly explains that the Key tab is not visible because the project has not been generated or deployed, matching the gold answer and providing actionable information."
+        }
+      }
+    },
+    {
+      "question": "What data can I track in the Traffic tab of the Analytics Dashboard?",
+      "question_type": "simple",
+      "gold_answer": "In the Traffic tab of the Analytics Dashboard, you can track Pageviews, Visitors, and Sessions.",
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 10.257,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific data points (Pageviews, Visitors, Sessions) that are not supported by the retrieved context, which does not contain any information about the Traffic tab.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing specific data that can be tracked in the Traffic tab.",
+          "context_precision": "The retrieved sources do not provide specific information about the Traffic tab in the Analytics Dashboard, making them irrelevant to the question.",
+          "resolution_rate": "The AI answer is correct, actionable, and matches the key facts in the gold answer, providing the user with the necessary information to track data in the Traffic tab."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains specific metrics and details about the Traffic tab that are not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing the key metrics that can be tracked in the Traffic tab of the Analytics Dashboard.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question.",
+          "resolution_rate": "The AI answer correctly identifies and explains the three key metrics (Pageviews, Visitors, Sessions) that can be tracked in the Traffic tab, matching the gold answer and providing additional context that enhances understanding."
+        }
+      }
+    },
+    {
+      "question": "Can I modify an existing project in CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "Yes, you can modify an existing project in CodePup AI by opening any of your previously created projects and describing the changes you want through chat instructions.",
+      "source_url": "https://docs.codepup.ai/introduction/faq",
+      "rag": {
+        "faithfulness": 0.7,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 10.77,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer correctly states that you can modify an existing project in CodePup AI, which is supported by the context. However, the reference to 'chat instructions' is not explicitly supported by the retrieved context.",
+          "answer_relevancy": "The response directly and completely addresses the question about modifying an existing project in CodePup AI.",
+          "context_precision": "The retrieved sources do not provide any relevant information regarding the modification of an existing project in CodePup AI.",
+          "resolution_rate": "The AI answer is correct, actionable, and matches the key facts in the gold answer, providing clear guidance for the user to modify an existing project."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides information about modifying projects in CodePup AI without any supporting context, as no sources were retrieved.",
+          "answer_relevancy": "The response directly and completely addresses the question about modifying existing projects in CodePup AI, providing clear instructions and details.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question.",
+          "resolution_rate": "The AI answer is correct, actionable, and matches the key facts in the gold answer. It provides clear instructions on how to modify existing projects and includes additional helpful details about the process."
+        }
+      }
+    },
+    {
+      "question": "What should I use while building and testing with Stripe?",
+      "question_type": "simple",
+      "gold_answer": "You should use your **test key** (`sk_test_...`) while building and testing with Stripe.",
+      "source_url": "https://docs.codepup.ai/integration/stripe-integration",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 10.705,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the information provided in the retrieved context, specifically regarding the use of test and live keys in Stripe integration.",
+          "answer_relevancy": "The response directly and completely addresses the question by specifying the use of test and live keys when building and testing with Stripe.",
+          "context_precision": "The retrieved sources focus on building ecommerce stores and dropshipping, but do not provide specific information on building and testing with Stripe.",
+          "resolution_rate": "The AI answer correctly states that the user should use their test key while building and testing with Stripe, matching the gold answer and providing additional context about switching to the live key."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains specific details about using test keys and test cards that are not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The response directly and completely addresses the question by providing specific guidance on what to use while building and testing with Stripe.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly states that the user should use their test key while building and testing with Stripe, matches the gold answer, and provides additional actionable information about testing cards, which would help the user accomplish their goal."
+        }
+      }
+    },
+    {
+      "question": "What is CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "CodePup AI is an AI-powered developer assistant that can turn ideas into fully functional, production-ready web applications in minutes by handling code, design, and deployment in a seamless workflow.",
+      "source_url": "https://docs.codepup.ai",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 0.4,
+        "latency": 13.567,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately describes CodePup AI as a no-code, AI-powered platform that allows users to create and manage websites or web apps by simply describing their ideas, which is supported by the retrieved context.",
+          "answer_relevancy": "The answer directly and completely explains what CodePup AI is, including its functionality and target users.",
+          "context_precision": "All retrieved sources are relevant and provide information about CodePup AI, making them useful for answering the question.",
+          "resolution_rate": "The AI answer provides some relevant information about CodePup AI being an AI-powered platform for creating websites, but it inaccurately describes it as a no-code solution and lacks details about its ability to handle code, design, and deployment as mentioned in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed information about CodePup AI that is not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely explains what CodePup AI is, detailing its features and functionalities.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question about CodePup AI.",
+          "resolution_rate": "The AI answer accurately describes CodePup AI, matching the key facts in the gold answer and providing additional context that enhances understanding. It is correct, actionable, and would help the user accomplish their goal."
+        }
+      }
+    },
+    {
+      "question": "What are the main ingredients used in a traditional Italian risotto?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "source_url": "",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 9.809,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly abstained from answering the out-of-scope question and indicated it couldn't find the information in the documentation."
+        }
+      },
+      "fin": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly declined to answer the out-of-scope question and suggested rephrasing or asking something else."
+        }
+      }
+    },
+    {
+      "question": "What can I use Codepup AI to generate?",
+      "question_type": "simple",
+      "gold_answer": "You can use Codepup AI to generate any type of website using simple natural-language prompts.",
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 9.71,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer introduces unsupported claims about generating full websites or web apps and specific features like backend logic and real-time features, which are not mentioned in the retrieved context.",
+          "answer_relevancy": "The response directly and completely addresses the question by specifying what can be generated using CodePup AI, including full websites, web apps, and interactive dashboards.",
+          "context_precision": "The retrieved sources do not provide specific information about what can be generated using Codepup AI, making them irrelevant to the question.",
+          "resolution_rate": "The AI answer expands on the capabilities of Codepup AI beyond the gold answer, providing additional details about generating web apps and interactive features, but it does not explicitly mention 'any type of website' as stated in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed information about the capabilities of Codepup AI without any supporting context, as no sources were retrieved.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing various types of websites and web applications that can be generated using Codepup AI.",
+          "context_precision": "No sources were retrieved, therefore there is no information to answer the question.",
+          "resolution_rate": "The AI answer correctly states that Codepup AI can generate various types of websites using natural-language prompts, aligning well with the gold answer."
+        }
+      }
+    },
+    {
+      "question": "How can I publish my project using CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "To publish your project using CodePup AI, you can follow the instructions provided in the \"How to Publish\" section of the documentation.",
+      "source_url": "https://docs.codepup.ai/features/publish",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.7,
+        "resolution_rate": 1.0,
+        "latency": 10.166,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the steps to publish a project as outlined in the retrieved context, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The answer directly and completely addresses the question by providing clear steps to publish a project using CodePup AI.",
+          "context_precision": "Most sources are relevant to publishing projects with CodePup AI, but some may contain less directly applicable information.",
+          "resolution_rate": "The AI answer provides clear, actionable steps to publish a project using CodePup AI, aligning well with the gold answer's instruction to refer to the documentation."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed steps for publishing a project, but there is no retrieved context to support any of the claims made, making the answer entirely unsupported.",
+          "answer_relevancy": "The answer directly and completely explains how to publish a project using CodePup AI, covering all necessary steps.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides a clear, actionable step-by-step guide to publishing a project using CodePup AI, aligning well with the gold answer's reference to the documentation."
+        }
+      }
+    },
+    {
+      "question": "What are the supported sources for video embedding in CodePup AI, and what limitations should I be aware of when embedding videos?",
+      "question_type": "multi_part",
+      "gold_answer": "CodePup AI supports embedding videos from the following sources:\n- YouTube\n- Vimeo\n- Cloud and CDN video URLs\n- Private blob storage links\n- Internal media servers\n- Any public video payload with a valid MIME type\n\nLimitations include that video **uploads** are not supported.",
+      "source_url": "https://docs.codepup.ai/features/embed-video",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.4,
+        "resolution_rate": 1.0,
+        "latency": 11.584,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the supported sources for video embedding and the limitations as stated in the retrieved context, with appropriate citations.",
+          "answer_relevancy": "The response directly and completely addresses the question by listing the supported sources for video embedding in CodePup AI and outlining the relevant limitations.",
+          "context_precision": "Some sources like 'Video Embedding Support' and 'FAQ' are relevant, but others like 'Supabase Integration' and 'Image Understanding & Integration' do not pertain to video embedding.",
+          "resolution_rate": "The AI answer correctly lists all the supported sources for video embedding and provides detailed limitations that align with the gold answer, making it actionable and helpful for the user."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific details about supported sources and limitations for video embedding that are not present in the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The answer directly addresses the question by listing supported sources for video embedding and outlining the limitations clearly.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly identifies the supported sources for video embedding and mentions the limitation regarding direct uploads. However, it introduces additional limitations about public access that are not explicitly stated in the gold answer, which could lead to confusion."
+        }
+      }
+    },
+    {
+      "question": "What is the Codepup AI CMS?",
+      "question_type": "simple",
+      "gold_answer": "The Codepup AI CMS is a content management system that utilizes AI to assist users in managing and creating content efficiently.",
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 0.7,
+        "latency": 10.767,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately describes the Codepup AI CMS, including its functionality and features, which are supported by the retrieved context.",
+          "answer_relevancy": "The answer directly and completely explains what the Codepup AI CMS is, detailing its features and functionalities.",
+          "context_precision": "All retrieved sources are directly related to Codepup AI and provide relevant information about its CMS.",
+          "resolution_rate": "The AI answer provides additional details about the functionality of the Codepup AI CMS, which enhances understanding, but it does not explicitly mention the AI aspect of the system as highlighted in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about the Codepup AI CMS that is not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely explains what the Codepup AI CMS is, detailing its features and functionalities.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer accurately describes the Codepup AI CMS, its functionality, and how it assists users, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the sections included in the Prompt Guide?",
+      "question_type": "simple",
+      "gold_answer": "The sections included in the Prompt Guide are:\n\n1. Overview\n2. What Makes a Good Prompt?\n3. Prompt Structure\n   - Basic Structure\n   - Advanced Structure\n4. Examples of Good Prompt",
+      "source_url": "https://docs.codepup.ai/introduction/prompt-guide",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 0.4,
+        "latency": 10.485,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately lists the sections included in the Prompt Guide as provided in the retrieved context, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The AI answer directly and completely lists the sections included in the Prompt Guide, addressing the question asked.",
+          "context_precision": "The retrieved source directly addresses the question by providing information about the sections included in the Prompt Guide.",
+          "resolution_rate": "The AI answer includes additional sections not present in the gold answer, which may confuse the user. However, it does provide the main sections listed in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.4,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed information about the sections of the Prompt Guide, but there is no retrieved context to support any of these claims, making the answer entirely unsupported.",
+          "answer_relevancy": "The AI answer directly and completely lists the sections included in the Prompt Guide, addressing the question asked.",
+          "context_precision": "No sources were retrieved, therefore there is no information to answer the question.",
+          "resolution_rate": "The AI answer includes some relevant sections but adds extra sections not mentioned in the gold answer, leading to partial alignment with the user's question."
+        }
+      }
+    },
+    {
+      "question": "What should I do if I receive an error after updating my API key?",
+      "question_type": "troubleshoot",
+      "gold_answer": "If you receive an error after updating your API key, double-check that you entered the key correctly and ensure that it is the correct key for the environment you are using (test or live). If the issue persists, consult the documentation or support for further troubleshooting.",
+      "source_url": "https://docs.codepup.ai/features/environmental-variables",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.218,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer states it could not find information in the documentation, which contradicts the expectation that the retrieved context should provide relevant guidance on handling an error after updating an API key.",
+          "answer_relevancy": "The response does not address the question about what to do after receiving an error; it only states a lack of information.",
+          "context_precision": "The retrieved sources do not provide information specifically related to troubleshooting errors after updating an API key.",
+          "resolution_rate": "The AI answer does not provide any actionable steps or guidance to resolve the user's issue, and it fails to address the key facts mentioned in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information supported by the retrieved context, as there were no sources retrieved.",
+          "answer_relevancy": "The response directly addresses the question by providing specific steps to take if an error occurs after updating an API key, making it complete and on-topic.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable steps and troubleshooting tips, but it lacks emphasis on verifying the correct API key and its environment, which are key points in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What topics are covered on the UI Component Integration page?",
+      "question_type": "simple",
+      "gold_answer": "The topics covered on the UI Component Integration page include Overview, How It Works, Example Workflow, Why This Matters, and Supported Use Cases.",
+      "source_url": "https://docs.codepup.ai/integration/ui-component-integration",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 10.782,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific topics covered on the UI Component Integration page, but the retrieved context does not contain any information about these topics, making the answer unsupported.",
+          "answer_relevancy": "The answer directly and completely lists the topics covered on the UI Component Integration page, addressing the question asked.",
+          "context_precision": "The retrieved sources do not provide relevant information about the topics covered on the UI Component Integration page.",
+          "resolution_rate": "The AI answer is mostly correct and actionable, matching the gold answer closely but includes an additional topic 'Looking Ahead' that is not mentioned in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed information about the UI Component Integration page, but there is no retrieved context to support any of the claims made. Therefore, the answer cannot be considered faithful.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing the main topics covered on the UI Component Integration page.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides a detailed overview of the topics covered on the UI Component Integration page, including some additional information not present in the gold answer. However, it does not explicitly list all the topics as stated in the gold answer, which may lead to minor gaps in clarity."
+        }
+      }
+    },
+    {
+      "question": "Why am I receiving an error when trying to publish my project on CodePup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific reasons for errors when publishing projects on CodePup AI. You may need to check the deployment overview or the \"How to Publish\" section for guidance on common issues.",
+      "source_url": "https://docs.codepup.ai/features/publish",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 11.083,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information from the retrieved context and fails to address the user's question about the error when publishing a project.",
+          "answer_relevancy": "The response does not address the question about the error when publishing the project; it only states a lack of information in the documentation.",
+          "context_precision": "The retrieved sources do not provide specific information related to the error encountered when publishing a project on CodePup AI.",
+          "resolution_rate": "The AI answer does not provide any actionable guidance or information to help the user troubleshoot the error they are experiencing, nor does it reference any relevant sections of the documentation."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific troubleshooting steps and details about the publishing process that are not supported by the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The response directly addresses the question about publishing errors on CodePup AI by providing specific troubleshooting steps and considerations.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable steps for troubleshooting publishing errors, but it lacks specific references to the deployment overview or the 'How to Publish' section mentioned in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the key differences between the Task Progress Panel and the All Tasks Completed views in CodePup AI's automation testing feature?",
+      "question_type": "comparison",
+      "gold_answer": "The Task Progress Panel displays the ongoing status of tasks being executed, showing real-time updates on their progress. In contrast, the All Tasks Completed view provides a summary of all tasks that have been finished, indicating their final outcomes and results.",
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 12.107,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately describes the functions of the Task Progress Panel and the All Tasks Completed views as supported by the retrieved context, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The response directly and completely addresses the question by clearly explaining the key differences between the Task Progress Panel and the All Tasks Completed views in CodePup AI's automation testing feature.",
+          "context_precision": "The retrieved sources do not provide specific information about the Task Progress Panel and All Tasks Completed views in CodePup AI's automation testing feature.",
+          "resolution_rate": "The AI answer accurately describes the key differences between the Task Progress Panel and the All Tasks Completed views, matching the gold answer well and providing actionable information."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information from the retrieved context, as no sources were provided.",
+          "answer_relevancy": "The response directly and completely addresses the question by clearly explaining the key differences between the Task Progress Panel and the All Tasks Completed views in CodePup AI's automation testing feature.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer accurately describes the key differences between the Task Progress Panel and the All Tasks Completed views, matching the gold answer well and providing actionable insights for the user."
+        }
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to upload a PNG image to CodePup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The provided context does not specify the reasons for errors when uploading PNG images to CodePup AI. Please check the platform's guidelines or support for specific upload requirements or limitations.",
+      "source_url": "https://docs.codepup.ai/features/use-images",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.959,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer states it couldn't find information in the documentation, which does not provide any relevant context or explanation regarding the error when uploading a PNG image. It fails to address the user's question and does not reference any specific information from the retrieved context.",
+          "answer_relevancy": "The response does not address the question about the error when uploading a PNG image; it simply states a lack of information.",
+          "context_precision": "The retrieved sources do not contain information related to uploading PNG images or troubleshooting errors in CodePup AI.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance to help the user troubleshoot the error, nor does it reference any specific upload requirements or limitations."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific details about file size limits and image quality that are not supported by the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The answer directly addresses the question about the error when uploading a PNG image to CodePup AI, providing relevant information about file size, quality, and potential solutions.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable advice regarding file size and quality, which aligns with potential issues when uploading PNG images. However, it lacks specific references to the platform's guidelines or support, which is mentioned in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What types of tutorials are available in CodePup?",
+      "question_type": "simple",
+      "gold_answer": "The available tutorials in CodePup include Resume to Portfolio, Event Gallery, Games, ECommerce, Visualization Dashboard, Landing Page, Stripe Payment Integration, Analytics Dashboard, Supabase Integration, and Automation Testing.",
+      "source_url": "https://docs.codepup.ai/use-cases/video-tutorial",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.4,
+        "resolution_rate": 1.0,
+        "latency": 10.148,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer lists specific tutorial types that are not mentioned in the retrieved context, which only references a video tutorial and does not provide details on the types of tutorials available.",
+          "answer_relevancy": "The answer directly lists the types of tutorials available in CodePup, fully addressing the question asked.",
+          "context_precision": "Some sources may provide relevant information about tutorials, but others like the FAQ and Prompt Guide may not directly address the types of tutorials available.",
+          "resolution_rate": "The AI answer correctly lists all the tutorials available in CodePup, matching the gold answer precisely and providing the user with the information needed to understand the available options."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.4,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about tutorial options that were not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The response directly and completely addresses the question by listing various types of tutorials available in CodePup.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides some relevant information about tutorials but does not specifically list the types of tutorials available in CodePup as outlined in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the core features of Codepup AI, and how can I use them to generate and refine a website?",
+      "question_type": "multi_part",
+      "gold_answer": "The core features of Codepup AI include the ability to generate websites using natural-language prompts, allowing users to create various types of websites easily. You can use these features by inputting specific prompts related to your website's design and functionality, and the AI will generate the corresponding code and structure. Additionally, you can refine your website by providing further instructions or adjustments based on the initial output.",
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": {
+        "faithfulness": 0.7,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 16.006,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer is mostly grounded in the context, with claims about natural language prompts, automatic updates, and full-stack generation supported by the retrieved sources. However, some details, such as specific examples and the extent of features, may not be fully traceable to the context.",
+          "answer_relevancy": "The response directly and completely addresses the question by outlining the core features of Codepup AI and explaining how to use them to generate and refine a website.",
+          "context_precision": "The retrieved sources do not provide specific information about the core features of Codepup AI or how to use them for website generation and refinement.",
+          "resolution_rate": "The AI answer accurately describes the core features of Codepup AI, matches the key facts in the gold answer, and provides actionable steps for the user to generate and refine a website."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about Codepup AI's features and usage that is not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely addresses the question by outlining the core features of Codepup AI and providing a clear method for using those features to generate and refine a website.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer accurately describes the core features of Codepup AI and provides actionable steps for generating and refining a website, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What is automation testing?",
+      "question_type": "simple",
+      "gold_answer": "Automation testing is a software testing technique that uses automated tools and scripts to execute tests on software applications, ensuring that they function as intended without manual intervention.",
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": {
+        "faithfulness": 0.7,
+        "answer_relevancy": 0.7,
+        "context_precision": 0.0,
+        "resolution_rate": 0.4,
+        "latency": 10.055,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately describes automation testing as a process executed by Codepup AI, but it introduces the detail about watching the testing process live inside the chat, which is not explicitly mentioned in the retrieved context.",
+          "answer_relevancy": "The answer addresses automation testing but focuses on a specific tool (Codepup AI) and its features rather than providing a general definition.",
+          "context_precision": "The retrieved sources do not contain information about automation testing; they focus on unrelated topics such as payment integration and FAQs.",
+          "resolution_rate": "The AI answer provides a description of automation testing but focuses on a specific tool (Codepup AI) and its features, which may not be applicable to all users. It lacks a clear definition and does not fully align with the key facts in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.4,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about automation testing that is not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely explains what automation testing is, including its purpose and specific checks it performs.",
+          "context_precision": "No sources were retrieved to provide any information related to the question about automation testing.",
+          "resolution_rate": "The AI answer provides a description of automation testing but focuses on a specific implementation rather than the general concept. It lacks a clear definition and does not fully match the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What is included automatically in the Supabase integration?",
+      "question_type": "simple",
+      "gold_answer": "The context does not provide specific details about what is included automatically in the Supabase integration. Please refer to the original document for that information.",
+      "source_url": "https://docs.codepup.ai/integration/supabase-integration",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 11.384,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately lists the Supabase features and their descriptions as supported by the retrieved context, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The AI answer directly and completely addresses the question by listing the features included automatically in the Supabase integration.",
+          "context_precision": "The retrieved sources do not contain information about the Supabase integration and are not on the relevant topic.",
+          "resolution_rate": "The AI answer provides a detailed list of features included automatically in the Supabase integration, which directly addresses the user's question and is actionable."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about the Supabase integration that is not supported by the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The answer directly and completely addresses the question by detailing what is included automatically in the Supabase integration.",
+          "context_precision": "No sources were retrieved, therefore there is no information to answer the question.",
+          "resolution_rate": "The AI answer provides a detailed and accurate description of what is included automatically in the Supabase integration, fully addressing the user's question."
+        }
+      }
+    },
+    {
+      "question": "What features does Codepup AI's Version Control offer?",
+      "question_type": "simple",
+      "gold_answer": "Codepup AI's Version Control offers features such as an overview of version control, reasons for its importance, guidance on how to use it, instructions for updating live published sites, and a focus on enabling users to work fearlessly.",
+      "source_url": "https://docs.codepup.ai/features/version-control",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.4,
+        "latency": 9.953,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the features of Codepup AI's Version Control as stated in the retrieved context, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing specific features of Codepup AI's Version Control.",
+          "context_precision": "The retrieved sources do not specifically address the features of Codepup AI's Version Control, making them irrelevant to the question.",
+          "resolution_rate": "The AI answer provides some features of Codepup AI's Version Control but misses key aspects mentioned in the gold answer, such as the importance of version control, guidance on usage, and instructions for updating live sites."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information that can be traced back to the retrieved context, as there were no sources retrieved.",
+          "answer_relevancy": "The answer directly and completely addresses the features of Codepup AI's Version Control, providing detailed information about automatic snapshots, easy restoration, and published site updates.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides detailed features of Codepup AI's Version Control, including automatic snapshots, easy restoration, and published site updates. However, it lacks mention of the importance of version control and guidance on how to use it, which are key aspects from the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the steps to connect my GitHub account, choose a repository name, and export or update my project using the GitHub integration?",
+      "question_type": "multi_part",
+      "gold_answer": "To connect your GitHub account, choose a repository name, and export or update your project using the GitHub integration, follow these steps:\n\n1. **Connect Your GitHub Account**: Follow the instructions provided in the integration documentation to link your GitHub account.\n2. **Choose a Repository Name**: Select a name for your repository as per the guidelines in the documentation.\n3. **Export or Update Your Project**: Use the relevant options in the integration to export your project or update it as needed.\n\nFor detailed instructions, refer to the specific sections in the documentation.",
+      "source_url": "https://docs.codepup.ai/integration/github-integration",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 12.493,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the steps to connect a GitHub account, choose a repository name, and export or update a project as outlined in the retrieved context from the GitHub Integration documentation.",
+          "answer_relevancy": "The response directly and completely addresses the question by outlining the steps to connect a GitHub account, choose a repository name, and export or update a project.",
+          "context_precision": "The retrieved sources do not provide relevant information regarding connecting a GitHub account, choosing a repository name, or exporting/updating a project using GitHub integration.",
+          "resolution_rate": "The AI answer is correct and actionable, matching the key facts in the gold answer. It provides clear steps for connecting a GitHub account, choosing a repository name, and exporting or updating a project, which would help the user accomplish their goal."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed steps and information about the GitHub integration, but there is no retrieved context to support any of the claims made, making the answer entirely unsupported.",
+          "answer_relevancy": "The answer directly and completely addresses the question by outlining the steps to connect a GitHub account, choose a repository name, and export or update a project using the GitHub integration.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides clear, actionable steps that align well with the gold answer, covering all aspects of connecting a GitHub account, choosing a repository name, and exporting or updating a project. It also includes additional details about the process and limitations, ensuring the user is well-informed."
+        }
+      }
+    },
+    {
+      "question": "What are the key differences between the Traffic tab and the Audience tab in the Analytics Dashboard?",
+      "question_type": "comparison",
+      "gold_answer": "The Traffic tab focuses on metrics related to visitor activity over time, such as pageviews, visitors, and sessions. In contrast, the Audience tab typically provides insights into the demographics, interests, and behaviors of the users visiting the site.",
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 12.341,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific details about the Traffic and Audience tabs that are not supported by the retrieved context, which does not contain any information about these tabs.",
+          "answer_relevancy": "The answer directly and completely addresses the question by clearly outlining the key differences between the Traffic tab and the Audience tab in the Analytics Dashboard.",
+          "context_precision": "The retrieved sources do not contain relevant information about the differences between the Traffic tab and the Audience tab in the Analytics Dashboard.",
+          "resolution_rate": "The AI answer correctly identifies the focus of the Traffic tab and provides some relevant details about the Audience tab, but it lacks specific mention of demographics, interests, and behaviors, which are key aspects from the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information from the retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely addresses the question by clearly outlining the key differences between the Traffic tab and the Audience tab in the Analytics Dashboard.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly identifies the main functions of the Traffic and Audience tabs, but it lacks some details found in the gold answer, such as insights into demographics and interests in the Audience tab."
+        }
+      }
+    },
+    {
+      "question": "What are the requirements for integrating GitHub with CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "The specific requirements for integrating GitHub with CodePup AI are detailed in the \"Requirements\" section of the documentation. Please refer to that section for complete information.",
+      "source_url": "https://docs.codepup.ai/integration/github-integration",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.4,
+        "latency": 11.028,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the information from the retrieved context, stating that GitHub Integration is available for paid plans only and that free-tier users cannot connect or export projects to GitHub.",
+          "answer_relevancy": "The response directly addresses the requirements for integrating GitHub with CodePup AI by specifying that integration is available only for paid plans.",
+          "context_precision": "None of the retrieved sources pertain to GitHub integration; they focus on other integrations and topics.",
+          "resolution_rate": "The AI answer provides some relevant information about the integration being available only for paid plans, but it does not reference the specific 'Requirements' section of the documentation as mentioned in the gold answer, which is crucial for complete understanding."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains specific details about GitHub integration requirements that are not supported by the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The answer directly addresses the requirements for integrating GitHub with CodePup AI, providing specific details about the paid plan and the integration process.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable information about the requirements for GitHub integration, specifically mentioning the need for a paid plan and outlining the integration process. However, it does not explicitly reference the documentation or the 'Requirements' section as the gold answer does, which could lead to minor gaps in completeness."
+        }
+      }
+    },
+    {
+      "question": "What are the differences between updating an API key for a live environment versus a test environment?",
+      "question_type": "comparison",
+      "gold_answer": "The context does not provide specific differences between updating an API key for a live environment versus a test environment. It only mentions that the process applies to both scenarios.",
+      "source_url": "https://docs.codepup.ai/features/environmental-variables",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 11.544,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information related to the differences between updating an API key for a live environment versus a test environment, nor does it reference the retrieved context.",
+          "answer_relevancy": "The response does not address the question at all and fails to provide any relevant information.",
+          "context_precision": "The retrieved sources do not provide relevant information about the differences between updating an API key for a live environment versus a test environment.",
+          "resolution_rate": "The AI answer does not provide any information or guidance regarding the differences between updating an API key in live versus test environments, leaving the user unblocked."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.7,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information from the retrieved context, as no sources were provided. Therefore, all claims made in the answer are unsupported and cannot be traced back to any context.",
+          "answer_relevancy": "The answer addresses the differences between test and live API keys but does not explicitly discuss the process of updating the keys in each environment.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides a clear comparison between test and live API keys, highlighting their purposes and best practices. However, it does not explicitly address the differences in the process of updating the keys, which is a key aspect of the user's question."
+        }
+      }
+    },
+    {
+      "question": "What types of image analysis does CodePup AI perform?",
+      "question_type": "simple",
+      "gold_answer": "CodePup AI performs the following types of image analysis: color extraction, text detection, asset placement, and SVG structure interpretation.",
+      "source_url": "https://docs.codepup.ai/features/use-images",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 10.073,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer lists specific types of image analysis (color extraction, text detection, asset placement, SVG structure interpretation) that are not explicitly mentioned in the retrieved context.",
+          "answer_relevancy": "The answer directly and completely lists the types of image analysis performed by CodePup AI, addressing the question asked.",
+          "context_precision": "The retrieved sources do not contain relevant information about the types of image analysis performed by CodePup AI.",
+          "resolution_rate": "The AI answer correctly lists all types of image analysis performed by CodePup AI, matching the gold answer and providing clear, actionable information."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about the types of image analysis performed by CodePup AI, but there is no retrieved context to support any of these claims, making the answer entirely unsupported.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing various types of image analysis performed by CodePup AI.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides a detailed list of image analysis types performed by CodePup AI, which includes some of the key aspects from the gold answer. However, it introduces additional types of analysis not mentioned in the gold answer, which may lead to minor gaps in alignment."
+        }
+      }
+    },
+    {
+      "question": "What are the sequential steps to set up a custom domain in CodePup AI after publishing my project?",
+      "question_type": "multi_part",
+      "gold_answer": "The sequential steps to set up a custom domain in CodePup AI after publishing your project are outlined in the \"Step-by-Step Setup Guide\" section of the documentation. Please refer to that section for detailed instructions.",
+      "source_url": "https://docs.codepup.ai/features/custom-domain",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.4,
+        "resolution_rate": 0.4,
+        "latency": 12.123,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific steps for setting up a custom domain that are not found in the retrieved context, which lacks detailed instructions on this process.",
+          "answer_relevancy": "The answer directly and completely addresses the question by providing sequential steps to set up a custom domain in CodePup AI after publishing a project.",
+          "context_precision": "Some sources may contain relevant information about setting up a custom domain, but others are likely not directly related to the specific steps needed for that process.",
+          "resolution_rate": "The AI answer provides some actionable steps but lacks completeness and does not reference the 'Step-by-Step Setup Guide' as mentioned in the gold answer, which is crucial for full resolution."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed steps for setting up a custom domain, but there is no retrieved context to support any of the claims made in the answer, making it entirely unsupported.",
+          "answer_relevancy": "The response directly and completely outlines the sequential steps to set up a custom domain in CodePup AI after publishing a project, addressing the question accurately.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides clear, actionable steps to set up a custom domain in CodePup AI after publishing a project, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to generate a website using Codepup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The error could be due to various reasons such as incorrect prompt format, server issues, or limitations in the Codepup AI system. Check your prompt for clarity and ensure that the service is operational.",
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.86,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information from the retrieved context and fails to address the user's question about the error in generating a website.",
+          "answer_relevancy": "The response does not address the question about the error when generating a website; it only states a lack of information in the documentation.",
+          "context_precision": "The retrieved sources do not provide specific information about the error encountered when generating a website using Codepup AI, making them irrelevant to the question.",
+          "resolution_rate": "The AI answer does not provide any actionable information or troubleshooting steps, leaving the user without guidance to resolve their issue."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific troubleshooting steps and suggestions that are not supported by the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The response directly addresses the question by providing common reasons for the error and suggesting specific actions to resolve it.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable steps and suggestions for troubleshooting, but it lacks mention of potential server issues or limitations in the Codepup AI system, which are key factors from the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the health benefits of regularly consuming green tea?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "source_url": "",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 8.998,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly declined to answer the out-of-scope question and indicated it couldn't find the information in the documentation."
+        }
+      },
+      "fin": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.5,
+        "context_precision": 1.0,
+        "resolution_rate": 0.5,
+        "latency": 0,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI partially declined by stating it couldn't find information, but it did not clearly indicate that the question was outside the product docs."
+        }
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to deploy my web application with CodePup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific information about deployment errors with CodePup AI. For assistance, you may need to consult the documentation or support resources available on the CodePup AI website.",
+      "source_url": "https://docs.codepup.ai",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.551,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information from the retrieved context and fails to address the user's question about the error when deploying the web application.",
+          "answer_relevancy": "The response does not address the question about the error when deploying the web application; it only states a lack of information in the documentation.",
+          "context_precision": "The retrieved sources do not provide specific information related to the error encountered when deploying a web application with CodePup AI.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance to help the user troubleshoot their deployment error, nor does it reference any documentation or support resources."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific troubleshooting steps and suggestions that are not supported by the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The response directly addresses the question by providing common reasons for deployment errors and suggests specific actions to troubleshoot the issue.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable steps for troubleshooting deployment errors and encourages the user to gather specific information, which can help in resolving the issue. However, it does not directly address the lack of specific information about deployment errors with CodePup AI as mentioned in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the nutritional benefits of incorporating kale into your diet?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "source_url": "",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 9.796,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly identified the question as out-of-scope and declined to answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {}
+      }
+    },
+    {
+      "question": "How do I publish my project to enable domain support?",
+      "question_type": "simple",
+      "gold_answer": "To publish your project and enable domain support, go to your project dashboard and click **Generate sharable URL**.",
+      "source_url": "https://docs.codepup.ai/features/custom-domain",
+      "rag": {
+        "faithfulness": 0.7,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.4,
+        "resolution_rate": 1.0,
+        "latency": 9.467,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer provides a step to publish the project and enable domain support, which is supported by the context. However, it does not specify that the step is from the 'Publishing Projects' section, which could lead to minor ambiguity.",
+          "answer_relevancy": "The answer directly and completely addresses the question by providing a clear step to publish the project and enable domain support.",
+          "context_precision": "Some sources may provide relevant information about publishing projects, but the focus on custom domains is unclear and not all sources directly address domain support.",
+          "resolution_rate": "The AI answer is correct, actionable, and matches the key facts in the gold answer, providing a clear step for the user to publish their project and enable domain support."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains specific steps and details about publishing a project and enabling domain support, but there is no retrieved context to support any of this information, making it entirely unsupported.",
+          "answer_relevancy": "The answer directly and completely addresses the question by providing clear steps to publish the project and enable domain support.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides clear, actionable steps that align with the gold answer, fully addressing the user's question about publishing the project and enabling domain support."
+        }
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to open the AI Assistant in the Codepup CMS?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific reasons for errors when opening the AI Assistant in the Codepup CMS. You may need to check for issues such as internet connectivity, browser compatibility, or software updates.",
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.574,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information from the retrieved context and fails to address the user's question about the error when trying to open the AI Assistant.",
+          "answer_relevancy": "The response does not address the question about the error when trying to open the AI Assistant in the Codepup CMS.",
+          "context_precision": "The retrieved sources do not provide specific information about the error encountered when opening the AI Assistant in the Codepup CMS.",
+          "resolution_rate": "The AI answer does not provide any actionable information or troubleshooting steps, leaving the user without guidance to resolve their issue."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific troubleshooting steps and instructions that are not supported by the retrieved context, which contains no information.",
+          "answer_relevancy": "The answer directly addresses the question by providing common reasons for the error and troubleshooting steps, making it complete and on-topic.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable steps for accessing the AI Assistant and suggests troubleshooting methods, but it lacks specific reasons for the error as mentioned in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What image formats can I upload to CodePup AI, and what functionalities can I utilize with these images?",
+      "question_type": "multi_part",
+      "gold_answer": "The context does not specify the image formats that can be uploaded to CodePup AI. However, it indicates that users can utilize various functionalities related to image understanding and integration. For specific image formats, please refer to the official documentation.",
+      "source_url": "https://docs.codepup.ai/features/use-images",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.4,
+        "latency": 12.25,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately lists the image formats and functionalities supported by CodePup AI, all of which are consistent with the retrieved context.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing the image formats that can be uploaded and detailing the functionalities available with those images.",
+          "context_precision": "The retrieved sources do not contain information about image formats or functionalities related to images in CodePup AI, making them irrelevant to the question.",
+          "resolution_rate": "The AI answer provides specific image formats and functionalities, but it contradicts the gold answer by stating formats that were not mentioned in the context. It partially helps the user but lacks confirmation from the official documentation."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains specific details about image formats and functionalities that are not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly addresses the question by listing the image formats that can be uploaded and detailing the functionalities available with those images.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides specific image formats that can be uploaded, which is actionable information. However, it does not mention that the gold answer indicates a lack of specific format details in the context, leading to a minor discrepancy."
+        }
+      }
+    },
+    {
+      "question": "What should I never share in prompts while using CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "You should never share secrets in prompts while using CodePup AI.",
+      "source_url": "https://docs.codepup.ai/features/security",
+      "rag": {
+        "faithfulness": 0.7,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 10.731,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer correctly states that secrets should not be shared in prompts, which aligns with the context about security. However, it introduces the idea of 'secure dialog boxes' without clear support from the retrieved context.",
+          "answer_relevancy": "The answer directly addresses the question by stating what should not be shared in prompts while using CodePup AI and provides a relevant recommendation.",
+          "context_precision": "All retrieved sources are relevant and provide information on what should not be shared while using CodePup AI.",
+          "resolution_rate": "The AI answer correctly states that secrets should not be shared in prompts and provides additional actionable advice about using secure dialog boxes, fully resolving the user's question."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains specific details about sensitive items to avoid sharing in prompts and mentions secure dialog boxes, which are not supported by the retrieved context that provided no sources.",
+          "answer_relevancy": "The response directly and completely addresses the question by listing specific items that should not be shared in prompts while using CodePup AI.",
+          "context_precision": "No sources were retrieved, therefore there is no information to answer the question.",
+          "resolution_rate": "The AI answer correctly identifies what should not be shared in prompts and provides actionable advice on using secure dialog boxes, fully resolving the user's question."
+        }
+      }
+    },
+    {
+      "question": "What can Codepup AI AI do with natural-language prompts?",
+      "question_type": "simple",
+      "gold_answer": "Codepup AI AI can generate any type of website using simple natural-language prompts.",
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 10.476,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer claims that Codepup AI can generate any type of website using natural-language prompts, but the retrieved context does not provide any specific information about website generation or the capabilities of Codepup AI.",
+          "answer_relevancy": "The answer directly and completely addresses the question by explaining what Codepup AI can do with natural-language prompts.",
+          "context_precision": "The retrieved sources do not provide any information about what Codepup AI can do with natural-language prompts, making them irrelevant to the question.",
+          "resolution_rate": "The AI answer correctly states that Codepup AI can generate any type of website using natural-language prompts, matching the key facts in the gold answer and providing additional actionable information."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {}
+      }
+    },
+    {
+      "question": "What are some free traffic sources for marketing my dropshipping store?",
+      "question_type": "simple",
+      "gold_answer": "Some free traffic sources for marketing your dropshipping store include Instagram Organic, where you can post product photos/videos daily, use trending hashtags in your niche, engage with potential customers, and include a link to your store in your bio.",
+      "source_url": "https://docs.codepup.ai/use-cases/dropshipping-site",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 11.273,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific traffic sources and strategies that are not mentioned in the retrieved context, which only includes a title and link without any details on marketing strategies.",
+          "answer_relevancy": "The answer directly and completely addresses the question by providing specific free traffic sources for marketing a dropshipping store.",
+          "context_precision": "The retrieved sources do not provide any information about free traffic sources for marketing a dropshipping store; they focus on launching a store instead.",
+          "resolution_rate": "The AI answer provides multiple free traffic sources for marketing a dropshipping store, including Instagram, TikTok, Pinterest, and Reddit, which are actionable and align well with the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {}
+      }
+    },
+    {
+      "question": "Why am I unable to connect my project to GitHub even though I'm on a paid plan?",
+      "question_type": "troubleshoot",
+      "gold_answer": "GitHub export is only available on paid plans; if you still can't connect, re-run the Connect with GitHub flow (open your project → Connect with GitHub → sign in via GitHub OAuth → confirm your GitHub account), then enter a repository name and export; if the issue persists, capture any error message and contact support for assistance.",
+      "source_url": "https://docs.codepup.ai/integration/github-integration",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.592,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information related to the user's issue about connecting to GitHub, nor does it reference any of the retrieved context.",
+          "answer_relevancy": "The response does not address the question about the inability to connect to GitHub and instead states a lack of information in the documentation.",
+          "context_precision": "The retrieved sources do not address the issue of connecting a project to GitHub or provide relevant information about GitHub's functionality or troubleshooting.",
+          "resolution_rate": "The AI answer does not provide any actionable steps or relevant information to help the user troubleshoot their issue, and it fails to address the user's question about connecting to GitHub."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information related to the user's issue about connecting to GitHub, nor does it reference any context, as no sources were retrieved.",
+          "answer_relevancy": "The response does not address the question about the inability to connect to GitHub and instead redirects to a human team without providing any relevant information.",
+          "context_precision": "No sources were retrieved to provide any information related to the question about connecting a project to GitHub.",
+          "resolution_rate": "The AI answer does not provide any actionable steps or information related to the user's issue, nor does it address the troubleshooting process outlined in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What does automation testing cover?",
+      "question_type": "simple",
+      "gold_answer": "Automation testing covers every major part of your project, specifically checking that every page loads without errors.",
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 10.848,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the information provided in the retrieved context about what automation testing covers, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The answer directly and completely addresses the question by outlining specific areas that automation testing covers.",
+          "context_precision": "The retrieved sources do not contain relevant information about automation testing; they focus on unrelated topics such as payment integration.",
+          "resolution_rate": "The AI answer accurately expands on the gold answer by detailing specific areas covered in automation testing while still aligning with the core concept that every major part of the project is checked for errors."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information that can be traced back to the retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing specific areas that automation testing covers.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides a comprehensive overview of what automation testing covers, including specific areas it checks, which aligns with the gold answer. However, it introduces additional details that may not be necessary for a simple question, leading to minor gaps in clarity."
+        }
+      }
+    },
+    {
+      "question": "What steps do I need to follow to add a new product and manage users using the Codepup AI CMS?",
+      "question_type": "multi_part",
+      "gold_answer": "To add a new product and manage users using the Codepup AI CMS, follow these steps:\n\n1. Access the Codepup AI dashboard.\n2. Navigate to the CMS section.\n3. Use the visual interface to add a new product by filling in the required details.\n4. To manage users, go to the user management section within the CMS.\n5. Perform actions such as adding, editing, or removing users as needed.\n\nFor a detailed guide, consider watching the video walkthrough provided in the CMS documentation.",
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 15.3,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the steps to add a new product and manage users as outlined in the retrieved context, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The response directly and completely addresses the question by providing clear steps for adding a new product and managing users using the Codepup AI CMS.",
+          "context_precision": "The retrieved sources do not provide specific information on adding a new product or managing users in the Codepup AI CMS, focusing instead on general ecommerce and dropshipping topics.",
+          "resolution_rate": "The AI answer provides actionable steps for adding a new product and managing users, similar to the gold answer. However, it introduces the AI Assistant feature, which is not mentioned in the gold answer, potentially causing confusion for users who may not be familiar with it."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed instructions and steps for using the Codepup AI CMS, but there is no retrieved context to support any of the claims made in the answer.",
+          "answer_relevancy": "The response directly and completely addresses the question by providing clear steps to add a new product and manage users using the Codepup AI CMS.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable steps to add a product and manage users, but it lacks some clarity and detail compared to the gold answer, such as explicitly mentioning the CMS section and the visual interface."
+        }
+      }
+    },
+    {
+      "question": "Why am I unable to add my custom domain after publishing my project?",
+      "question_type": "troubleshoot",
+      "gold_answer": "You may be unable to add your custom domain because you have not yet published your project. Ensure that you click **Generate sharable URL** from your project dashboard to deploy your project and enable domain support.",
+      "source_url": "https://docs.codepup.ai/features/custom-domain",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.502,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer states it couldn't find information in the documentation, which does not provide any relevant information regarding the user's inability to add a custom domain after publishing their project. This response does not address the question and fails to reference the context appropriately.",
+          "answer_relevancy": "The response does not address the question about the inability to add a custom domain; it only states a lack of information in the documentation.",
+          "context_precision": "The retrieved sources do not provide relevant information regarding the inability to add a custom domain after publishing a project.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance to resolve the user's issue, nor does it address the key facts from the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains information that is not supported by the retrieved context, as there were no sources provided to validate any claims made.",
+          "answer_relevancy": "The answer directly addresses the question by explaining the reasons for being unable to add a custom domain after publishing a project and provides specific steps to resolve the issue.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly identifies that the project needs to be fully deployed to add a custom domain, matches the key facts from the gold answer, and provides actionable steps for the user to follow."
+        }
+      }
+    },
+    {
+      "question": "How can I open the Analytics Dashboard in CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "To open the Analytics Dashboard in CodePup AI, refer to the section titled \"How to Open Analytics\" in the documentation.",
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.4,
+        "resolution_rate": 0.0,
+        "latency": 9.561,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the lack of information found in the retrieved context regarding how to open the Analytics Dashboard in CodePup AI.",
+          "answer_relevancy": "The response does not address the question about how to open the Analytics Dashboard in CodePup AI.",
+          "context_precision": "One source is directly relevant to the question about the Analytics Dashboard, while the others are not related to the topic.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance on how to open the Analytics Dashboard, and it fails to reference the relevant section in the documentation."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific instructions on how to open the Analytics Dashboard, but there is no retrieved context to support any of the claims made in the answer.",
+          "answer_relevancy": "The response directly and completely addresses how to open the Analytics Dashboard in CodePup AI, providing clear steps and relevant information.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides clear, actionable steps to open the Analytics Dashboard in CodePup AI, matching the intent of the gold answer and ensuring the user can accomplish their goal."
+        }
+      }
+    },
+    {
+      "question": "What are the key differences between using CodePup AI as a developer assistant versus traditional coding methods?",
+      "question_type": "comparison",
+      "gold_answer": "The key differences between using CodePup AI as a developer assistant and traditional coding methods include:\n\n1. **Speed**: CodePup AI can turn ideas into fully functional web applications in minutes, whereas traditional coding methods typically take much longer.\n2. **Automation**: CodePup AI automates the coding, design, and deployment processes, while traditional methods require manual coding and separate steps for design and deployment.\n3. **Ease of Use**: Users can simply describe their requirements to CodePup AI, making it more accessible for those without extensive coding knowledge, unlike traditional methods that require programming skills.\n4. **Seamless Workflow**: CodePup AI provides an integrated workflow, combining all aspects of development in one platform, whereas traditional methods often involve multiple tools and processes.",
+      "source_url": "https://docs.codepup.ai",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 12.707,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information related to the key differences between using CodePup AI and traditional coding methods, nor does it reference the retrieved context.",
+          "answer_relevancy": "The response does not address the question at all and instead states a lack of information.",
+          "context_precision": "The retrieved sources are all FAQs and a welcome page, which do not provide specific information on the differences between using CodePup AI and traditional coding methods.",
+          "resolution_rate": "The AI answer does not provide any information or comparison regarding CodePup AI and traditional coding methods, failing to address the user's question."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information that can be traced back to the retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely addresses the key differences between using CodePup AI and traditional coding methods, focusing on speed, complexity handling, and the benefits of using AI.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question.",
+          "resolution_rate": "The AI answer captures some key differences such as speed and ease of use, but it lacks a structured comparison and misses details about automation and seamless workflow mentioned in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What file types are supported by the CodePup AI Visualization Dashboard?",
+      "question_type": "simple",
+      "gold_answer": "The specific supported file types are not listed in the provided context. Please refer to the \"Supported File Types\" section in the documentation for detailed information.",
+      "source_url": "https://docs.codepup.ai/use-cases/visualization-dashboard",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.668,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the lack of information in the retrieved context regarding supported file types for the CodePup AI Visualization Dashboard.",
+          "answer_relevancy": "The response does not address the question about supported file types at all.",
+          "context_precision": "The retrieved sources do not provide specific information about the file types supported by the CodePup AI Visualization Dashboard.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance on where to find the supported file types, leaving the user unblocked."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific details about supported file types and data handling that are not present in the retrieved context, which contains no sources.",
+          "answer_relevancy": "The answer directly and completely lists the supported file types for the CodePup AI Visualization Dashboard and provides relevant additional information about data preparation and performance limits.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly lists the supported file types and provides additional relevant information, fully resolving the user's question."
+        }
+      }
+    },
+    {
+      "question": "What are the differences between using natural-language prompts for website generation and manually coding a website from scratch?",
+      "question_type": "comparison",
+      "gold_answer": "Using natural-language prompts for website generation allows for quicker and more intuitive creation, as users can describe their needs in plain language without needing coding skills. In contrast, manually coding a website from scratch requires technical knowledge, attention to detail, and can be more time-consuming. Natural-language prompts streamline the process, while manual coding offers greater control and customization.",
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 12.909,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information related to the differences between using natural-language prompts for website generation and manually coding a website from scratch, nor does it reference the retrieved context.",
+          "answer_relevancy": "The response does not address the question at all and instead indicates a lack of information.",
+          "context_precision": "The retrieved sources do not provide relevant information regarding the differences between using natural-language prompts for website generation and manually coding a website from scratch.",
+          "resolution_rate": "The AI answer does not address the user's question at all and fails to provide any relevant information or comparison between the two methods of website generation."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information that can be traced back to the retrieved context, as no sources were provided.",
+          "answer_relevancy": "The response directly and completely addresses the differences between using natural-language prompts for website generation and manually coding a website from scratch, covering speed, complexity, and skill requirements.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides a detailed comparison of natural-language prompts and manual coding, highlighting key differences in speed, complexity, and skill requirements. However, it lacks some nuance found in the gold answer regarding the control and customization offered by manual coding."
+        }
+      }
+    },
+    {
+      "question": "How long does it take to build an ecommerce store with CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "Typically 30 minutes from initial prompt to a fully functional store.",
+      "source_url": "https://docs.codepup.ai/use-cases/ecommerce-store",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 9.259,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the information from the retrieved context, stating that it takes 30 minutes to build an ecommerce store with CodePup AI, and it appropriately cites the source.",
+          "answer_relevancy": "The answer directly and completely addresses the question by providing a specific time frame for building an ecommerce store with CodePup AI.",
+          "context_precision": "All sources provide relevant information about building an ecommerce store with CodePup AI, specifically stating that it can be done in 30 minutes.",
+          "resolution_rate": "The AI answer is correct, actionable, and matches the key facts in the gold answer, providing the user with the information needed to understand the time required to build an ecommerce store with CodePup AI."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific details about the time it takes to build an ecommerce store with CodePup AI, but there is no retrieved context to support any of these claims, making the answer entirely unsupported.",
+          "answer_relevancy": "The answer directly addresses the question by providing a specific time frame for building an ecommerce store with CodePup AI and includes relevant details about the features included in that time.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question.",
+          "resolution_rate": "The AI answer correctly states that it takes about 30 minutes to build a fully functional ecommerce store with CodePup AI, matching the gold answer. It provides additional details about the features included in the build, which enhances the user's understanding and would help them accomplish their goal."
+        }
+      }
+    },
+    {
+      "question": "What is Resend?",
+      "question_type": "simple",
+      "gold_answer": "Resend is a service that allows users to send emails and manage email communications efficiently.",
+      "source_url": "https://docs.codepup.ai/integration/resend-integration",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 10.251,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately describes Resend as an email service for sending transactional emails and correctly mentions its integration with CodePup AI, including the necessary steps to use it, all of which are supported by the retrieved context.",
+          "answer_relevancy": "The answer directly and completely addresses the question by explaining what Resend is and its functionality.",
+          "context_precision": "The retrieved sources do not provide any relevant information about 'Resend' and are not on the right topic.",
+          "resolution_rate": "The AI answer provides a correct description of Resend as an email service, but it includes additional details about integration with CodePup AI that may not be relevant to the user's simple question."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed information about Resend that is not supported by the retrieved context, which contains no sources or information.",
+          "answer_relevancy": "The answer directly and completely explains what Resend is, including its purpose and features.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides a detailed description of Resend as an email API, which aligns with the gold answer's focus on email communication. However, it introduces additional technical details that may not be necessary for a simple understanding of what Resend is."
+        }
+      }
+    },
+    {
+      "question": "What are the three project types supported by CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "The context does not specify the three project types supported by CodePup AI.",
+      "source_url": "https://docs.codepup.ai/introduction/getting-started",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.454,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific project types that are not supported by the retrieved context, which does not mention any project types.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing the three project types supported by CodePup AI.",
+          "context_precision": "The retrieved sources do not provide any information about the three project types supported by CodePup AI, making them irrelevant to the question.",
+          "resolution_rate": "The AI answer provides specific project types that are not confirmed by the gold answer, which states that the context does not specify the three project types. Therefore, the response is incorrect and does not help the user."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific details about the three project types supported by CodePup AI, but there is no retrieved context to support any of this information, making it entirely unsupported.",
+          "answer_relevancy": "The response directly and completely addresses the question by listing and describing the three project types supported by CodePup AI.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question.",
+          "resolution_rate": "The AI answer provides specific project types but does not match the gold answer, which states that the context does not specify the project types."
+        }
+      }
+    },
+    {
+      "question": "What steps do I need to follow to use CodePup AI to turn my idea into a fully functional web application, and what types of users is it built for?",
+      "question_type": "multi_part",
+      "gold_answer": "To use CodePup AI to turn your idea into a fully functional web application, you simply need to describe what you want, and CodePup AI will handle the coding, design, and deployment in one seamless workflow. \n\nCodePup AI is built for everyone, making it accessible to a wide range of users.",
+      "source_url": "https://docs.codepup.ai",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 12.821,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer accurately reflects the steps to use CodePup AI and the types of users it is built for, all of which are supported by the retrieved context.",
+          "answer_relevancy": "The response directly and completely addresses the question by outlining the steps to use CodePup AI and specifying the types of users it is built for.",
+          "context_precision": "All retrieved sources provide relevant information on how to use CodePup AI and its intended user base, making them useful for answering the question.",
+          "resolution_rate": "The AI answer provides clear, actionable steps to use CodePup AI and accurately describes the types of users it is built for, matching the key facts in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed steps and descriptions that are not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The response directly and completely addresses the question by outlining the steps to use CodePup AI for creating a web application and specifying the types of users it is built for.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides clear, actionable steps to use CodePup AI for creating a web application and accurately describes the target user base, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the main ingredients needed to make a traditional lasagna?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "source_url": "",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 9.753,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly abstained from answering and indicated it couldn't find the information in the documentation, which is appropriate for an out-of-scope question."
+        }
+      },
+      "fin": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly declined to answer the out-of-scope question and suggested rephrasing or asking something else."
+        }
+      }
+    },
+    {
+      "question": "Why am I unable to restore an older version of my project using version control?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific reasons for being unable to restore an older version of a project using version control. You may need to check the version control documentation or troubleshoot potential issues such as missing commits, incorrect branch selection, or lack of permissions.",
+      "source_url": "https://docs.codepup.ai/features/version-control",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.45,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer states it couldn't find information in the documentation, which does not address the question about why an older version cannot be restored. This indicates a lack of relevant information and does not align with the context provided.",
+          "answer_relevancy": "The response does not address the question about restoring an older version of a project using version control.",
+          "context_precision": "The retrieved sources do not provide any specific information related to restoring an older version of a project using version control.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance to help the user troubleshoot their issue, nor does it address the potential reasons for being unable to restore an older version as mentioned in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.4,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information from the retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly addresses the question by providing specific reasons for being unable to restore an older version of a project using version control, including version limits, project type limitations, and access issues.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides some potential reasons for the inability to restore an older version, but it introduces specific limitations (version limit and fullstack projects) that may not apply to all users. It lacks a comprehensive troubleshooting approach and does not fully align with the gold answer's suggestion to check documentation or permissions."
+        }
+      }
+    },
+    {
+      "question": "What are the nutritional benefits of incorporating quinoa into your diet?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "source_url": "",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 8.987,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly identified the question as out-of-scope and declined to answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.5,
+        "context_precision": 1.0,
+        "resolution_rate": 0.5,
+        "latency": 0,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI partially declined by stating it couldn't find information, but it did not explicitly mention that the question is outside the product docs."
+        }
+      }
+    },
+    {
+      "question": "What are the differences between using the AI Assistant to add data and manually inputting data in the Codepup AI CMS?",
+      "question_type": "comparison",
+      "gold_answer": "The context does not provide specific details on the differences between using the AI Assistant to add data and manually inputting data in the Codepup AI CMS. For accurate information, please refer to the relevant sections of the documentation.",
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 11.94,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer accurately describes the differences between using the AI Assistant and manual data entry in the Codepup AI CMS, without introducing unsupported facts or contradictions, and it aligns with the context provided.",
+          "answer_relevancy": "The answer directly and completely addresses the question by outlining the differences between using the AI Assistant and manual data entry in the Codepup AI CMS.",
+          "context_precision": "The retrieved sources do not provide specific information about the differences between using the AI Assistant and manual data input in the Codepup AI CMS.",
+          "resolution_rate": "The AI answer provides a clear and actionable comparison between using the AI Assistant and manual data entry in the Codepup AI CMS, addressing the user's question effectively."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information from the retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely addresses the differences between using the AI Assistant and manual data input in the Codepup AI CMS, providing clear comparisons and relevant details.",
+          "context_precision": "No sources were retrieved, therefore there is no information to evaluate for relevance to the question.",
+          "resolution_rate": "The AI answer provides a clear and actionable comparison between using the AI Assistant and manual entry in the Codepup AI CMS, addressing the user's question effectively."
+        }
+      }
+    },
+    {
+      "question": "What can you manage using the Codepup AI CMS?",
+      "question_type": "simple",
+      "gold_answer": "You can manage products, users, track orders, and seed test data using the Codepup AI CMS.",
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 9.412,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer includes specific details about managing products, users, orders, and test data that are not supported by the retrieved context, which does not provide any information on these functionalities.",
+          "answer_relevancy": "The answer directly addresses the question by listing specific management capabilities of the Codepup AI CMS, providing a complete and relevant response.",
+          "context_precision": "The retrieved sources do not provide specific information about what can be managed using the Codepup AI CMS.",
+          "resolution_rate": "The AI answer correctly identifies the key management tasks (products, users, orders, and test data) and provides additional context about the interface, fully resolving the user's question."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about the Codepup AI CMS that is not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely addresses the question by detailing the features and management capabilities of the Codepup AI CMS.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly identifies and elaborates on the key functionalities of the Codepup AI CMS, matching the gold answer and providing actionable information."
+        }
+      }
+    },
+    {
+      "question": "What are the differences between using a sharable URL and a custom domain for publishing your project in CodePup AI?",
+      "question_type": "comparison",
+      "gold_answer": "The differences between using a sharable URL and a custom domain for publishing your project in CodePup AI include:\n\n1. **URL Format**: A sharable URL is typically a generic link provided by CodePup AI, while a custom domain allows you to use your own personalized web address.\n2. **Branding**: A custom domain enhances branding and professionalism, making it easier for users to remember and trust your project.\n3. **Control**: With a custom domain, you have more control over the domain name and can manage it independently, whereas a sharable URL is managed by CodePup AI.\n4. **SEO Benefits**: A custom domain can improve search engine optimization (SEO) compared to a generic sharable URL.",
+      "source_url": "https://docs.codepup.ai/features/custom-domain",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.4,
+        "resolution_rate": 0.0,
+        "latency": 12.442,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer states it couldn't find the information in the documentation, which does not provide any relevant information about the differences between a sharable URL and a custom domain, thus failing to address the question.",
+          "answer_relevancy": "The response does not address the question at all and instead states a lack of information.",
+          "context_precision": "Some sources may contain relevant information about custom domains and publishing projects, but the lack of specific content addressing the differences between a sharable URL and a custom domain limits their usefulness.",
+          "resolution_rate": "The AI answer does not provide any information regarding the differences between a sharable URL and a custom domain, failing to address the user's question."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information from the retrieved context, as no sources were provided.",
+          "answer_relevancy": "The response directly and completely addresses the differences between using a sharable URL and a custom domain for publishing a project in CodePup AI, providing clear and relevant details.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly outlines the differences between a sharable URL and a custom domain, matches the key facts from the gold answer, and provides actionable information that would help the user understand their options."
+        }
+      }
+    },
+    {
+      "question": "How can I share my portfolio website?",
+      "question_type": "simple",
+      "gold_answer": "You can share your portfolio website by including the URL in your resume, adding it to your LinkedIn headline and featured section, linking it in your email signature, sharing it in your social media bio, including it with job applications and cover letters, and using a QR code or short URL on your business cards.",
+      "source_url": "https://docs.codepup.ai/use-cases/portfolio-website",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 9.387,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific methods for sharing a portfolio website that are not mentioned in the retrieved context, which only discusses creating a portfolio website.",
+          "answer_relevancy": "The answer directly and completely addresses the question by providing multiple relevant methods for sharing a portfolio website.",
+          "context_precision": "The sources focus on creating a portfolio website, not on sharing it.",
+          "resolution_rate": "The AI answer is correct, actionable, and closely matches the gold answer, providing multiple effective ways to share a portfolio website."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific instructions and suggestions for sharing a portfolio website that are not supported by the retrieved context, which contains no information.",
+          "answer_relevancy": "The answer directly addresses how to share a portfolio website and provides multiple relevant methods for sharing.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer is correct, actionable, and matches the key facts in the gold answer. It provides clear steps for sharing the portfolio website and includes additional helpful information about the link remaining the same."
+        }
+      }
+    },
+    {
+      "question": "What should I do if I'm getting an error when entering my Resend API Key in Codepup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "If you're getting an error when entering your Resend API Key in Codepup AI, double-check that the key is correctly copied and pasted without any extra spaces or characters. If the issue persists, consult the documentation for troubleshooting tips or contact support for assistance.",
+      "source_url": "https://docs.codepup.ai/integration/resend-integration",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 8.786,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer states it couldn't find information in the documentation, which contradicts the expectation that the documentation should provide guidance on entering the Resend API Key.",
+          "answer_relevancy": "The response does not address the question about what to do when encountering an error with the Resend API Key; it simply states a lack of information.",
+          "context_precision": "The retrieved sources do not provide specific information about resolving errors related to entering the Resend API Key in Codepup AI.",
+          "resolution_rate": "The AI answer does not provide any actionable steps or guidance to resolve the user's issue, nor does it address the key facts mentioned in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information supported by the retrieved context, as there were no sources retrieved.",
+          "answer_relevancy": "The response directly addresses the question by providing specific troubleshooting steps for resolving the error with the Resend API key.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable steps and checks for the user, similar to the gold answer, but it includes additional troubleshooting steps that may not be necessary for all users, which could lead to confusion."
+        }
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to manage my data in the Codepup AI CMS?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The error may be due to issues with your Codepup AI account or a temporary problem with the CMS. Since you don't need to access Supabase directly, ensure your Codepup AI account is active and check the CMS documentation for troubleshooting steps.",
+      "source_url": "https://docs.codepup.ai/integration/supabase-integration",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 8.856,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any relevant information from the retrieved context and fails to address the user's question about the error in managing data.",
+          "answer_relevancy": "The response does not address the question about the error in managing data; it only states a lack of information in the documentation.",
+          "context_precision": "The retrieved sources do not provide specific information about managing data errors in the Codepup AI CMS.",
+          "resolution_rate": "The AI answer does not provide any actionable information or troubleshooting steps, and it fails to address the user's issue regarding the error in managing data in the CMS."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides troubleshooting steps and advice that are not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The response directly addresses the question by providing common reasons for CMS errors and actionable steps to troubleshoot the issue.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides actionable troubleshooting steps and encourages specificity, which aligns with the gold answer's focus on account issues and CMS documentation. However, it lacks direct mention of checking the account status and does not explicitly suggest consulting the CMS documentation."
+        }
+      }
+    },
+    {
+      "question": "What are the steps to use version control in CodePup AI, and how can I update my live published site after making changes?",
+      "question_type": "multi_part",
+      "gold_answer": "To use version control in CodePup AI, follow these steps:\n\n1. **Overview**: Familiarize yourself with the version control features.\n2. **Why This Matters**: Understand the importance of version control for your projects.\n3. **How to Use Version Control**: Implement version control by following the specific guidelines provided in the documentation.\n4. **Work Fearlessly**: Utilize version control to make changes without fear of losing previous work.\n\nTo update your live published site after making changes, refer to the section on \"Updating Your Live Published Site\" in the documentation for detailed instructions.",
+      "source_url": "https://docs.codepup.ai/features/version-control",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.7,
+        "resolution_rate": 0.4,
+        "latency": 12.104,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the steps for using version control and updating a live site as supported by the retrieved context, with appropriate citations.",
+          "answer_relevancy": "The response directly and completely addresses the question by outlining the steps for using version control in CodePup AI and explaining how to update the live published site after making changes.",
+          "context_precision": "The sources include relevant topics such as version control and publishing projects, which are likely to contain useful information for the question, but the repetition of the FAQ source may indicate some redundancy.",
+          "resolution_rate": "The AI answer provides some relevant information about version control but lacks key steps and context from the gold answer. It does not fully address the importance of version control or provide comprehensive guidelines, which may leave the user partially unblocked."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed steps for using version control and updating a live site, but there is no retrieved context to support any of the claims made in the answer.",
+          "answer_relevancy": "The response directly and completely addresses the question about using version control in CodePup AI and updating the live published site after making changes.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides clear, actionable steps for using version control and updating the live site, matching the key facts from the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the differences between embedding videos from a valid URL and embedding videos specifically from YouTube in CodePup AI?",
+      "question_type": "comparison",
+      "gold_answer": "The differences between embedding videos from a valid URL and embedding videos specifically from YouTube in CodePup AI are not detailed in the provided context. For specific differences, one would need to refer to the sections on \"Supported Sources\" and \"Limitations\" in the documentation.",
+      "source_url": "https://docs.codepup.ai/features/embed-video",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.4,
+        "resolution_rate": 0.7,
+        "latency": 11.788,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the information provided in the retrieved context, stating that CodePup AI supports embedding videos from any valid video URL, including YouTube as one of the sources, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The response directly and completely addresses the differences between embedding videos from any valid URL and specifically from YouTube in CodePup AI.",
+          "context_precision": "The sources may contain some relevant information about video embedding in CodePup AI, but it is unclear if they specifically address the differences between embedding from a valid URL and YouTube.",
+          "resolution_rate": "The AI answer provides a comparison between embedding videos from any valid URL and specifically from YouTube, but it lacks details on the specific differences and limitations mentioned in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information from the retrieved context, as there were no sources retrieved.",
+          "answer_relevancy": "The response directly and completely addresses the question by explaining that there is no functional difference between embedding YouTube videos and other valid video URLs in CodePup AI.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question.",
+          "resolution_rate": "The AI answer provides a clear explanation that there is no functional difference between embedding YouTube videos and other valid video URLs, which aligns with the user's question. However, it does not reference the specific sections in the documentation as suggested in the gold answer, which could provide additional context."
+        }
+      }
+    },
+    {
+      "question": "What video sources does CodePup AI support for embedding?",
+      "question_type": "simple",
+      "gold_answer": "CodePup AI supports embedding videos from YouTube, Vimeo, cloud and CDN video URLs, private blob storage links, internal media servers, and any public video payload with a valid MIME type.",
+      "source_url": "https://docs.codepup.ai/features/embed-video",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 9.563,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer includes specific details about video sources that are not present in the retrieved context, which does not provide any information about supported video sources.",
+          "answer_relevancy": "The answer directly and completely lists the video sources that CodePup AI supports for embedding, addressing the question asked.",
+          "context_precision": "The retrieved sources do not provide relevant information about the video sources supported for embedding by CodePup AI.",
+          "resolution_rate": "The AI answer correctly lists all the video sources supported by CodePup AI, matching the gold answer and providing actionable information for the user."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides specific details about video sources supported for embedding, which are not present in the retrieved context. Since no sources were retrieved, the answer cannot be considered faithful.",
+          "answer_relevancy": "The answer directly and completely addresses the question by listing the specific video sources that CodePup AI supports for embedding.",
+          "context_precision": "No sources were retrieved, therefore there is no information to answer the question.",
+          "resolution_rate": "The AI answer correctly lists all the video sources supported by CodePup AI, matches the gold answer well, and provides actionable information for the user."
+        }
+      }
+    },
+    {
+      "question": "What steps do I need to take to test my payment integration using the provided test card, and how can I switch from test payments to live payments after confirming the payment flow is working?",
+      "question_type": "multi_part",
+      "gold_answer": "To test your payment integration using the provided test card, follow these steps:\n\n1. **Integrate Stripe**: Ensure that you have integrated Stripe into your project as per the guidelines provided by CodePup AI.\n2. **Use Test Card**: On your checkout page, enter the test card number `4242 4242 4242 4242`, any future expiry date, and any 3-digit CVC.\n3. **Confirm Payment Flow**: Complete the checkout process to simulate a successful payment. Verify that the order is confirmed.\n\nAfter confirming that the payment flow is working:\n\n1. **Switch to Live Payments**: To switch from test payments to live payments, visit your Stripe dashboard and update your API keys from test to live mode.\n2. **Adjust Checkout Style**: If needed, you can ask CodePup AI in the chat to help switch or adjust the checkout style for live payments.",
+      "source_url": "https://docs.codepup.ai/integration/stripe-integration",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 12.518,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the steps for testing payment integration and switching to live payments as outlined in the retrieved context, without introducing unsupported facts or contradictions.",
+          "answer_relevancy": "The response directly and completely addresses the question by providing clear steps for testing the payment integration and switching from test to live payments.",
+          "context_precision": "The retrieved sources do not provide specific information on testing payment integration with a test card or switching to live payments, making them irrelevant to the question.",
+          "resolution_rate": "The AI answer provides actionable steps for testing the payment integration and switching to live payments, but it lacks some details about confirming the order and adjusting the checkout style, which are mentioned in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains no information that can be traced back to the retrieved context, as no sources were provided.",
+          "answer_relevancy": "The answer directly and completely addresses the question by providing steps for testing the payment integration and instructions for switching to live payments.",
+          "context_precision": "No sources were retrieved, therefore there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides correct steps for testing the payment integration and switching to live payments, but it lacks some details and clarity found in the gold answer, such as explicitly confirming the order and adjusting checkout style."
+        }
+      }
+    },
+    {
+      "question": "What are the specific areas that get tested during automation, and how does Codepup AI ensure that every page loads without errors?",
+      "question_type": "multi_part",
+      "gold_answer": "The specific area that gets tested during automation is **Pages & Routes**, where Codepup AI ensures that every page loads without errors by navigating through the site and checking each feature automatically in real-time.",
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 14.722,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The answer accurately reflects the specific areas tested during automation as mentioned in the retrieved context and correctly states how Codepup AI ensures that every page loads without errors, citing the context appropriately.",
+          "answer_relevancy": "The answer directly addresses the question by listing specific areas tested during automation and explaining how Codepup AI ensures that every page loads without errors.",
+          "context_precision": "The retrieved sources do not provide specific information about the areas tested during automation or how Codepup AI ensures error-free page loading.",
+          "resolution_rate": "The AI answer correctly identifies the specific areas tested during automation and explains how Codepup AI ensures that every page loads without errors, matching the key facts in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about automation testing and how Codepup AI ensures pages load without errors, but there is no retrieved context to support any of these claims, making the answer entirely unsupported.",
+          "answer_relevancy": "The answer directly and completely addresses the question by outlining the specific areas tested during automation and explaining how Codepup AI ensures that every page loads without errors.",
+          "context_precision": "No sources were retrieved, therefore there is no information to evaluate for relevance to the question.",
+          "resolution_rate": "The AI answer correctly identifies the specific areas tested during automation and explains how Codepup AI ensures that every page loads without errors, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the steps to open the Analytics Dashboard, and what key insights can I find regarding traffic and audience?",
+      "question_type": "multi_part",
+      "gold_answer": "To open the Analytics Dashboard, follow these steps:\n\n1. Navigate to the CodePup AI platform.\n2. Locate the Analytics section in the menu.\n3. Click on the Analytics Dashboard option.\n\nIn the Analytics Dashboard, you can find key insights regarding traffic and audience, including metrics such as user engagement, visitor demographics, and traffic sources.",
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 11.716,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information about the steps to open the Analytics Dashboard or the key insights regarding traffic and audience, which are the main points of the question. It also does not reference any of the retrieved context.",
+          "answer_relevancy": "The response does not address the question at all and fails to provide any relevant information regarding the steps to open the Analytics Dashboard or insights about traffic and audience.",
+          "context_precision": "The retrieved sources do not contain relevant information about opening the Analytics Dashboard or insights regarding traffic and audience.",
+          "resolution_rate": "The AI answer does not provide any actionable steps to open the Analytics Dashboard and fails to address the user's question about key insights, leaving the user unblocked."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer provides detailed steps and insights about the Analytics Dashboard without any supporting context, as no sources were retrieved.",
+          "answer_relevancy": "The response directly and completely addresses the question by providing clear steps to open the Analytics Dashboard and detailing key insights regarding traffic and audience.",
+          "context_precision": "No sources were retrieved, making it impossible to answer the question.",
+          "resolution_rate": "The AI answer provides clear, actionable steps to open the Analytics Dashboard and includes detailed insights about traffic and audience, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "Why is my video not embedding even though I used a valid URL?",
+      "question_type": "troubleshoot",
+      "gold_answer": "Your video may not be embedding because it could be from a source that is not supported by CodePup AI, or it may not have a valid MIME type. Additionally, ensure that the video is not a private upload, as CodePup AI does not support video uploads.",
+      "source_url": "https://docs.codepup.ai/features/embed-video",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 10.545,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the information from the retrieved context, stating that the video must be publicly accessible and not require authentication, which aligns with the guidelines for video embedding.",
+          "answer_relevancy": "The response directly addresses the question by explaining potential reasons why the video is not embedding, specifically mentioning the need for a public link and the issue of authentication.",
+          "context_precision": "The retrieved sources do not contain relevant information about video embedding issues and do not address the specific question.",
+          "resolution_rate": "The AI answer provides valid reasons for why the video may not be embedding, such as authentication issues and the need for a direct public link. However, it lacks mention of unsupported sources or MIME types, which are key points in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed explanations and specific reasons for video embedding issues that are not supported by the retrieved context, which had no sources.",
+          "answer_relevancy": "The answer directly addresses the question by providing several reasons why a video might not embed despite having a valid URL, including access restrictions, private links, and URL format issues.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer correctly identifies multiple potential issues that could prevent video embedding, aligns with the key facts in the gold answer, and provides actionable steps for the user to troubleshoot their problem."
+        }
+      }
+    },
+    {
+      "question": "Why am I getting an error related to API keys when I try to generate a project?",
+      "question_type": "troubleshoot",
+      "gold_answer": "You may be encountering an error related to API keys because they are required for validating service connections, setting up environment variables, or auto-configuring integrations. Ensure that you have entered the correct API keys and that they are properly configured before attempting to generate the project.",
+      "source_url": "https://docs.codepup.ai/features/security",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.4,
+        "resolution_rate": 0.0,
+        "latency": 9.566,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information related to the error about API keys and instead states it couldn't find relevant documentation, which contradicts the expectation of addressing the user's issue.",
+          "answer_relevancy": "The response does not address the question about the error related to API keys and instead states a lack of information in the documentation.",
+          "context_precision": "Some sources discuss API keys, which is relevant, but the overall context and specific error related to generating a project are not adequately addressed.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance related to the user's question about API key errors, and it fails to address the issue at all."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about API key errors and troubleshooting steps that are not supported by the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The response directly addresses the question about API key errors during project generation, providing specific reasons and solutions.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question about API key errors.",
+          "resolution_rate": "The AI answer correctly identifies common causes of API key errors, provides actionable steps for troubleshooting, and aligns well with the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What steps should I take to ensure my API keys remain secure while using CodePup AI, and how does the platform handle sensitive information included in prompts?",
+      "question_type": "multi_part",
+      "gold_answer": "To ensure your API keys remain secure while using CodePup AI, follow these steps:\n\n1. **Use Dialog Boxes**: Enter your API keys in the dialog boxes that appear before generation begins, as this keeps them isolated from your main prompt.\n2. **Avoid Sharing Secrets**: Do not share sensitive information in prompts, as CodePup AI is not responsible for secrets shared in Pro.\n\nRegarding how the platform handles sensitive information, your API keys are used solely for validating service connections, setting up environment variables, and auto-configuring integrations. They are never logged or stored elsewhere, and are not included in analytics or training operations.",
+      "source_url": "https://docs.codepup.ai/features/security",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.7,
+        "resolution_rate": 1.0,
+        "latency": 13.628,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer accurately reflects the information provided in the retrieved context, does not introduce unsupported facts, and appropriately cites the sources.",
+          "answer_relevancy": "The response directly and completely addresses the question about securing API keys and how CodePup AI handles sensitive information.",
+          "context_precision": "Most sources are relevant as they pertain to security and usage of API keys, but some may not directly address the handling of sensitive information in prompts.",
+          "resolution_rate": "The AI answer provides correct and actionable steps to secure API keys, matches the key facts in the gold answer, and would effectively help the user accomplish their goal."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains detailed information about API key security and handling that is not supported by any retrieved context, as no sources were provided.",
+          "answer_relevancy": "The response directly and completely addresses the question about securing API keys and how the platform handles sensitive information.",
+          "context_precision": "No sources were retrieved to provide any information related to the question about securing API keys and handling sensitive information.",
+          "resolution_rate": "The AI answer fully resolves the user's question by providing actionable steps to secure API keys and clearly explains how the platform handles sensitive information, matching the key facts in the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the health benefits of incorporating more leafy greens into my diet?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "source_url": "",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 9.338,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly identified the question as out-of-scope and declined to answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 0,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly declined to answer the out-of-scope question and suggested rephrasing or asking something else."
+        }
+      }
+    },
+    {
+      "question": "Why can't I see the task progress panel in the chat while Codepup AI is running my automation tests?",
+      "question_type": "troubleshoot",
+      "gold_answer": "You may not see the task progress panel in the chat if the automation testing is not currently running or if there is an issue with the Codepup AI chat panel. Ensure that the testing process is active and that you are in the correct chat panel where the project is built.",
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.0,
+        "latency": 9.589,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer does not provide any information from the retrieved context and fails to address the question about the task progress panel.",
+          "answer_relevancy": "The response does not address the question about the visibility of the task progress panel and instead states a lack of information in the documentation.",
+          "context_precision": "The retrieved sources are focused on automation testing and payment integration, which do not address the specific issue of the task progress panel visibility in Codepup AI.",
+          "resolution_rate": "The AI answer does not provide any actionable information or guidance to help the user understand why the task progress panel is not visible, nor does it address the key facts mentioned in the gold answer."
+        }
+      },
+      "fin": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 0.0,
+        "resolution_rate": 0.7,
+        "latency": 0,
+        "abstained": false,
+        "error": null,
+        "reasons": {
+          "faithfulness": "The AI answer contains information about the task progress panel and the Automation Testing panel that is not supported by the retrieved context, which states that no sources were retrieved.",
+          "answer_relevancy": "The response directly addresses the question about the visibility of the task progress panel during automation tests and provides relevant details about the expected views.",
+          "context_precision": "No sources were retrieved, so there is no information available to answer the question.",
+          "resolution_rate": "The AI answer provides correct information about the visibility of the task progress panel during the build phase and mentions the Automation Testing panel. However, it lacks emphasis on ensuring that the testing process is active and being in the correct chat panel, which are key points from the gold answer."
+        }
+      }
+    },
+    {
+      "question": "What are the main ingredients needed to make a traditional Italian risotto?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "source_url": "",
+      "rag": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 1.0,
+        "context_precision": 1.0,
+        "resolution_rate": 1.0,
+        "latency": 10.424,
+        "abstained": true,
+        "error": null,
+        "reasons": {
+          "abstention": "The AI correctly declined to answer the out-of-scope question and indicated it couldn't find the information in the documentation."
+        }
+      },
+      "fin": null
+    }
+  ]
+}
