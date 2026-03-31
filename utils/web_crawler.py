@@ -8,8 +8,10 @@ from typing import List, Optional, Set
 from urllib.parse import urljoin, urlparse
 
 import aiohttp
+from bs4 import BeautifulSoup
+from markdownify import markdownify as md_convert
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
-from crawl4ai import DefaultTableExtraction                  # ← NEW
+from crawl4ai import DefaultTableExtraction
 from crawl4ai.extraction_strategy import NoExtractionStrategy
 
 
@@ -23,10 +25,13 @@ class PageData:
     crawl_depth: int = 0
 
 
-# ← NEW: clicks every tab/accordion before extraction so hidden content renders
+# JS: click every tab and force all panels visible simultaneously
+# so the HTML snapshot contains ALL tab content, not just the last-clicked one
 _TAB_CLICK_JS = """
 (async () => {
     const delay = ms => new Promise(r => setTimeout(r, ms));
+
+    // Click every tab
     const selectors = [
         '[role="tab"]', '[data-tab]', '[data-value]',
         '.tab', '.tabs li', '.tab-item', '.tab-button',
@@ -37,14 +42,28 @@ _TAB_CLICK_JS = """
         for (const el of document.querySelectorAll(sel)) {
             if (!seen.has(el)) {
                 seen.add(el);
-                try { el.click(); await delay(350); } catch(e) {}
+                try { el.click(); await delay(300); } catch(e) {}
             }
         }
     }
+
+    // Force ALL tab panels visible simultaneously
+    for (const el of document.querySelectorAll(
+        '[role="tabpanel"], [data-tab-content], [data-panel], .tab-panel, .tabpanel'
+    )) {
+        el.style.display    = 'block';
+        el.style.visibility = 'visible';
+        el.style.opacity    = '1';
+        el.removeAttribute('hidden');
+        el.removeAttribute('aria-hidden');
+    }
+
+    // Open all accordions/details
     for (const el of document.querySelectorAll('details:not([open])')) {
         try { el.open = true; } catch(e) {}
     }
-    await delay(400);
+
+    await delay(600);
 })();
 """
 
@@ -81,7 +100,7 @@ class WebCrawler:
 
         queue: asyncio.Queue = asyncio.Queue()
 
-        # ── Step 0: Seed from sitemap (catches pages not linked anywhere) ──
+        # Seed from sitemap first (catches pages not linked anywhere)
         sitemap_urls = await self._discover_from_sitemap(start_url, base_domain)
         if sitemap_urls:
             print(f"\n🗺️  SITEMAP  found {len(sitemap_urls)} URLs — seeding queue at depth 1")
@@ -95,9 +114,20 @@ class WebCrawler:
         # Always start from root at depth 0
         await queue.put((start_url, 0))
 
-        browser_cfg = BrowserConfig(headless=True, verbose=False)
+        browser_cfg = BrowserConfig(
+            headless=True,
+            verbose=False,
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            ),
+            extra_args=[
+                "--disable-blink-features=AutomationControlled",
+                "--no-sandbox",
+            ],
+        )
 
-        # ← NEW: table extraction + tab JS added; everything else unchanged
         table_strategy = DefaultTableExtraction(
             table_score_threshold=5,
             min_rows=2,
@@ -108,13 +138,15 @@ class WebCrawler:
         run_cfg = CrawlerRunConfig(
             cache_mode=CacheMode.BYPASS,
             extraction_strategy=NoExtractionStrategy(),
-            table_extraction=table_strategy,           # ← NEW
+            table_extraction=table_strategy,
             word_count_threshold=10,
             remove_overlay_elements=True,
             exclude_external_links=True,
-            js_code=_TAB_CLICK_JS,                    # ← NEW
-            wait_for="networkidle",                   # ← NEW
+            js_code=_TAB_CLICK_JS,
+            wait_for="css:body",
+            page_timeout=30000,
         )
+
         semaphore = asyncio.Semaphore(self.concurrency)
 
         async with AsyncWebCrawler(config=browser_cfg) as crawler:
@@ -173,7 +205,7 @@ class WebCrawler:
                         if new_links:
                             print(f"         ↳ enqueued {new_links} links at depth {depth+1}")
 
-        # ── Summary ───────────────────────────────────────────────────
+        # Summary
         elapsed      = time.time() - crawl_start
         total_words  = sum(len(p.markdown.split()) for p in results if p.markdown)
         total_images = sum(len(p.image_urls) for p in results)
@@ -205,11 +237,6 @@ class WebCrawler:
     # ------------------------------------------------------------------
 
     async def _discover_from_sitemap(self, start_url: str, base_domain: str) -> List[str]:
-        """
-        Try to fetch sitemap.xml (and sitemap_index.xml).
-        Returns a flat list of all page URLs found that belong to base_domain.
-        Falls back gracefully — never raises.
-        """
         candidates = [
             f"{base_domain}/sitemap.xml",
             f"{base_domain}/sitemap_index.xml",
@@ -240,10 +267,6 @@ class WebCrawler:
         base_domain: str,
         depth: int,
     ) -> List[str]:
-        """
-        Fetch one sitemap URL. Handles both regular sitemaps (<url><loc>)
-        and sitemap indexes (<sitemap><loc>) recursively (max 2 levels).
-        """
         if depth > 2:
             return []
 
@@ -260,7 +283,6 @@ class WebCrawler:
         except ET.ParseError:
             return []
 
-        # Strip XML namespace for simpler tag matching
         ns_re = re.compile(r"\{[^}]+\}")
         tag = lambda el: ns_re.sub("", el.tag)
 
@@ -270,7 +292,6 @@ class WebCrawler:
             child_tag = tag(child)
 
             if child_tag == "sitemap":
-                # Sitemap index — recurse into each child sitemap
                 for sub in child:
                     if tag(sub) == "loc" and sub.text:
                         sub_urls = await self._fetch_sitemap(
@@ -288,6 +309,8 @@ class WebCrawler:
         return urls
 
     # ------------------------------------------------------------------
+    # Core page crawl — BS4 + markdownify extraction
+    # ------------------------------------------------------------------
 
     async def _crawl_one(self, crawler, run_cfg, semaphore, url, depth) -> Optional[PageData]:
         async with semaphore:
@@ -296,12 +319,31 @@ class WebCrawler:
                 if not result.success:
                     return None
 
-                title     = result.metadata.get("title", "") or urlparse(url).path or url
-                markdown  = self._clean_markdown(result.markdown or "")
-                img_urls  = []
+                title = result.metadata.get("title", "") or urlparse(url).path or url
 
-                # ← NEW: convert extracted tables → markdown and append to page content
-                # so tab-hidden pricing/comparison tables are fully indexed by the chunker
+                # ── PRIMARY: BS4 + markdownify ────────────────────────────────
+                # Uses the fully-rendered HTML snapshot (after JS execution),
+                # so tab panels forced visible by _TAB_CLICK_JS are included.
+                markdown = self._html_to_clean_markdown(result.html or "")
+
+                # ── FALLBACK: crawl4ai raw markdown ───────────────────────────
+                # Used only if BS4 extraction yields too little content.
+                if len(markdown.split()) < 30:
+                    md_obj = result.markdown
+                    if hasattr(md_obj, "raw_markdown"):
+                        fallback = md_obj.raw_markdown or ""
+                    else:
+                        fallback = str(md_obj) if md_obj else ""
+                    if fallback:
+                        print(f"      ⚠️  BS4 low content ({len(markdown.split())} words), using crawl4ai fallback for {url}")
+                        markdown = self._clean_markdown(fallback)
+
+                # Warn if still low content after fallback
+                word_count = len(markdown.split())
+                if word_count < 50:
+                    print(f"      ⚠️  Low content warning: {word_count} words from {url}")
+
+                # ── Append extracted tables ───────────────────────────────────
                 if result.tables:
                     table_md = []
                     for table in result.tables:
@@ -322,6 +364,7 @@ class WebCrawler:
                         markdown += "\n\n" + "\n\n".join(table_md)
                         print(f"      📊 {len(result.tables)} table(s) appended → {url[:60]}")
 
+                # Discover internal links for queue
                 discovered = [
                     urljoin(url, li.get("href", ""))
                     for li in (result.links or {}).get("internal", [])
@@ -329,12 +372,125 @@ class WebCrawler:
                 ]
 
                 page = PageData(url=url, title=title, markdown=markdown,
-                                image_urls=img_urls, crawl_depth=depth)
+                                image_urls=[], crawl_depth=depth)
                 page._discovered_links = discovered  # type: ignore[attr-defined]
                 return page
 
             except Exception as e:
                 raise RuntimeError(str(e)) from e
+
+    # ------------------------------------------------------------------
+    # BS4 + markdownify extraction (primary pipeline)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _html_to_clean_markdown(html: str) -> str:
+        """
+        Strip nav/sidebar/footer from rendered HTML,
+        find the main content element, convert to clean markdown.
+
+        Selector priority (most-specific first):
+          1. .sl-markdown-content   — Starlight/Astro docs
+          2. .content-panel         — Starlight fallback
+          3. .markdown-body         — GitHub-style docs
+          4. .prose                 — Tailwind prose
+          5. #content               — generic id
+          6. <main>                 — semantic HTML
+          7. role=main              — ARIA
+          8. largest <article>      — avoids card wrappers
+          9. <body>                 — last resort
+        """
+        soup = BeautifulSoup(html, "html.parser")
+
+        # Remove noise elements
+        noise_selectors = [
+            "nav", "header", "footer", "aside",
+            "[role='navigation']", "[role='banner']", "[role='contentinfo']",
+            ".sidebar", ".navbar", ".nav", ".toc", ".breadcrumb",
+            "#sidebar", "#nav", "#header", "#footer",
+            ".on-this-page", "[aria-label='On this page']",
+            ".pagination", ".prev-next", ".edit-page",
+            # Starlight/Astro specific
+            "starlight-menu-button", ".sl-sidebar", ".sl-nav",
+            "[data-pagefind-ignore]",
+        ]
+        for sel in noise_selectors:
+            for tag in soup.select(sel):
+                tag.decompose()
+
+        # Find main content area
+        def find_main(s):
+            el = s.find(class_="sl-markdown-content")
+            if el: return el
+            el = s.find(class_="content-panel")
+            if el: return el
+            el = s.find(class_="markdown-body")
+            if el: return el
+            el = s.find(class_="prose")
+            if el: return el
+            el = s.find(id="content")
+            if el: return el
+            el = s.find("main")
+            if el: return el
+            el = s.find(attrs={"role": "main"})
+            if el: return el
+            articles = s.find_all("article")
+            if articles:
+                return max(articles, key=lambda t: len(t.get_text()))
+            return s.body or s
+
+        main = find_main(soup)
+
+        # Strip noise tags inside the selected element
+        for tag in main.find_all(["script", "style", "svg", "button", "noscript"]):
+            tag.decompose()
+
+        # Convert to markdown
+        # NOTE: markdownify does NOT allow strip= and convert= simultaneously
+        clean_md = md_convert(
+            str(main),
+            heading_style="ATX",
+            bullets="-",
+            strip=["script", "style", "svg", "button", "noscript", "img"],
+        )
+
+        # Remove lines that are purely nav links (e.g. sidebar TOC items)
+        lines = clean_md.splitlines()
+        filtered = [
+            line for line in lines
+            if not re.match(r'^\s*\[([^\]]{1,80})\]\([^\)]+\)\s*$', line.strip())
+        ]
+        clean_md = "\n".join(filtered)
+
+        # Collapse 3+ blank lines → 2
+        clean_md = re.sub(r'\n{3,}', '\n\n', clean_md)
+        return clean_md.strip()
+
+    # ------------------------------------------------------------------
+    # crawl4ai markdown cleaner (fallback only)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _clean_markdown(md: str) -> str:
+        """Clean crawl4ai raw markdown — used only as fallback."""
+        lines = [l for l in md.splitlines()
+                 if not re.match(r"^\[.{1,40}\]\(.*\)$", l.strip())]
+        result = []
+        skip = False
+        for line in lines:
+            if re.match(r'^#+\s*(on this page|table of contents|contents)', line, re.I):
+                skip = True
+            elif skip and re.match(r'^#+\s', line):
+                skip = False
+            if not skip:
+                result.append(line)
+        cleaned = "\n".join(result).strip()
+        cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+        return cleaned
+
+    # ------------------------------------------------------------------
+    # Utilities
+    # ------------------------------------------------------------------
 
     @staticmethod
     def _normalize_url(url: str) -> str:
@@ -358,12 +514,6 @@ class WebCrawler:
         if any(urlparse(url).path.lower().endswith(e) for e in skip):
             return False
         return True
-
-    @staticmethod
-    def _clean_markdown(md: str) -> str:
-        lines = [l for l in md.splitlines()
-                 if not re.match(r"^\[.{1,40}\]\(.*\)$", l.strip())]
-        return "\n".join(lines).strip()
 
     @staticmethod
     def _extract_image_urls(result, page_url: str) -> List[str]:

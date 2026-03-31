@@ -66,6 +66,7 @@ class DatabaseManager:
         status: str,
         chunks_count: Optional[int] = None,
         error_message: Optional[str] = None,
+        bm25_blob_url: Optional[str] = None,
     ) -> Dict:
         """Update PDF / site processing status."""
         try:
@@ -79,6 +80,8 @@ class DatabaseManager:
 
             if error_message:
                 update_data["error_message"] = error_message
+            if bm25_blob_url:
+                update_data["bm25_blob_url"] = bm25_blob_url
 
             response = (
                 self.client.table("user_pdfs")

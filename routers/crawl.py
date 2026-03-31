@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from utils.auth import get_current_user
+from utils.auth import get_current_user, get_supabase_client
 from utils.database import DatabaseManager
 from utils.web_crawler import WebCrawler
 from utils.web_chunker import WebChunker
@@ -119,10 +119,11 @@ async def _process_crawl_job(
         await _update_job(db, job_id, stage="Building keyword index", progress=0.55)
 
         try:
-            bm25_store = BM25Store(site_slug)
+            bm25_store = BM25Store(site_slug, user_id=user_id)  # pass user_id
             bm25_store.build(text_chunks)
-            bm25_store.save()
-            print(f"[STEP 3/4] ✅ BM25 index built and saved")
+            supabase = get_supabase_client()
+            bm25_store.save_to_blob(supabase)                    # save to blob storage
+            print(f"[STEP 3/4] ✅ BM25 index saved to Supabase blob")
         except Exception as e:
             # BM25 failure is non-fatal — dense search still works
             print(f"[STEP 3/4] ⚠️  BM25 build failed (non-fatal): {e}")

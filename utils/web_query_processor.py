@@ -23,6 +23,7 @@ from config import (
     AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT,
     AZURE_API_VERSION, AZURE_DEPLOYMENT_NAME,
 )
+from utils.auth import get_supabase_client
 from utils.bm25_store import get_bm25_store
 from utils.reranker import get_reranker
 
@@ -292,6 +293,11 @@ JSON array:"""
         # BM25 retrieval (sync in executor to avoid blocking)
         bm25_results = []
         bm25_store   = get_bm25_store(pdf_name)
+
+        if not bm25_store.is_ready:
+            # not in memory — try loading from Supabase blob storage
+            supabase = get_supabase_client()
+            bm25_store.load_from_blob(supabase)
 
         if bm25_store.is_ready:
             loop = asyncio.get_event_loop()

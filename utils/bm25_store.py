@@ -21,7 +21,7 @@ import os
 import re
 import time
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Optional, Tuple
 
 # rank_bm25 is a lightweight pure-Python library — add to requirements.txt
 try:
@@ -31,8 +31,22 @@ except ImportError:
     BM25_AVAILABLE = False
     print("⚠️  rank_bm25 not installed — BM25 retrieval disabled. Run: pip install rank-bm25")
 
+# Azure Blob Storage client
+try:
+    from azure.storage.blob import BlobServiceClient
+    AZURE_BLOB_AVAILABLE = True
+except ImportError:
+    AZURE_BLOB_AVAILABLE = False
+    print("⚠️  azure-storage-blob not installed — BM25 blob storage disabled. Run: pip install azure-storage-blob")
+
+from config import AZURE_STORAGE_CONNECTION_STRING
+
 BM25_INDEX_DIR = Path("bm25_indexes")
 BM25_INDEX_DIR.mkdir(exist_ok=True)
+
+# Azure blob container name used for saving/loading BM25 JSON blobs.
+# Use a lowercase container name (no underscores); adjust if your blob container differs.
+BM25_BLOB_CONTAINER = "bm25-indexes"
 
 # Minimal stop words — keep domain terms like "api", "config", "error"
 STOP_WORDS = {
@@ -86,97 +100,179 @@ def _tokenize(text: str) -> List[str]:
 
 
 class BM25Store:
-    """
-    Per-site BM25 index.
-
-    Usage:
-        # At crawl time — build and save
-        store = BM25Store(site_slug)
-        store.build(chunks)          # chunks from WebChunker
-        store.save()
-
-        # At query time — load and search
-        store = BM25Store(site_slug)
-        store.load()
-        results = store.search(query, top_k=20)
-    """
-
-    def __init__(self, site_slug: str):
-        self.site_slug  = site_slug
-        self.index_path = BM25_INDEX_DIR / f"{site_slug}.json"
-        self.bm25       = None
-        self.chunks     = []          # parallel list to BM25 corpus
-        self._loaded    = False
-
-    # ── Build ─────────────────────────────────────────────────────────────────
+    def __init__(self, site_slug: str, user_id: str = None):
+        self.site_slug = site_slug
+        self.user_id   = user_id   # needed for Supabase save/load
+        self.bm25      = None
+        self.chunks    = []
+        self._loaded   = False
+        self._blob_url = None
 
     def build(self, chunks: List[Dict[str, Any]]) -> None:
-        """Build BM25 index from a list of chunks (output of WebChunker)."""
+        """Build index from chunks — same as before."""
         if not BM25_AVAILABLE:
-            print("⚠️  BM25 build skipped — rank_bm25 not installed")
             return
-
         t0 = time.time()
         self.chunks = [c for c in chunks if c.get('content', '').strip()]
-
         corpus = [_tokenize(c['content']) for c in self.chunks]
         self.bm25 = BM25Okapi(corpus)
         self._loaded = True
+        print(f"✅ BM25 built: {len(self.chunks)} docs in {time.time()-t0:.2f}s")
 
-        print(f"✅ BM25 index built: {len(self.chunks)} docs in {time.time()-t0:.2f}s")
+    # ── Azure Blob Storage helper ─────────────────────────────────────────
 
-    # ── Persist ───────────────────────────────────────────────────────────────
+    def _get_blob_service(self):
+        """
+        Get Azure Blob Storage service client.
+        Uses connection string from config.
+        Creates container if it doesn't exist.
+        """
+        if not AZURE_BLOB_AVAILABLE:
+            raise RuntimeError("azure-storage-blob not installed. Run: pip install azure-storage-blob")
+        if not AZURE_STORAGE_CONNECTION_STRING:
+            raise ValueError("AZURE_STORAGE_CONNECTION_STRING not set in environment")
+        
+        blob_service = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
+        
+        # Create container if it doesn't exist
+        try:
+            container_client = blob_service.get_container_client(container=BM25_BLOB_CONTAINER)
+            container_client.get_container_properties()  # Check if exists
+        except Exception:
+            # Container doesn't exist, create it
+            try:
+                blob_service.create_container(name=BM25_BLOB_CONTAINER)
+                print(f"✅ Created blob container: {BM25_BLOB_CONTAINER}")
+            except Exception as e:
+                print(f"⚠️  Container creation failed (may already exist): {e}")
+        
+        return blob_service
 
-    def save(self) -> None:
-        """Persist index to disk as JSON so it survives process restarts."""
+    # ── Supabase persistence ──────────────────────────────────────────
+
+    def save_to_blob(self, supabase_client) -> Optional[str]:
         if not self.chunks:
-            return
+            print("⚠️  BM25 save skipped — no chunks")
+            return None
+        if not self.user_id:
+            print("⚠️  BM25 save skipped — user_id required")
+            return None
 
-        payload = {
-            "site_slug": self.site_slug,
-            "chunks":    self.chunks,
-            "corpus":    [_tokenize(c['content']) for c in self.chunks],
-        }
-        with open(self.index_path, 'w', encoding='utf-8') as f:
-            json.dump(payload, f, ensure_ascii=False)
+        try:
+            # Serialize + upload to blob — same as before
+            payload       = json.dumps({
+                "site_slug": self.site_slug,
+                "chunks":    self.chunks,
+                "corpus":    [_tokenize(c['content']) for c in self.chunks],
+            }, ensure_ascii=False).encode("utf-8")
 
-        size_kb = self.index_path.stat().st_size / 1024
-        print(f"💾 BM25 index saved: {self.index_path} ({size_kb:.1f} KB)")
+            blob_name   = f"{self.user_id}/{self.site_slug}.json"
+            blob_svc    = self._get_blob_service()
+            blob_client = blob_svc.get_blob_client(
+                container=BM25_BLOB_CONTAINER, blob=blob_name
+            )
+            blob_client.upload_blob(payload, overwrite=True)
 
-    def load(self) -> bool:
-        """Load index from disk. Returns True if successful."""
+            account_name   = blob_svc.account_name
+            blob_url       = (
+                f"https://{account_name}.blob.core.windows.net"
+                f"/{BM25_BLOB_CONTAINER}/{blob_name}"
+            )
+            self._blob_url = blob_url
+            print(f"✅ BM25 uploaded: {blob_name} ({len(payload)/1024:.1f} KB)")
+
+            # ── Store URL in user_pdfs (no separate table) ────────────────
+            supabase_client.table("user_pdfs") \
+                .update({"bm25_blob_url": blob_url}) \
+                .eq("user_id", self.user_id) \
+                .eq("pdf_name", self.site_slug) \
+                .execute()
+
+            print(f"✅ BM25 blob URL saved to user_pdfs: {self.site_slug}")
+            return blob_url
+
+        except Exception as e:
+            print(f"❌ BM25 save failed: {e}")
+            return None
+
+    def load_from_blob(self, supabase_client) -> bool:
         if self._loaded:
             return True
-
         if not BM25_AVAILABLE:
             return False
 
-        if not self.index_path.exists():
-            print(f"⚠️  No BM25 index found for '{self.site_slug}' — keyword search disabled")
-            return False
-
         try:
-            t0 = time.time()
-            with open(self.index_path, 'r', encoding='utf-8') as f:
-                payload = json.load(f)
+            # Get blob URL from user_pdfs
+            response = supabase_client.table("user_pdfs") \
+                .select("bm25_blob_url") \
+                .eq("pdf_name", self.site_slug) \
+                .single() \
+                .execute()
 
-            self.chunks = payload['chunks']
-            corpus      = payload['corpus']
-            self.bm25   = BM25Okapi(corpus)
+            if not response.data or not response.data.get("bm25_blob_url"):
+                print(f"⚠️  No BM25 blob URL in user_pdfs for '{self.site_slug}'")
+                return False
+
+            blob_url       = response.data["bm25_blob_url"]
+            self._blob_url = blob_url
+
+            # Download + rebuild — same as before
+            parts     = blob_url.split(f"{BM25_BLOB_CONTAINER}/", 1)
+            blob_name = parts[1] if len(parts) == 2 else None
+            if not blob_name:
+                print(f"❌ Could not parse blob name from: {blob_url}")
+                return False
+
+            t0          = time.time()
+            blob_svc    = self._get_blob_service()
+            blob_client = blob_svc.get_blob_client(
+                container=BM25_BLOB_CONTAINER, blob=blob_name
+            )
+            data        = json.loads(blob_client.download_blob().readall().decode("utf-8"))
+
+            self.chunks  = data["chunks"]
+            self.bm25    = BM25Okapi(data["corpus"])
             self._loaded = True
 
-            print(f"✅ BM25 index loaded: {len(self.chunks)} docs in {time.time()-t0:.2f}s")
+            print(f"✅ BM25 loaded: {len(self.chunks)} docs in {time.time()-t0:.2f}s")
             return True
 
         except Exception as e:
-            print(f"❌ Failed to load BM25 index: {e}")
+            print(f"❌ BM25 load failed for '{self.site_slug}': {e}")
             return False
 
-    def delete(self) -> None:
-        """Delete persisted index (called when site is deleted)."""
-        if self.index_path.exists():
-            self.index_path.unlink()
-            print(f"🗑️  BM25 index deleted: {self.index_path}")
+    def delete_from_blob(self, supabase_client) -> None:
+        # Delete the actual blob
+        try:
+            if not self._blob_url:
+                response = supabase_client.table("user_pdfs") \
+                    .select("bm25_blob_url") \
+                    .eq("pdf_name", self.site_slug) \
+                    .single() \
+                    .execute()
+                if response.data:
+                    self._blob_url = response.data.get("bm25_blob_url")
+
+            if self._blob_url:
+                parts     = self._blob_url.split(f"{BM25_BLOB_CONTAINER}/", 1)
+                blob_name = parts[1] if len(parts) == 2 else None
+                if blob_name:
+                    self._get_blob_service().get_blob_client(
+                        container=BM25_BLOB_CONTAINER, blob=blob_name
+                    ).delete_blob()
+                    print(f"🗑️  BM25 blob deleted: {blob_name}")
+        except Exception as e:
+            print(f"⚠️  BM25 blob delete failed (non-fatal): {e}")
+
+        # Clear the field in user_pdfs (don't delete the row)
+        try:
+            supabase_client.table("user_pdfs") \
+                .update({"bm25_blob_url": None}) \
+                .eq("pdf_name", self.site_slug) \
+                .execute()
+            print(f"🗑️  BM25 blob URL cleared in user_pdfs: {self.site_slug}")
+        except Exception as e:
+            print(f"⚠️  BM25 field clear failed: {e}")
 
     # ── Search ────────────────────────────────────────────────────────────────
 
@@ -223,10 +319,9 @@ _index_cache: Dict[str, BM25Store] = {}
 
 
 def get_bm25_store(site_slug: str) -> BM25Store:
-    """Get or load a BM25Store from the in-memory cache."""
+    """Get or create a BM25Store from the in-memory cache."""
     if site_slug not in _index_cache:
         store = BM25Store(site_slug)
-        store.load()
         _index_cache[site_slug] = store
     return _index_cache[site_slug]
 

@@ -68,6 +68,13 @@ class WebChunker:
         if not page.markdown or not page.markdown.strip():
             return []
 
+        # Skip if content is mostly links (nav pages, sitemaps)
+        lines = page.markdown.strip().splitlines()
+        link_lines = sum(1 for l in lines if re.match(r'^\s*\*?\s*\[.+\]\(.+\)', l))
+        if len(lines) > 0 and link_lines / len(lines) > 0.6:
+            print(f"   ⏭️  Skipping nav-heavy page: {page.url} ({link_lines}/{len(lines)} link lines)")
+            return []
+
         word_count = len(page.markdown.split())
 
         if word_count <= SMALL_PAGE_THRESH:

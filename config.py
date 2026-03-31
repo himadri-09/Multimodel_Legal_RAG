@@ -28,6 +28,11 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")  # Service role key for backend (bypasses RLS)
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")  # Anon key (for reference only)
 
+# Azure Blob Storage Configuration (for BM25 index storage)
+AZURE_STORAGE_ACCOUNT_NAME = os.getenv("AZURE_STORAGE_ACCOUNT_NAME")
+AZURE_STORAGE_ACCOUNT_KEY = os.getenv("AZURE_STORAGE_ACCOUNT_KEY")
+AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+
 # Processing Configuration
 EMBEDDING_DIMENSION = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "512"))
