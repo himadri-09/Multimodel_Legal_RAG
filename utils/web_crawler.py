@@ -9,6 +9,7 @@ from urllib.parse import urljoin, urlparse
 
 import aiohttp
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from crawl4ai import DefaultTableExtraction                  # ← NEW
 from crawl4ai.extraction_strategy import NoExtractionStrategy
 
 
@@ -20,6 +21,32 @@ class PageData:
     markdown: str
     image_urls: List[str] = field(default_factory=list)
     crawl_depth: int = 0
+
+
+# ← NEW: clicks every tab/accordion before extraction so hidden content renders
+_TAB_CLICK_JS = """
+(async () => {
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+    const selectors = [
+        '[role="tab"]', '[data-tab]', '[data-value]',
+        '.tab', '.tabs li', '.tab-item', '.tab-button',
+        'button[id*="tab"]', 'li[id*="tab"]', '[aria-selected]',
+    ];
+    const seen = new Set();
+    for (const sel of selectors) {
+        for (const el of document.querySelectorAll(sel)) {
+            if (!seen.has(el)) {
+                seen.add(el);
+                try { el.click(); await delay(350); } catch(e) {}
+            }
+        }
+    }
+    for (const el of document.querySelectorAll('details:not([open])')) {
+        try { el.open = true; } catch(e) {}
+    }
+    await delay(400);
+})();
+"""
 
 
 class WebCrawler:
@@ -69,12 +96,24 @@ class WebCrawler:
         await queue.put((start_url, 0))
 
         browser_cfg = BrowserConfig(headless=True, verbose=False)
+
+        # ← NEW: table extraction + tab JS added; everything else unchanged
+        table_strategy = DefaultTableExtraction(
+            table_score_threshold=5,
+            min_rows=2,
+            min_cols=2,
+            verbose=False,
+        )
+
         run_cfg = CrawlerRunConfig(
             cache_mode=CacheMode.BYPASS,
             extraction_strategy=NoExtractionStrategy(),
+            table_extraction=table_strategy,           # ← NEW
             word_count_threshold=10,
             remove_overlay_elements=True,
             exclude_external_links=True,
+            js_code=_TAB_CLICK_JS,                    # ← NEW
+            wait_for="networkidle",                   # ← NEW
         )
         semaphore = asyncio.Semaphore(self.concurrency)
 
@@ -260,6 +299,28 @@ class WebCrawler:
                 title     = result.metadata.get("title", "") or urlparse(url).path or url
                 markdown  = self._clean_markdown(result.markdown or "")
                 img_urls  = []
+
+                # ← NEW: convert extracted tables → markdown and append to page content
+                # so tab-hidden pricing/comparison tables are fully indexed by the chunker
+                if result.tables:
+                    table_md = []
+                    for table in result.tables:
+                        lines   = []
+                        caption = table.get("caption", "")
+                        headers = table.get("headers", [])
+                        rows    = table.get("rows", [])
+                        if caption:
+                            lines.append(f"\n### {caption}\n")
+                        if headers:
+                            lines.append("| " + " | ".join(str(h) for h in headers) + " |")
+                            lines.append("|" + " --- |" * len(headers))
+                        for row in rows:
+                            lines.append("| " + " | ".join(str(c) for c in row) + " |")
+                        if lines:
+                            table_md.append("\n".join(lines))
+                    if table_md:
+                        markdown += "\n\n" + "\n\n".join(table_md)
+                        print(f"      📊 {len(result.tables)} table(s) appended → {url[:60]}")
 
                 discovered = [
                     urljoin(url, li.get("href", ""))

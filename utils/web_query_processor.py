@@ -40,7 +40,6 @@ QUERY_TYPES = {
     "multi_part":   "Asks about multiple things or requires sequential steps",
     "troubleshoot": "Debugging an error, unexpected behavior, or failure",
     "comparison":   "Comparing or contrasting two or more options or features",
-    "out_of_scope": "Unrelated to the product documentation",
 }
 
 
@@ -91,20 +90,6 @@ class WebQueryProcessor:
 
         # 1. Classify
         query_type = await self.classify_query(query)
-
-        # 2. Short-circuit out-of-scope
-        if query_type == "out_of_scope":
-            print("Out of scope — abstaining immediately")
-            return {
-                "answer":      "That question doesn't appear to be covered in the "
-                               "documentation. Could you rephrase or ask something "
-                               "related to the product?",
-                "sources":     [],
-                "raw_chunks":  [],
-                "abstained":   True,
-                "query_type":  query_type,
-                "chunks_used": 0,
-            }
 
         # 3. Get search queries (single or decomposed)
         search_queries = await self.get_search_queries(
@@ -225,8 +210,6 @@ Category:"""
         query_type:           str,
         conversation_history: List[Dict[str, Any]] = None,
     ) -> List[str]:
-        if query_type == "out_of_scope":
-            return []
         if query_type in ("simple", "troubleshoot"):
             print(f"Single retrieval path (type={query_type})")
             return [query]
