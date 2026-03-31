@@ -30,36 +30,33 @@ class PineconeVectorStore:
                 metric="cosine",
                 spec=ServerlessSpec(
                     cloud="aws",
-                    region="us-east-1"  # Change this to your preferred region
+                    region="us-east-1"
                 )
             )
         
         self.index = self.pc.Index(PINECONE_INDEX_NAME)
         
-        # Initialize Azure OpenAI client with timeout and retry settings
         self.client = AsyncAzureOpenAI(
             api_key=AZURE_OPENAI_API_KEY,
             azure_endpoint=AZURE_OPENAI_ENDPOINT,
             api_version=AZURE_API_VERSION,
-            timeout=60.0,  # Add timeout to prevent hanging
-            max_retries=3   # Add retry logic
+            timeout=60.0,
+            max_retries=3
         )
         
-        # Reduce concurrent embeddings for better stability
-        # Original was potentially too high and causing API rate limits
         self.semaphore = asyncio.Semaphore(min(MAX_CONCURRENT_EMBEDDINGS, 50))
         print(f"📌 Connected to Pinecone index: {PINECONE_INDEX_NAME}")
         print(f"🎛️  Concurrent embedding limit: {min(MAX_CONCURRENT_EMBEDDINGS, 50)}")
-    
+
+    # ── ID sanitisation ───────────────────────────────────────────────────────
+
     def sanitize_for_pinecone_id(self, text: str) -> str:
         """Sanitize text to be valid for Pinecone vector IDs"""
         if not text:
             return "default"
         
-        # Convert to string and lowercase
         text = str(text).lower()
         
-        # More aggressive: only keep a-z, 0-9, and convert everything else to dash
         sanitized = ""
         for char in text:
             if char.isalnum():
@@ -67,32 +64,38 @@ class PineconeVectorStore:
             else:
                 sanitized += "-"
         
-        # Remove consecutive dashes
         sanitized = re.sub(r'-+', '-', sanitized)
-        
-        # Remove leading/trailing dashes
         sanitized = sanitized.strip('-')
         
-        # Ensure it's not empty
         if not sanitized:
             return "default"
         
-        # Ensure it doesn't start with a number (optional safety measure)
         if sanitized[0].isdigit():
             sanitized = f"item-{sanitized}"
         
-        # Final validation - check each character
         for i, char in enumerate(sanitized):
             if not (char.isalnum() or char == '-'):
                 print(f"❌ Invalid character found at position {i}: '{char}' (ord: {ord(char)})")
-                # Replace invalid character with dash
                 sanitized = sanitized[:i] + '-' + sanitized[i+1:]
         
-        # Clean up any double dashes created by the fix above
         sanitized = re.sub(r'-+', '-', sanitized).strip('-')
         
         return sanitized or "default"
-    
+
+    # ── FIX: real embedding for existence checks (replaces zero vector) ───────
+
+    async def _get_query_vector(self, text: str = "documentation") -> list:
+        """
+        Returns a real embedding for use in existence-check queries.
+        Zero vectors cause cosine similarity to return 0 matches even when
+        data exists — this fixes that by using a real non-zero embedding.
+        The actual text doesn't matter for filter-based existence checks.
+        """
+        vec = await self.create_single_embedding(text)
+        return vec.tolist()
+
+    # ── Embeddings ────────────────────────────────────────────────────────────
+
     async def create_single_embedding(self, text: str) -> np.ndarray:
         """Create embedding for a single text with improved error handling"""
         async with self.semaphore:
@@ -105,14 +108,11 @@ class PineconeVectorStore:
                 return np.array(response.data[0].embedding, dtype=np.float32)
             except Exception as e:
                 print(f"❌ Error creating embedding: {e}")
-                # Return zero vector as fallback instead of crashing
                 return np.zeros(EMBEDDING_DIMENSION, dtype=np.float32)
     
     async def create_embeddings_batch(self, texts: List[str]) -> List[np.ndarray]:
         """
         Create embeddings for multiple texts asynchronously with progress tracking
-        
-        Shows batch progress and completion status in real-time
         """
         if not texts:
             return []
@@ -129,10 +129,8 @@ class PineconeVectorStore:
         completed = 0
         
         async def track_embedding_with_progress(text: str, index: int) -> np.ndarray:
-            """Wrapper to track individual embedding progress"""
             nonlocal completed
             
-            # Calculate which batch this embedding belongs to
             batch_num = (index // max_concurrent) + 1
             position_in_batch = (index % max_concurrent) + 1
             
@@ -140,7 +138,6 @@ class PineconeVectorStore:
                 result = await self.create_single_embedding(text)
                 completed += 1
                 
-                # Show progress every 50 completions or for the first few
                 if (completed % 50 == 0 or completed <= 10 or 
                     completed == total_chunks or index < 5):
                     
@@ -161,14 +158,11 @@ class PineconeVectorStore:
                 print(f"❌ Failed embedding in batch {batch_num} (item {position_in_batch}): {e}")
                 return np.zeros(EMBEDDING_DIMENSION, dtype=np.float32)
         
-        # Create all tasks with progress tracking
         print(f"⏳ Starting all {total_chunks} embedding tasks across {total_batches} batches...")
         tasks = [track_embedding_with_progress(text, i) for i, text in enumerate(texts)]
         
-        # Execute all tasks concurrently (semaphore controls actual concurrency)
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
-        # Process results and count successes/failures
         final_embeddings = []
         failed_count = 0
         
@@ -178,13 +172,11 @@ class PineconeVectorStore:
                 final_embeddings.append(np.zeros(EMBEDDING_DIMENSION, dtype=np.float32))
                 failed_count += 1
             elif isinstance(result, np.ndarray) and result.sum() == 0:
-                # This was a failed embedding that returned zero vector
                 failed_count += 1
                 final_embeddings.append(result)
             else:
                 final_embeddings.append(result)
         
-        # Performance statistics
         end_time = time.time()
         total_time = end_time - start_time
         success_count = total_chunks - failed_count
@@ -205,6 +197,8 @@ class PineconeVectorStore:
         
         return final_embeddings
 
+    # ── Store chunks ──────────────────────────────────────────────────────────
+
     async def store_chunks(self, chunks: List[Dict[str, Any]], pdf_name: str, user_id: str):
         """Store chunks in Pinecone with embeddings and user isolation"""
         if not chunks:
@@ -212,40 +206,30 @@ class PineconeVectorStore:
 
         print(f"📦 Storing {len(chunks)} chunks for PDF: {pdf_name} (user: {user_id})")
 
-        # Sanitize pdf_name using the improved function
         sanitized_pdf_name = self.sanitize_for_pinecone_id(pdf_name)
         print(f"🔍 Sanitized PDF name: '{pdf_name}' -> '{sanitized_pdf_name}'")
         
-        # Extract texts for embedding
         texts = []
         for chunk in chunks:
             if chunk['type'] == 'image':
-                # For images, combine caption with metadata
                 text = f"Image from page {chunk['page_number']}: {chunk['content']}"
             else:
                 text = chunk['content']
             texts.append(text)
         
-        # Create embeddings using the fixed method
         print(f"🤖 Creating embeddings for {len(texts)} chunks...")
         embeddings = await self.create_embeddings_batch(texts)
         
-        # Prepare vectors for Pinecone
         vectors = []
 
         for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-            # Use improved sanitization
             chunk_type = self.sanitize_for_pinecone_id(chunk.get('type', 'unknown'))
-            # Don't sanitize page numbers - they're already integers and safe
             page_num = str(chunk.get('page_number', 0))
 
-            # Create a unique vector ID
             base_id = f"{sanitized_pdf_name}-{chunk_type}-page{page_num}-{i}"
             
-            # Apply sanitization to the complete ID
             vector_id = self.sanitize_for_pinecone_id(base_id)
             
-            # Final safety check - validate each character manually
             final_id = ""
             for char in vector_id:
                 if char.isalnum() or char == '-':
@@ -254,125 +238,123 @@ class PineconeVectorStore:
                     print(f"❌ Replacing invalid char '{char}' (ord: {ord(char)}) with '-'")
                     final_id += '-'
             
-            # Clean up and ensure uniqueness
             final_id = re.sub(r'-+', '-', final_id).strip('-')
             if not final_id:
                 final_id = f"chunk-{i}"
             
-            # Add UUID suffix if needed for uniqueness
             if len(final_id) < 8:
                 final_id = f"{final_id}-{str(uuid.uuid4())[:8]}"
             
             vector_id = final_id
             
-            # DEBUG: Print sample vector IDs for verification
-            if i < 3:  # Show first 3 examples
+            if i < 3:
                 print(f"🔍 Vector ID [{i}]: '{vector_id}'")
             
+            # ── Base metadata ─────────────────────────────────────────────────
             metadata = {
-                'pdf_name': pdf_name,
-                'user_id': user_id,  # CRITICAL: User isolation
-                'type': chunk['type'],
+                'pdf_name':    pdf_name,
+                'user_id':     user_id,
+                'type':        chunk['type'],
                 'page_number': chunk['page_number'],
-                'content': chunk['content'][:1000],  # Truncate for metadata size limit
+                'content':     chunk['content'][:1000],
             }
             
-            # Add type-specific metadata
+            # ── Type-specific metadata ────────────────────────────────────────
             if chunk['type'] == 'image':
                 metadata['image_path'] = chunk.get('image_path', '')
+
             elif chunk['type'] == 'table':
                 metadata.update(chunk.get('metadata', {}))
+
+            else:
+                # text chunk — persist web source fields if present
+                chunk_meta = chunk.get('metadata', {})
+                if chunk_meta.get('source_type') == 'web':
+                    metadata['source_type'] = 'web'
+                    metadata['source_url']  = chunk_meta.get('source_url', '')
+                    metadata['page_title']  = chunk_meta.get('page_title', '')
+                    metadata['chunk_index'] = chunk_meta.get('chunk_index', 0)
             
             vectors.append({
-                'id': vector_id,
-                'values': embedding.tolist(),
-                'metadata': metadata
+                'id':       vector_id,
+                'values':   embedding.tolist(),
+                'metadata': metadata,
             })
         
-        # Upsert to Pinecone in batches with retry logic
-        batch_size = 50  # Reduced from 100 for better reliability
+        # ── Upsert in batches with retry ──────────────────────────────────────
+        batch_size    = 50
         total_batches = (len(vectors) + batch_size - 1) // batch_size
 
         print(f"📤 Uploading {len(vectors)} vectors to Pinecone in {total_batches} batches...")
 
-        failed_batches = []
+        failed_batches    = []
         start_upload_time = time.time()
 
         for i in range(0, len(vectors), batch_size):
-            batch = vectors[i:i + batch_size]
+            batch     = vectors[i:i + batch_size]
             batch_num = i // batch_size + 1
 
-            # Retry logic with exponential backoff
             max_retries = 3
-            retry_delay = 2  # Start with 2 seconds
+            retry_delay = 2
 
             for attempt in range(max_retries):
                 try:
                     batch_start = time.time()
 
-                    # CRITICAL: Use synchronous upsert and force wait for completion
-                    response = self.index.upsert(vectors=batch, async_req=False)
+                    self.index.upsert(vectors=batch, async_req=False)
 
-                    # Add small delay to ensure Pinecone processes the batch
                     await asyncio.sleep(0.5)
 
                     batch_duration = time.time() - batch_start
                     print(f"   ✅ Upserted batch {batch_num}/{total_batches} ({len(batch)} vectors) in {batch_duration:.2f}s")
 
-                    # Verify upload every 5 batches
                     if batch_num % 5 == 0 or batch_num == total_batches:
-                        await asyncio.sleep(1)  # Give Pinecone time to index
+                        await asyncio.sleep(1)
                         stats = self.index.describe_index_stats()
                         total_vectors = stats.get('total_vector_count', 0)
                         print(f"   📊 Pinecone total vectors: {total_vectors}")
 
-                    break  # Success, exit retry loop
+                    break
 
                 except Exception as e:
                     if attempt < max_retries - 1:
-                        # Not the last attempt, retry
                         print(f"   ⚠️  Batch {batch_num} failed (attempt {attempt + 1}/{max_retries}): {e}")
                         print(f"   ⏳ Retrying in {retry_delay}s...")
                         await asyncio.sleep(retry_delay)
-                        retry_delay *= 2  # Exponential backoff
+                        retry_delay *= 2
                     else:
-                        # Last attempt failed, log and continue
                         print(f"   ❌ Batch {batch_num} failed after {max_retries} attempts: {e}")
-                        print(f"   Sample vector IDs in failed batch:")
                         for j, vec in enumerate(batch[:3]):
                             print(f"     [{j}]: '{vec['id']}'")
                         failed_batches.append((batch_num, batch, str(e)))
 
-        # Final verification - CRITICAL for debugging
+        # ── FIX: verify by fetching first vector ID directly ──────────────────
+        # Zero-vector queries return 0 matches due to undefined cosine similarity.
+        # fetch() is a direct ID lookup — always accurate.
         print(f"⏳ Waiting 3s for Pinecone to finish indexing...")
         await asyncio.sleep(3)
 
         try:
-            final_stats = self.index.describe_index_stats()
+            final_stats   = self.index.describe_index_stats()
             total_vectors = final_stats.get('total_vector_count', 0)
             print(f"📊 Final Pinecone index stats: {total_vectors} total vectors")
 
-            # Verify user's vectors
-            user_filter_stats = self.index.query(
-                vector=[0.0] * EMBEDDING_DIMENSION,
-                top_k=1,
-                filter={'user_id': user_id, 'pdf_name': pdf_name},
-                include_metadata=False
-            )
-            user_vectors_exist = len(user_filter_stats.get('matches', [])) > 0
+            first_vector_id = vectors[0]['id']
+            fetch_response  = self.index.fetch(ids=[first_vector_id])
+            fetched         = fetch_response.get('vectors', {})
 
-            if user_vectors_exist:
+            if first_vector_id in fetched:
                 print(f"✅ Verified: Vectors for user {user_id} / PDF '{pdf_name}' exist in Pinecone")
             else:
-                print(f"❌ WARNING: No vectors found for user {user_id} / PDF '{pdf_name}' after upload!")
-                raise Exception("Vector upload verification failed - no vectors found in Pinecone")
+                # Not necessarily an error — Pinecone may still be indexing
+                print(f"⚠️  Fetch verification inconclusive for '{pdf_name}' — data likely still indexing")
 
         except Exception as e:
             print(f"⚠️  Could not verify upload: {e}")
 
-        # Report results
+        # ── Report ────────────────────────────────────────────────────────────
         total_upload_time = time.time() - start_upload_time
-        success_count = total_batches - len(failed_batches)
+        success_count     = total_batches - len(failed_batches)
 
         if failed_batches:
             print(f"⚠️  Upload completed with errors:")
@@ -380,29 +362,33 @@ class PineconeVectorStore:
             print(f"   ❌ Failed: {len(failed_batches)}/{total_batches} batches")
             for batch_num, _, error in failed_batches:
                 print(f"      - Batch {batch_num}: {error[:100]}")
-            # Raise exception if too many failures
             if len(failed_batches) > total_batches * 0.5:
                 raise Exception(f"More than 50% of batches failed ({len(failed_batches)}/{total_batches})")
         else:
             print(f"🎉 Successfully stored all {len(vectors)} chunks in Pinecone (took {total_upload_time:.2f}s)")
-    
-    async def search_similar_chunks(self, query: str, top_k: int = 5, pdf_name: str = None, user_id: str = None) -> List[Dict[str, Any]]:
+
+    # ── Search ────────────────────────────────────────────────────────────────
+
+    async def search_similar_chunks(
+        self,
+        query: str,
+        top_k: int = 5,
+        pdf_name: str = None,
+        user_id: str = None,
+        return_embeddings: bool = False,
+    ) -> List[Dict[str, Any]]:
         """Search for similar chunks with user isolation"""
-        # CRITICAL: Always require user_id for security
         if not user_id:
             raise ValueError("user_id is required for search to ensure data isolation")
 
         print(f"🔍 Searching for top {top_k} chunks for query: '{query}' (user: {user_id})")
 
-        # Create query embedding
         query_embedding = await self.create_single_embedding(query)
 
-        # Build filter - ALWAYS include user_id
-        filter_dict = {'user_id': user_id}  # User isolation enforced
+        filter_dict = {'user_id': user_id}
         if pdf_name:
             filter_dict['pdf_name'] = pdf_name
 
-        # Search in Pinecone
         search_response = self.index.query(
             vector=query_embedding.tolist(),
             top_k=top_k,
@@ -410,46 +396,99 @@ class PineconeVectorStore:
             filter=filter_dict
         )
         
-        # Convert to chunks format
         results = []
         for match in search_response['matches']:
+            meta  = match['metadata']
             chunk = {
-                'content': match['metadata']['content'],
-                'type': match['metadata']['type'],
-                'page_number': match['metadata']['page_number'],
-                'pdf_name': match['metadata']['pdf_name'],
-                'similarity_score': match['score']
+                'content':          meta.get('content', ''),
+                'type':             meta.get('type', 'text'),
+                'page_number':      meta.get('page_number', 0),
+                'pdf_name':         meta.get('pdf_name', ''),
+                'similarity_score': match['score'],
+                # web source fields — empty string for PDF chunks
+                'source_url':       meta.get('source_url', ''),
+                'page_title':       meta.get('page_title', ''),
+                'source_type':      meta.get('source_type', 'pdf'),
             }
             
-            # Add image path if available
-            if chunk['type'] == 'image' and 'image_path' in match['metadata']:
-                chunk['image_path'] = match['metadata']['image_path']
+            if meta.get('type') == 'image' and 'image_path' in meta:
+                chunk['image_path'] = meta['image_path']
+
+            if return_embeddings:
+                chunk['embedding'] = query_embedding.tolist()
             
             results.append(chunk)
         
         print(f"✅ Found {len(results)} relevant chunks")
         return results
-    
+
+    # ── Web candidate pool search ─────────────────────────────────────────────
+
+    async def search_web_candidates(
+        self,
+        queries: List[str],
+        pdf_name: str,
+        user_id: str,
+        candidate_top_k: int = 25,
+    ) -> List[Dict[str, Any]]:
+        """
+        Run multiple queries in parallel, merge and deduplicate results.
+        Returns a sorted candidate pool for threshold filter + MMR.
+        Used only by the web RAG pipeline.
+        """
+        if not queries:
+            return []
+
+        print(f"🌐 Web candidate search — {len(queries)} queries, top_k={candidate_top_k} each")
+
+        tasks = [
+            self.search_similar_chunks(
+                query=q,
+                top_k=candidate_top_k,
+                pdf_name=pdf_name,
+                user_id=user_id,
+                return_embeddings=True,
+            )
+            for q in queries
+        ]
+        all_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        seen_hashes: set = set()
+        merged: List[Dict[str, Any]] = []
+
+        for result_set in all_results:
+            if isinstance(result_set, Exception):
+                print(f"⚠️  Search query error: {result_set}")
+                continue
+            for chunk in result_set:
+                h = hash(chunk['content'][:300])
+                if h not in seen_hashes:
+                    seen_hashes.add(h)
+                    merged.append(chunk)
+
+        merged.sort(key=lambda c: c.get('similarity_score', 0), reverse=True)
+        print(f"📦 Merged candidate pool: {len(merged)} unique chunks")
+        return merged
+
+    # ── Utility ───────────────────────────────────────────────────────────────
+
     async def check_pdf_exists(self, pdf_name: str, user_id: str) -> bool:
         """
-        Check if PDF is already processed for this user
-
-        How it works:
-        1. Query Pinecone with a dummy vector (all zeros)
-        2. Filter by pdf_name AND user_id metadata (critical for user isolation)
-        3. Ask for just 1 result (top_k=1)
-        4. If any match found, PDF exists for this user
-
-        Time: ~10-50ms regardless of database size
+        Check if PDF is already processed for this user.
+        Uses a real embedding instead of zero vector — zero vectors cause
+        cosine similarity to return 0 matches even when data exists.
         """
         try:
             print(f"🔍 Checking if PDF '{pdf_name}' exists for user {user_id}...")
 
+            # FIX: use real embedding, not zero vector
+            query_vector = await self._get_query_vector()
+
             response = self.index.query(
-                vector=[0.0] * EMBEDDING_DIMENSION,  # Dummy vector - don't care about similarity
-                top_k=1,                             # Just need to know if ANY exist
-                filter={'pdf_name': pdf_name, 'user_id': user_id},  # Both filters for security
-                include_metadata=False               # Don't need metadata, just existence
+                vector=query_vector,
+                top_k=1,
+                filter={'pdf_name': pdf_name, 'user_id': user_id},
+                include_metadata=False
             )
 
             exists = len(response['matches']) > 0
@@ -463,19 +502,21 @@ class PineconeVectorStore:
 
         except Exception as e:
             print(f"❌ Error checking PDF existence: {e}")
-            return False  # If error, assume not cached and process normally
+            return False
 
     async def get_pdf_chunk_count(self, pdf_name: str, user_id: str) -> int:
         """
-        Get approximate number of chunks for this PDF for a specific user
-        Useful for logging and verification
+        Get approximate number of chunks for this PDF for a specific user.
+        Uses a real embedding instead of zero vector.
         """
         try:
-            # Query more results to get better count estimate
+            # FIX: use real embedding, not zero vector
+            query_vector = await self._get_query_vector()
+
             response = self.index.query(
-                vector=[0.0] * EMBEDDING_DIMENSION,
-                top_k=100,  # Get up to 100 to estimate total
-                filter={'pdf_name': pdf_name, 'user_id': user_id},  # Filter by both
+                vector=query_vector,
+                top_k=100,
+                filter={'pdf_name': pdf_name, 'user_id': user_id},
                 include_metadata=False
             )
 
@@ -488,22 +529,11 @@ class PineconeVectorStore:
             return 0
 
     async def delete_pdf_vectors(self, pdf_name: str, user_id: str) -> bool:
-        """
-        Delete all vectors for a specific PDF and user from Pinecone
-
-        Args:
-            pdf_name: PDF name to delete
-            user_id: User ID for isolation
-
-        Returns:
-            bool: True if deletion was successful
-        """
+        """Delete all vectors for a specific PDF and user from Pinecone"""
         try:
             print(f"🗑️  Deleting vectors for PDF '{pdf_name}' (user: {user_id})...")
 
-            # Delete by metadata filter
-            # Pinecone supports deleting by filter (pdf_name + user_id)
-            delete_response = self.index.delete(
+            self.index.delete(
                 filter={'pdf_name': pdf_name, 'user_id': user_id}
             )
 

@@ -14,6 +14,7 @@ from utils.database import DatabaseManager
 from utils.web_crawler import WebCrawler
 from utils.web_chunker import WebChunker
 from utils.vector_store import PineconeVectorStore
+from utils.bm25_store import BM25Store, invalidate_bm25_cache
 
 
 router = APIRouter(prefix="/crawl", tags=["Web Crawling"])
@@ -24,16 +25,16 @@ router = APIRouter(prefix="/crawl", tags=["Web Crawling"])
 # ------------------------------------------------------------------
 
 class CrawlRequest(BaseModel):
-    url: str
+    url:       str
     max_pages: int = 100
     max_depth: int = 5
 
 
 class CrawlResponse(BaseModel):
-    job_id: str
-    message: str
-    status: str
-    site_slug: str
+    job_id:           str
+    message:          str
+    status:           str
+    site_slug:        str
     check_status_url: str
 
 
@@ -50,8 +51,8 @@ async def _update_job(db: DatabaseManager, job_id: str, **kwargs):
 
 def _url_to_slug(url: str) -> str:
     parsed = urlparse(url.rstrip("/"))
-    raw  = f"{parsed.netloc}{parsed.path}"
-    slug = re.sub(r"[^a-z0-9]+", "-", raw.lower()).strip("-")
+    raw    = f"{parsed.netloc}{parsed.path}"
+    slug   = re.sub(r"[^a-z0-9]+", "-", raw.lower()).strip("-")
     return slug or "web-site"
 
 
@@ -60,14 +61,14 @@ def _url_to_slug(url: str) -> str:
 # ------------------------------------------------------------------
 
 async def _process_crawl_job(
-    job_id: str,
+    job_id:    str,
     start_url: str,
     site_slug: str,
     max_pages: int,
     max_depth: int,
-    user_id: str,
+    user_id:   str,
 ):
-    db = DatabaseManager()
+    db             = DatabaseManager()
     pipeline_start = time.time()
 
     try:
@@ -79,7 +80,7 @@ async def _process_crawl_job(
         print(f"{'#'*60}")
 
         # ── Step 1: Crawl ─────────────────────────────────────────────
-        print(f"\n[STEP 1/3] CRAWLING")
+        print(f"\n[STEP 1/4] CRAWLING")
         await _update_job(db, job_id, status="processing", stage="Crawling website", progress=0.05)
 
         pages_done = 0
@@ -87,7 +88,7 @@ async def _process_crawl_job(
         async def progress_cb(done, found):
             nonlocal pages_done
             pages_done = done
-            pct = min(0.05 + (done / max(max_pages, 1)) * 0.45, 0.50)
+            pct = min(0.05 + (done / max(max_pages, 1)) * 0.35, 0.40)
             await _update_job(db, job_id,
                               stage=f"Crawled {done}/{found} pages",
                               progress=round(pct, 2))
@@ -99,33 +100,51 @@ async def _process_crawl_job(
             raise ValueError("No pages were successfully crawled from the given URL.")
 
         t_crawl = time.time() - pipeline_start
-        print(f"\n[STEP 1/3] ✅ DONE  pages={len(pages)}  ({t_crawl:.1f}s elapsed)")
+        print(f"\n[STEP 1/4] ✅ DONE  pages={len(pages)}  ({t_crawl:.1f}s elapsed)")
 
         # ── Step 2: Chunk text ────────────────────────────────────────
-        print(f"\n[STEP 2/3] CHUNKING TEXT")
-        await _update_job(db, job_id, stage=f"Chunking {len(pages)} pages", progress=0.55)
+        print(f"\n[STEP 2/4] CHUNKING TEXT")
+        await _update_job(db, job_id, stage=f"Chunking {len(pages)} pages", progress=0.45)
 
         chunker     = WebChunker()
         text_chunks = chunker.chunk_pages(pages, site_slug)
 
         t_chunk = time.time() - pipeline_start
-        print(f"\n[STEP 2/3] ✅ DONE  text_chunks={len(text_chunks)}  ({t_chunk:.1f}s elapsed)")
+        print(f"\n[STEP 2/4] ✅ DONE  text_chunks={len(text_chunks)}  ({t_chunk:.1f}s elapsed)")
 
-        # ── Step 3: Store in Pinecone ─────────────────────────────────
-        print(f"\n[STEP 3/3] STORING IN VECTOR DB")
+        # ── Step 3: Build BM25 index (keyword search) ─────────────────
+        # This runs alongside vector storage so hybrid retrieval works
+        # at query time without any extra latency.
+        print(f"\n[STEP 3/4] BUILDING BM25 KEYWORD INDEX")
+        await _update_job(db, job_id, stage="Building keyword index", progress=0.55)
+
+        try:
+            bm25_store = BM25Store(site_slug)
+            bm25_store.build(text_chunks)
+            bm25_store.save()
+            print(f"[STEP 3/4] ✅ BM25 index built and saved")
+        except Exception as e:
+            # BM25 failure is non-fatal — dense search still works
+            print(f"[STEP 3/4] ⚠️  BM25 build failed (non-fatal): {e}")
+
+        t_bm25 = time.time() - pipeline_start
+        print(f"\n[STEP 3/4] ✅ DONE  ({t_bm25:.1f}s elapsed)")
+
+        # ── Step 4: Store in Pinecone ─────────────────────────────────
+        print(f"\n[STEP 4/4] STORING IN VECTOR DB")
         print(f"   Text chunks : {len(text_chunks)}")
         print(f"   site_slug   : {site_slug}")
         print(f"   user_id     : {user_id}")
 
         await _update_job(db, job_id,
                           stage=f"Storing {len(text_chunks)} chunks in vector DB",
-                          progress=0.70)
+                          progress=0.65)
 
         async with PineconeVectorStore() as vector_store:
             await vector_store.store_chunks(text_chunks, site_slug, user_id)
 
         t_store = time.time() - pipeline_start
-        print(f"\n[STEP 3/3] ✅ DONE  ({t_store:.1f}s elapsed)")
+        print(f"\n[STEP 4/4] ✅ DONE  ({t_store:.1f}s elapsed)")
 
         # ── Persist to Supabase user_pdfs ────────────────────────────
         await db.log_pdf_upload(
@@ -197,20 +216,9 @@ async def _process_crawl_job(
 
 @router.post("", response_model=CrawlResponse, summary="Crawl a website and index its content")
 async def submit_crawl(
-    request: CrawlRequest,
+    request:      CrawlRequest,
     current_user: dict = Depends(get_current_user),
 ):
-    """
-    Submit a URL for recursive crawling and RAG indexing.
-
-    - **url**: Root URL to crawl (e.g. `https://docs.example.com/`)
-    - **max_pages**: Hard cap on pages to crawl (default 100)
-    - **max_depth**: Maximum link depth from root (default 5)
-
-    Always runs in background. Poll `GET /crawl/status/{job_id}`.
-    Once complete the site appears in `GET /documents/processed` and
-    can be queried via `POST /query` using `site_slug` as `pdf_name`.
-    """
     user_id = current_user["id"]
 
     try:
@@ -277,17 +285,17 @@ async def get_crawl_status(job_id: str, current_user: dict = Depends(get_current
 
 @router.get("/sites", summary="List all indexed websites")
 async def list_crawled_sites(current_user: dict = Depends(get_current_user)):
-    user_id = current_user["id"]
-    db      = DatabaseManager()
+    user_id  = current_user["id"]
+    db       = DatabaseManager()
     all_docs = await db.get_user_pdfs(user_id)
-    sites = [d for d in all_docs
-             if (d.get("original_filename") or "").startswith("http")]
+    sites    = [d for d in all_docs
+                if (d.get("original_filename") or "").startswith("http")]
     return {"sites": sites, "total_count": len(sites)}
 
 
 @router.delete("/sites/{site_slug}", summary="Delete an indexed website")
 async def delete_crawled_site(
-    site_slug: str,
+    site_slug:    str,
     current_user: dict = Depends(get_current_user),
 ):
     user_id  = current_user["id"]
@@ -297,11 +305,21 @@ async def delete_crawled_site(
         raise HTTPException(status_code=404,
                             detail="Site not found or no permission to delete it.")
     try:
+        # Delete vectors from Pinecone
         async with PineconeVectorStore() as vs:
             await vs.delete_pdf_vectors(site_slug, user_id)
+
+        # Delete BM25 index from disk + memory cache
+        bm25_store = BM25Store(site_slug)
+        bm25_store.delete()
+        invalidate_bm25_cache(site_slug)
+
+        # Delete DB record
         await db.delete_user_pdf(user_id, site_slug)
+
         print(f"🗑️  Deleted site '{site_slug}' for user {user_id}")
         return {"message": f"Site '{site_slug}' deleted successfully.", "site_slug": site_slug}
+
     except Exception as exc:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to delete site: {exc}")

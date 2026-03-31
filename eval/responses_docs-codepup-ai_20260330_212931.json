@@ -1,0 +1,1282 @@
+{
+  "slug": "docs-codepup-ai",
+  "timestamp": "20260330_212931",
+  "systems": "fin",
+  "results": [
+    {
+      "question": "What are the steps to publish a project from the CodePup AI interface, and how can I ensure that it is continuously updated after publishing?",
+      "question_type": "multi_part",
+      "gold_answer": "To publish from CodePup AI: open your project, make sure the preview is available and error free, then click Share (top right) → Generate shareable URL. That gives you a live link you can share. \nFor continuous updates: every time you modify your app and re deploy, the same project URL stays active and automatically shows the latest deployment (older builds are replaced, not kept).\nIf you restore an older version and want that version live, go back to Share → Generate shareable URL again - the same link will update to reflect the restored version.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/publish"
+      ],
+      "source_url": "https://docs.codepup.ai/features/publish",
+      "rag": null,
+      "fin": {
+        "answer": "Here's how to publish your project:1. Open your project in CodePup AI 2. Make sure your app preview is working and error-free 3. Click the Share button (top-right corner) 4. Click Generate shareable URL 5. Copy and share the linkFor continuous updates, it's automatic! When you modify and re-deploy your app, the same URL stays active but automatically shows your latest version. Visitors always see your most recent published build without you needing new linksIf you restore an older version from version control, just go back to the Share section and click Generate Shareable URL again - your existing link will update to reflect the restored versionYour project gets its own dedicated subdomain that always points to whatever you've published most recently, so no version conflicts or duplicate URLs to worry about",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What steps do I need to follow to enter my Resend API Key and Stripe Secret Key when starting a new project on Codepup AI?",
+      "question_type": "multi_part",
+      "gold_answer": "To enter your Resend API Key and Stripe Secret Key when starting a new project on Codepup AI, follow these steps:\n\n1. Start a new project by typing your project idea in the prompt box.\n2. Select **E-Commerce Store (fullstack + payment)**.\n3. Enter your Resend API Key in the designated field.\n4. Enter your Stripe Secret Key in the appropriate field. \n\nMake sure to verify your sender email for improved email deliverability.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/resend-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/resend-integration",
+      "rag": null,
+      "fin": {
+        "answer": "When starting a new project, here's how to enter your API keys:Step 1: Type your project idea and select E-Commerce Store (fullstack + payment + email integration).Step 2: Before building starts, we'll show you a keys input screen with fields for both your Stripe Secret Key and Resend API Key.Where to get your keys:1. Stripe Secret Key: Go to your Stripe Dashboard → Developers → API Keys 2. Resend API Key: Go to your Resend Dashboard → API KeysStep 3: Fill in both fields and click Proceed. We'll then start building your fully integrated project automatically.The input screen includes direct links to setup guides if you need help finding your keys. Use your test keys while building - you can switch to live keys later when ready to accept real payments.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the health benefits of incorporating spinach into my diet?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "gold_sources": [
+        ""
+      ],
+      "source_url": "",
+      "rag": null,
+      "fin": {
+        "answer": "I'm sorry, but I couldn't find any information about the health benefits of spinach in our resources. Could you please rephrase your question or let me know if there's something else I can assist you with?",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the available paid plans for CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "The available paid plans for CodePup AI are:\nPlan\tMonthly Credits\tMonthly Billing\tAnnual Billing (Discounted)\nBasic\t100\t$25\t$250 ($21/month)\nPro\t220\t$50\t$500 ($42/month)\nAdvance\t1,100\t$200\t$2,000 ($167/month)\nAdditionally, there are Custom Credits available for paid users, where $10 equals 40 credits, and users can choose any amount in $10 increments up to $200",
+      "gold_sources": [
+        "https://docs.codepup.ai/introduction/plans-and-credits"
+      ],
+      "source_url": "https://docs.codepup.ai/introduction/plans-and-credits",
+      "rag": null,
+      "fin": {
+        "answer": "We have three main paid plans:Basic - $25/month1. 100 credits monthly 2. Private projects 3. GitHub export 4. Remove CodePup badge 5. Community supportPro - $50/month1. 220 credits monthly 2. All Basic features 3. Priority email supportAdvance - $200/month1. 1,100 credits monthly 2. All Pro features 3. Dedicated supportAll paid plans get annual discounts (about 17% off when billed yearly). You can also buy custom credit packs from $10-$200 if you need extra credits beyond your plan.Credits are used for generating websites (10-30 credits depending on complexity) and modifications (5 credits each). Publishing and GitHub export are free on paid plans.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What steps do I need to follow to manage my data through Codepup AI's CMS without needing a Supabase account, and how does project deletion affect my data?",
+      "question_type": "multi_part",
+      "gold_answer": "You don’t need a Supabase account at all. Codepup AI creates and manages the Supabase backend for you automatically when you create a project, so you can manage your data entirely through our CMS.\nTo manage your data:\nOpen your project, then click the database icon in the top right to open the CMS.\nPick a table from the left sidebar, then add, edit, or delete records in the main panel.\nOr use the AI Assistant to bulk insert data by describing what you want in plain English.\nProject deletion: deleting a Codepup AI project also deletes the associated Supabase project and all its data, so export anything you need first.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/supabase-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/supabase-integration",
+      "rag": null,
+      "fin": {
+        "answer": "You don't need a Supabase account at all - we manage everything for you automatically.To manage your data through our CMS:1. Open the CMS - Click the database icon (⚡) in your project's top-right toolbar 2. Choose your method:&#8226; Manual entry - Fill simple forms to add data row by row&#8226; AI Assistant - Describe what you want in plain English and let AI bulk-insert data 3. View and edit - Use the left sidebar to navigate between database tables, then add, edit, or delete records in the main panelAbout project deletion: When you delete a project, the associated Supabase project and all its data are permanently removed. Make sure to export any data you need first - you can do this from the CMS or ask our AI to help export specific tables.Your data updates appear instantly on your live website without needing to redeploy.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What does CodePup AI do?",
+      "question_type": "simple",
+      "gold_answer": "CodePup AI is an AI-powered developer assistant that turns ideas into fully functional, production-ready web applications in minutes by building code, design, and deployment in one seamless workflow.",
+      "gold_sources": [
+        "https://docs.codepup.ai"
+      ],
+      "source_url": "https://docs.codepup.ai",
+      "rag": null,
+      "fin": {
+        "answer": "CodePup AI is an AI-powered platform that turns your ideas into fully functional websites and web apps just by describing what you want.You simply type your idea in plain English, and we instantly generate your complete website with responsive design and clean code - no coding experience needed.What makes us different is that we build full-stack applications, not just frontend designs. We automatically connect everything - backend logic, database, authentication, payments, and email integrations.You can build almost anything: landing pages, SaaS products, e-commerce stores, dashboards, internal tools, and portfolio sites. We handle the code, design, and deployment all in one seamless workflow.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are environment variables, and how can I open the Key Tab to update my API key?",
+      "question_type": "multi_part",
+      "gold_answer": "Environment variables are secret values your project uses to connect to external services, such as Stripe for payments or Resend for emails. They are stored securely on the server and are never exposed in your frontend code or the browser.\n\nTo open the Key Tab and update your API key, follow these steps:\n\nClick the Key tab.\nEnter your new API key in the relevant field.\nLeave other fields empty if you want to keep existing values intact",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/environmental-variables"
+      ],
+      "source_url": "https://docs.codepup.ai/features/environmental-variables",
+      "rag": null,
+      "fin": {
+        "answer": "Environment variables are secret values your project uses to connect to external services like Stripe for payments or Resend for emails. They're stored securely on the server and never exposed in your frontend code or browser.To open the Key Tab:1. Open your Codepup AI project 2. Click the 🔑 Key tab in the top toolbar (next to the Preview tab) 3. The Environment Variables panel opens on the right sideNote: The Key tab only appears after your project has been generated and deployed at least once.Once open, you can update any API key by entering the new value in the relevant field and clicking Save Changes. Only fill in fields you want to update - leave others empty to keep existing values.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What types of recurring emails can be sent using the scheduled reports feature?",
+      "question_type": "simple",
+      "gold_answer": "The scheduled reports feature can send daily summaries, weekly performance reports, monthly analytics, and quarterly reviews.",
+      "gold_sources": [
+        "https://docs.codepup.ai/use-cases/internal-tools"
+      ],
+      "source_url": "https://docs.codepup.ai/use-cases/internal-tools",
+      "rag": null,
+      "fin": {
+        "answer": "With our scheduled reports feature, you can send several types of recurring emails:Daily Reports:1. Low-stock alerts and summaries 2. Open ticket digests to support teams 3. Task reminders for sales repsWeekly Reports:1. Performance metrics and analytics 2. Pipeline summaries for leadership 3. Inventory summaries 4. HR digests to managementMonthly Reports:1. Analytics dashboards 2. HR summaries to leadership 3. Business KPI reportsQuarterly Reports:1. Comprehensive business reviewsYou can also set up automated reports for specific metrics like ticket volume trends, employee utilization, inventory turnover rates, and performance analytics by team or individual.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why is the payment integration process stuck and not completing any tasks in the chat?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific reasons for the payment integration process being stuck or not completing tasks in the chat.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/stripe-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/stripe-integration",
+      "rag": null,
+      "fin": {
+        "answer": "I'm routing you to our human team now. They'll be able to assist you better.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why is my analytics dashboard not displaying any traffic data?",
+      "question_type": "troubleshoot",
+      "gold_answer": "Your analytics dashboard may not be displaying any traffic data due to a lack of visitors, sessions, or pageviews, possibly because your project hasn't been shared or promoted yet. Additionally, ensure that the tracking code is correctly implemented on your site.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/analytics-dashboard"
+      ],
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": null,
+      "fin": {
+        "answer": "The most common reason your analytics dashboard isn't showing traffic data is that your website needs to be deployed or shared via a public link first.Analytics only tracks data from live websites - it won't work in preview mode.To fix this:1. Deploy your project or generate a shareable public URL 2. Wait for visitors to start accessing your live site 3. Then check your analytics dashboard againOnce your site is live and getting traffic, you'll see data for pageviews, visitors, sessions, and more in the dashboard.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why can't I see the Key tab in the Codepup AI toolbar?",
+      "question_type": "simple",
+      "gold_answer": "You can't see the Key tab in the Codepup AI toolbar because your project has not been generated or deployed at least once.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/environmental-variables"
+      ],
+      "source_url": "https://docs.codepup.ai/features/environmental-variables",
+      "rag": null,
+      "fin": {
+        "answer": "The Key tab only appears after your project has been generated and deployed at least once.If you don't see the 🔑 Key tab in your top toolbar next to the Preview tab, it means your project hasn't been fully deployed yet. Once your project is generated and deployed, the Key tab will become visible and you'll be able to manage your API keys and environment variables from there.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What data can I track in the Traffic tab of the Analytics Dashboard?",
+      "question_type": "simple",
+      "gold_answer": "In the Traffic tab of the Analytics Dashboard, you can track Pageviews, Visitors, and Sessions.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/analytics-dashboard"
+      ],
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": null,
+      "fin": {
+        "answer": "In the Traffic tab, you can track three key metrics over time:• Pageviews - how many pages are being viewed• Visitors - number of people visiting your site• Sessions - individual user visitsThis graph helps you spot traffic spikes, like after sharing your project on social media.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Can I modify an existing project in CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "Yes, you can modify an existing project in CodePup AI by opening any of your previously created projects and describing the changes you want through chat instructions.",
+      "gold_sources": [
+        "https://docs.codepup.ai/introduction/faq"
+      ],
+      "source_url": "https://docs.codepup.ai/introduction/faq",
+      "rag": null,
+      "fin": {
+        "answer": "Yes! You can definitely modify existing projects in CodePup AI. Just open any of your previously created projects and continue editing them through chat instructions.Simply describe what changes you want, like:- &quot;Replace the hero image with a video background&quot;- &quot;Add a testimonials section below the pricing section&quot;CodePup AI will automatically update your website based on your instructions while keeping all your previous work intact. Each modification costs 5 credits and is available on all plans.You can continuously refine your project using natural language - just chat with us about any changes you need!",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What should I use while building and testing with Stripe?",
+      "question_type": "simple",
+      "gold_answer": "You should use your **test key** (`sk_test_...`) while building and testing with Stripe.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/stripe-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/stripe-integration",
+      "rag": null,
+      "fin": {
+        "answer": "Use your test key (sk_test_...) while building and testing with Stripe. This lets you test the complete checkout flow without real charges.For testing payments, use these Stripe test cards:• 4242 4242 4242 4242 - Visa (Success)• 4000 0000 0000 0002 - Visa (Decline)• 4000 0025 0000 3155 - Visa (Requires authentication)Use any future expiry date and any 3-digit CVC.Only switch to your live key (sk_live_...) when you're ready to accept real payments.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What is CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "CodePup AI is an AI-powered developer assistant that can turn ideas into fully functional, production-ready web applications in minutes by handling code, design, and deployment in a seamless workflow.",
+      "gold_sources": [
+        "https://docs.codepup.ai"
+      ],
+      "source_url": "https://docs.codepup.ai",
+      "rag": null,
+      "fin": {
+        "answer": "CodePup AI is a no-code, AI-powered platform that lets you create full websites and web apps just by describing what you want in plain English.It's your AI developer assistant that turns ideas into production-ready applications in minutes - handling code, design, and deployment all in one workflow.Unlike other no-code builders that focus only on frontend design, we generate complete full-stack applications including backend logic, databases, authentication, and integrations like payments and emails. You get real, clean code using modern technologies like React, Node.js, and TailwindCSS - no vendor lock-in.Whether you're a founder building an MVP, a designer creating UIs, or a developer speeding up your workflow, CodePup AI works for all skill levels. You can build anything from simple landing pages to SaaS products, e-commerce stores, and internal tools.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the main ingredients used in a traditional Italian risotto?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "gold_sources": [
+        ""
+      ],
+      "source_url": "",
+      "rag": null,
+      "fin": {
+        "answer": "I'm sorry, but I couldn't find any information about the main ingredients of a traditional Italian risotto in our resources. Could you please rephrase your question or let me know if there's anything else I can assist you with?",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What can I use Codepup AI to generate?",
+      "question_type": "simple",
+      "gold_answer": "You can use Codepup AI to generate any type of website using simple natural-language prompts.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/chat-and-create"
+      ],
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": null,
+      "fin": {
+        "answer": "You can generate a wide variety of websites and web applications with us! Here's what's possible:Website Types:1. Landing pages and marketing websites 2. Portfolio websites for showcasing your work 3. E-commerce stores with full payment processing 4. SaaS products with subscriptions 5. Interactive dashboards and internal tools 6. Data visualization dashboards from CSV/Excel filesProject Types:1. Simple websites - Frontend-only sites like portfolios and landing pages 2. Interactive websites - Full-stack apps with databases and authentication 3. E-commerce stores - Complete online stores with Stripe paymentsJust describe what you want in plain English, and we'll build it automatically with all the necessary features like responsive design, backend logic, database connections, and integrations. You can then refine everything through natural conversation!",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "How can I publish my project using CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "To publish your project using CodePup AI, you can follow the instructions provided in the \"How to Publish\" section of the documentation.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/publish"
+      ],
+      "source_url": "https://docs.codepup.ai/features/publish",
+      "rag": null,
+      "fin": {
+        "answer": "Publishing your project is super straightforward! Here's how:1. Make sure your project preview is working - it needs to build successfully first 2. Click the Share button in the top-right corner of your project 3. Click &quot;Generate shareable URL&quot; - this creates your live link 4. Copy and share the URL with anyone you wantYour project gets its own unique subdomain that always shows the latest version. When you make changes and republish, the same URL automatically updates with your new deploymentThe best part? Publishing is completely free on all plans",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the supported sources for video embedding in CodePup AI, and what limitations should I be aware of when embedding videos?",
+      "question_type": "multi_part",
+      "gold_answer": "CodePup AI supports embedding videos from the following sources:\n- YouTube\n- Vimeo\n- Cloud and CDN video URLs\n- Private blob storage links\n- Internal media servers\n- Any public video payload with a valid MIME type\n\nLimitations include that video **uploads** are not supported.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/embed-video"
+      ],
+      "source_url": "https://docs.codepup.ai/features/embed-video",
+      "rag": null,
+      "fin": {
+        "answer": "We support embedding videos from pretty much any source! You can use YouTube, Vimeo, cloud/CDN URLs, private blob storage links, internal media servers, or any public video with a valid MIME type.The main limitations to keep in mind:• No direct uploads yet - you can't upload videos from your device, they need to be hosted somewhere with a URL• Public access required - if your video is behind authentication or uses temporary tokens, we'll need a direct public link to embed it successfullyThe good news is that once you have a valid video URL, we can generate responsive players with custom controls like autoplay, loop, keyboard shortcuts, and fullscreen support across all project types.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What is the Codepup AI CMS?",
+      "question_type": "simple",
+      "gold_answer": "The Codepup AI CMS is a content management system that utilizes AI to assist users in managing and creating content efficiently.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/cms"
+      ],
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": null,
+      "fin": {
+        "answer": "The Codepup AI CMS is our built-in Content Management System that lets you manage your website's database content directly from the dashboard - no SQL, coding, or external tools needed.Think of it as your website's back office where you can add products, manage users, track orders, and populate your site with content.It offers two ways to manage data:1. Manual Row Entry - simple forms to add data one row at a time 2. AI Assistant - describe what you want in plain English and let AI handle the heavy liftingYou can view all database tables, add/edit/delete records, and see changes update live on your website instantly.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the sections included in the Prompt Guide?",
+      "question_type": "simple",
+      "gold_answer": "The sections included in the Prompt Guide are:\n\n1. Overview\n2. What Makes a Good Prompt?\n3. Prompt Structure\n   - Basic Structure\n   - Advanced Structure\n4. Examples of Good Prompt",
+      "gold_sources": [
+        "https://docs.codepup.ai/introduction/prompt-guide"
+      ],
+      "source_url": "https://docs.codepup.ai/introduction/prompt-guide",
+      "rag": null,
+      "fin": {
+        "answer": "The Prompt Guide includes these main sections:• What Makes a Good Prompt? - explains the key qualities of effective prompts• Prompt Structure - covers basic and advanced prompt formatting• Examples of Good Prompts - shows real examples for simple websites, interactive sites, and e-commerce stores• Tips for Better Prompts - best practices for writing clear, specific prompts• Common Mistakes to Avoid - what not to do when crafting prompts• Iterating on Your Project - how to refine your website with follow-up promptsEach section helps you write better prompts to get exactly what you want from our AI.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What should I do if I receive an error after updating my API key?",
+      "question_type": "troubleshoot",
+      "gold_answer": "If you receive an error after updating your API key, double-check that you entered the key correctly and ensure that it is the correct key for the environment you are using (test or live). If the issue persists, consult the documentation or support for further troubleshooting.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/environmental-variables"
+      ],
+      "source_url": "https://docs.codepup.ai/features/environmental-variables",
+      "rag": null,
+      "fin": {
+        "answer": "If you're getting an error after updating your API key, here are a few things to try:First, check the basics:1. Make sure you entered the correct key in the Key tab 2. Verify you clicked &quot;Save Changes&quot; and saw the saving confirmationIf the error persists:1. Try breaking your request into smaller steps 2. Rephrase what you're trying to do 3. Ask our AI directly: &quot;Why is this error happening?&quot; or &quot;Fix this error&quot;For debugging help:1. Include the exact error message from your browser console 2. Describe what you expected vs what's actually happening 3. Mention which page or feature is affectedRemember that API key changes take effect immediately - no redeployment needed . The issue might be with how the key is being used rather than the update itself.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What topics are covered on the UI Component Integration page?",
+      "question_type": "simple",
+      "gold_answer": "The topics covered on the UI Component Integration page include Overview, How It Works, Example Workflow, Why This Matters, and Supported Use Cases.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/ui-component-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/ui-component-integration",
+      "rag": null,
+      "fin": {
+        "answer": "The UI Component Integration page covers how to bring external UI components into your CodePup AI projects using copy-prompt integration.Main topics include:• How it works - The system automatically handles component structure, dependencies, related files, and project placement when you paste component prompts from libraries like 21st.dev (https://21st.dev)• Example workflow - Step-by-step process from browsing components to automatic integration• Supported use cases - Importing complex UI, dashboards, forms, hero sections, landing pages, and Tailwind/ShadCN-style components• Component limitations - Notes about framework-specific constraints and when additional configuration might be needed• Future improvements - Upcoming features like smarter positioning, routing awareness, and multi-file component pack supportThe page explains how this bridges AI-generated apps with modern component ecosystems, letting you add production-ready components without manual dependency management.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I receiving an error when trying to publish my project on CodePup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific reasons for errors when publishing projects on CodePup AI. You may need to check the deployment overview or the \"How to Publish\" section for guidance on common issues.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/publish"
+      ],
+      "source_url": "https://docs.codepup.ai/features/publish",
+      "rag": null,
+      "fin": {
+        "answer": "Publishing errors usually happen when your project isn't ready for deployment. Here's what to check:Make sure your project is built successfully - you need to see the preview working without errors before you can publish.Check the publish process - click the Share button, then &quot;Generate shareable URL&quot; to deploy your project.If you're still getting errors, try breaking down what you're trying to do into smaller steps or ask our AI directly &quot;Why is this error happening?&quot; to get specific help with the issue.For custom domains, remember they can only be added after your project is already published and deployed.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the key differences between the Task Progress Panel and the All Tasks Completed views in CodePup AI's automation testing feature?",
+      "question_type": "comparison",
+      "gold_answer": "The Task Progress Panel displays the ongoing status of tasks being executed, showing real-time updates on their progress. In contrast, the All Tasks Completed view provides a summary of all tasks that have been finished, indicating their final outcomes and results.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/automation-testing"
+      ],
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": null,
+      "fin": {
+        "answer": "The Task Progress Panel shows real-time progress while CodePup AI is actively working. You'll see individual tasks being completed one by one, each getting a green checkmark as they finish - like &quot;✅ Deploy send-email edge function&quot; or &quot;✅ Create email service utility.&quot;The All Tasks Completed view appears after everything is done. It simply displays &quot;All tasks completed&quot; in green, confirming the entire process ran successfully with no errors. This is your signal that everything has been tested and verified.So the key difference is timing - the Task Progress Panel is the live, step-by-step view during the build, while All Tasks Completed is the final confirmation screen when everything's finished.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to upload a PNG image to CodePup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The provided context does not specify the reasons for errors when uploading PNG images to CodePup AI. Please check the platform's guidelines or support for specific upload requirements or limitations.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/use-images"
+      ],
+      "source_url": "https://docs.codepup.ai/features/use-images",
+      "rag": null,
+      "fin": {
+        "answer": "PNG files are definitely supported by CodePup AI, so the error might be related to file size or quality.For images, we support PNG, JPG, WebP, and GIF up to 10MB each. If your PNG is larger than 10MB, try compressing it first.Also, low resolution or heavily compressed images can sometimes cause issues with our processing. Make sure your PNG has decent quality and clarity.If you're still getting the error, try asking directly: &quot;Why is this error happening?&quot; or &quot;Fix this error&quot; - that usually helps identify the specific issue.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What types of tutorials are available in CodePup?",
+      "question_type": "simple",
+      "gold_answer": "The available tutorials in CodePup include Resume to Portfolio, Event Gallery, Games, ECommerce, Visualization Dashboard, Landing Page, Stripe Payment Integration, Analytics Dashboard, Supabase Integration, and Automation Testing.",
+      "gold_sources": [
+        "https://docs.codepup.ai/use-cases/video-tutorial"
+      ],
+      "source_url": "https://docs.codepup.ai/use-cases/video-tutorial",
+      "rag": null,
+      "fin": {
+        "answer": "We offer several tutorial options to help you get the most out of our platform:Demo videos - Quick recorded tutorials that walk you through featuresIn-app guidance - Tooltips and help text built right into the interfaceDocumentation - Our AI can generate user guides for your specific needsStep-by-step guides - Like our detailed portfolio creation tutorial that shows you how to build a professional portfolio in 15 minutes, complete with examples for different professions (designers, architects, developers, photographers)You can also get help from our Discord community where other users share tips and solutions",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the core features of Codepup AI, and how can I use them to generate and refine a website?",
+      "question_type": "multi_part",
+      "gold_answer": "The core features of Codepup AI include the ability to generate websites using natural-language prompts, allowing users to create various types of websites easily. You can use these features by inputting specific prompts related to your website's design and functionality, and the AI will generate the corresponding code and structure. Additionally, you can refine your website by providing further instructions or adjustments based on the initial output.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/chat-and-create"
+      ],
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": null,
+      "fin": {
+        "answer": "Codepup AI's core features include:Natural Language Generation - Create any website type using simple prompts in plain English, no coding needed.Conversational Editing - Refine your site by chatting naturally. Just describe changes like &quot;make the hero bigger&quot; or &quot;switch to dark theme&quot; and we'll update automatically.Live Preview - See updates instantly as your site regenerates.Version Control - Every version is saved so you can revert anytime.Built-in Integrations - Connect databases, authentication, payments (Stripe), and email (Resend) automatically.Three Project Types - Simple websites (frontend only), Interactive websites (full-stack with database), and E-commerce stores (complete with payments).How to use it:1. Describe - Write any prompt like &quot;Create a landing page with hero section and pricing table&quot; 2. Generate - We build the first working version instantly 3. Refine - Chat to make changes like &quot;add testimonials section&quot; or &quot;change colors&quot;You can build landing pages, portfolios, dashboards, SaaS products, and e-commerce stores - all through conversation!",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What is automation testing?",
+      "question_type": "simple",
+      "gold_answer": "Automation testing is a software testing technique that uses automated tools and scripts to execute tests on software applications, ensuring that they function as intended without manual intervention.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/automation-testing"
+      ],
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": null,
+      "fin": {
+        "answer": "Automation testing is our built-in quality check system that runs automatically every time we build or modify your project.It verifies everything works correctly before you even open your site - no manual testing needed on your part.What it checks:1. All pages load correctly 2. Forms and interactions work as expected 3. Payment flows process without errors 4. Email integrations send successfully 5. Database connections are live 6. Authentication flows function properlyYou can watch the entire testing process happen live in the chat as we work through each task. Once complete, you'll see &quot;All tasks completed&quot; confirming everything passed.It runs automatically on every significant build - new projects, payment integration, email setup, or any major feature addition.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What is included automatically in the Supabase integration?",
+      "question_type": "simple",
+      "gold_answer": "The context does not provide specific details about what is included automatically in the Supabase integration. Please refer to the original document for that information.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/supabase-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/supabase-integration",
+      "rag": null,
+      "fin": {
+        "answer": "When you create a project with us, the Supabase integration includes everything you need automatically:Core Features:1. PostgreSQL Database - stores all your app data (users, products, orders, etc.) 2. User Authentication - complete sign-up, login, and session management 3. File Storage - upload and serve images, videos, and files 4. Real-time Updates - live data streaming for chat and notifications 5. Edge Functions - serverless backend for payments and API calls 6. Row Level Security - keeps user data private and protectedWhat happens automatically:1. Organization and project creation 2. Database URLs and API keys injection 3. Schema generation based on your specific app 4. Auto-created storage buckets (avatars, uploads, product images) 5. Authentication wired into your login flowsYou don't need a Supabase account or any manual setup. We handle everything under the hood so your backend is ready the moment your project generates.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What features does Codepup AI's Version Control offer?",
+      "question_type": "simple",
+      "gold_answer": "Codepup AI's Version Control offers features such as an overview of version control, reasons for its importance, guidance on how to use it, instructions for updating live published sites, and a focus on enabling users to work fearlessly.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/version-control"
+      ],
+      "source_url": "https://docs.codepup.ai/features/version-control",
+      "rag": null,
+      "fin": {
+        "answer": "Our Version Control feature lets you safely experiment and restore previous versions of your project. Here's what it offers:Automatic Snapshots1. Saves up to 20 recent versions automatically 2. Creates a new snapshot with every regeneration or code edit 3. Older versions get pruned automatically, but your assets stay safeEasy Restoration1. Browse your project's timeline in the Version Control panel 2. Click any version to restore your entire project in seconds 3. No manual copying or rework neededPublished Site Updates1. Restoring a version won't automatically update your live site 2. You can update your published URL by clicking &quot;Generate Shareable URL&quot; after restoring 3. Your live link stays the same - only the version changesThis means you can experiment fearlessly knowing you can always roll back to any previous state.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the steps to connect my GitHub account, choose a repository name, and export or update my project using the GitHub integration?",
+      "question_type": "multi_part",
+      "gold_answer": "To connect your GitHub account, choose a repository name, and export or update your project using the GitHub integration, follow these steps:\n\n1. **Connect Your GitHub Account**: Follow the instructions provided in the integration documentation to link your GitHub account.\n2. **Choose a Repository Name**: Select a name for your repository as per the guidelines in the documentation.\n3. **Export or Update Your Project**: Use the relevant options in the integration to export your project or update it as needed.\n\nFor detailed instructions, refer to the specific sections in the documentation.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/github-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/github-integration",
+      "rag": null,
+      "fin": {
+        "answer": "Here's how to use our GitHub integration:1. Connect Your GitHub AccountClick &quot;Connect with GitHub&quot; to authenticate via OAuth. Once connected, your GitHub profile name and avatar will appear.2. Choose Your Repository NameEnter a repository name for your export. We pre-fill this with your project name, but you can edit it anytime.3. Export or Update Your Project1. First Export: Creates a new GitHub repository containing your generated project 2. Subsequent Exports: Pushes updates to the same repository, keeping your GitHub version history clear and consistentThe process is: Connect GitHub → Choose repo name → Export or Update.Note that GitHub integration is only available for paid plans - free-tier users can't connect or export projects to GitHub.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the key differences between the Traffic tab and the Audience tab in the Analytics Dashboard?",
+      "question_type": "comparison",
+      "gold_answer": "The Traffic tab focuses on metrics related to visitor activity over time, such as pageviews, visitors, and sessions. In contrast, the Audience tab typically provides insights into the demographics, interests, and behaviors of the users visiting the site.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/analytics-dashboard"
+      ],
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": null,
+      "fin": {
+        "answer": "The Traffic tab and Audience tab serve different purposes in our Analytics Dashboard:Traffic tab focuses on visitor activity over time. It tracks how your numbers change with graphs showing:1. Pageviews 2. Visitors 3. SessionsThis helps you spot traffic spikes, like after sharing your project on social media.Audience tab focuses on who your users are. It breaks down:1. Device types (mobile vs desktop) 2. Browser usageThis helps you understand your user base - for example, if most visitors use mobile, you'll know your responsive design is working well.Basically, Traffic shows the &quot;when and how much&quot; while Audience shows the &quot;who and what they're using.&quot;",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the requirements for integrating GitHub with CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "The specific requirements for integrating GitHub with CodePup AI are detailed in the \"Requirements\" section of the documentation. Please refer to that section for complete information.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/github-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/github-integration",
+      "rag": null,
+      "fin": {
+        "answer": "The main requirement for GitHub integration is having a paid plan - it's not available on our free tier.Once you're on a paid plan (Basic, Pro, or Advance), you can:• Connect through GitHub OAuth authentication• Choose or customize your repository name• Export projects to create new repos or update existing onesThe integration works with a simple one-click process: Connect GitHub → Choose repo name → Export or Update. Your GitHub profile and avatar will appear once connected, and subsequent exports update the same repository to maintain clean version history.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the differences between updating an API key for a live environment versus a test environment?",
+      "question_type": "comparison",
+      "gold_answer": "The context does not provide specific differences between updating an API key for a live environment versus a test environment. It only mentions that the process applies to both scenarios.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/environmental-variables"
+      ],
+      "source_url": "https://docs.codepup.ai/features/environmental-variables",
+      "rag": null,
+      "fin": {
+        "answer": "The process for updating API keys is identical whether you're switching to test or live environments - you use the same Key tab interface.The key differences are:Test keys (like sk_test_... for Stripe):1. Used for development and testing 2. Safe to experiment with 3. No real transactions processedLive keys (like sk_live_... for Stripe):1. Used for production environments 2. Process real payments and transactions 3. Require activated accounts (like Stripe account activation)Best practice: Always use test keys during development, then switch to live keys only when you're ready to go live. Changes take effect immediately without needing to redeploy your project.Both types are stored securely in Supabase Edge Function secrets and never exposed in your frontend code.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What types of image analysis does CodePup AI perform?",
+      "question_type": "simple",
+      "gold_answer": "CodePup AI performs the following types of image analysis: color extraction, text detection, asset placement, and SVG structure interpretation.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/use-images"
+      ],
+      "source_url": "https://docs.codepup.ai/features/use-images",
+      "rag": null,
+      "fin": {
+        "answer": "CodePup AI performs several types of image analysis:Color Palette Extraction - Analyzes uploaded images for dominant colors and generates theme-friendly palettes that can be applied to UI components or entire design systems.Text Recognition - Extracts text from screenshots, scanned documents, resumes, or any image containing readable text, making it usable in your projects.SVG and Icon Processing - Interprets SVG structure, icons, and graphical elements for integration into your UI components.Design Reference Analysis - Studies reference images to identify color palettes, layouts, and typography styles, then applies similar aesthetics to your projects.Image Optimization - Automatically optimizes images for web display, creates thumbnails, and handles file organization and imports.We support PNG, JPG, JPEG, SVG, and ICO formats. The analysis works best with clear, high-resolution images - low quality or heavily compressed images may reduce accuracy.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the sequential steps to set up a custom domain in CodePup AI after publishing my project?",
+      "question_type": "multi_part",
+      "gold_answer": "The sequential steps to set up a custom domain in CodePup AI after publishing your project are outlined in the \"Step-by-Step Setup Guide\" section of the documentation. Please refer to that section for detailed instructions.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/custom-domain"
+      ],
+      "source_url": "https://docs.codepup.ai/features/custom-domain",
+      "rag": null,
+      "fin": {
+        "answer": "Here are the steps to set up your custom domain after publishing:Step 1: Go to Publish → Custom Domain and click ➕ Add DomainStep 2: Enter your domain name without https:// or www (like example.com) and click Add DomainStep 3: Configure DNS records in your domain provider's dashboard using the exact records we show you:1. TXT record: _vercel with the verification value 2. A record: @ pointing to 216.150.1.1Step 4: Wait for DNS propagation (up to 48 hours) then click Verify DomainOnce verified, your domain status changes to &quot;Active&quot; and HTTPS is automatically enabled. We handle SSL certificates and renewals for you.The key is making sure your project is already published before starting - custom domains only work after deployment.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to generate a website using Codepup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The error could be due to various reasons such as incorrect prompt format, server issues, or limitations in the Codepup AI system. Check your prompt for clarity and ensure that the service is operational.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/chat-and-create"
+      ],
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": null,
+      "fin": {
+        "answer": "There are a few common reasons you might be hitting an error during website generation. Try breaking your instruction into smaller, more specific steps instead of one big request.For example, start with something simple like &quot;Create a landing page for my product&quot; and then add details step by step rather than describing everything at once.You can also try rephrasing your request or ask our AI directly &quot;Why is this error happening?&quot; or &quot;Fix this error&quot; in the chat.If you're still stuck, share the specific error message you're seeing and describe exactly what you were trying to generate - this helps pinpoint what's going wrong.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the health benefits of regularly consuming green tea?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "gold_sources": [
+        ""
+      ],
+      "source_url": "",
+      "rag": null,
+      "fin": {
+        "answer": "I'm sorry, but I couldn't find any information about the health benefits of green tea in our resources. Could you please rephrase your question or let me know if there's something else I can assist you with?",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to deploy my web application with CodePup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific information about deployment errors with CodePup AI. For assistance, you may need to consult the documentation or support resources available on the CodePup AI website.",
+      "gold_sources": [
+        "https://docs.codepup.ai"
+      ],
+      "source_url": "https://docs.codepup.ai",
+      "rag": null,
+      "fin": {
+        "answer": "There are a few common reasons deployment errors happen. First, try breaking your instruction into smaller steps or rephrasing your request.You can also ask our AI directly: &quot;Why is this error happening?&quot; or &quot;Fix this error&quot; to get specific help.For better debugging, include:1. The exact error message from your browser console 2. Which page or component has the issue 3. Steps to reproduce the problem 4. What you expected vs what's actually happeningIf testing fails during deployment, our system will show the error in chat and automatically attempt to fix it, then re-run tests to confirm everything works.What specific error message are you seeing? That'll help me give you more targeted guidance.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the nutritional benefits of incorporating kale into your diet?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "gold_sources": [
+        ""
+      ],
+      "source_url": "",
+      "rag": null,
+      "fin": {
+        "answer": "",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "How do I publish my project to enable domain support?",
+      "question_type": "simple",
+      "gold_answer": "To publish your project and enable domain support, go to your project dashboard and click **Generate sharable URL**.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/custom-domain"
+      ],
+      "source_url": "https://docs.codepup.ai/features/custom-domain",
+      "rag": null,
+      "fin": {
+        "answer": "To publish your project and enable domain support, follow these steps:1. Open your project in CodePup AI and make sure your app preview is working without errors 2. Click the Share button in the top-right corner, then select Generate shareable URLThis publishes your project and creates a live URL. Publishing is required before you can add custom domainsOnce published, you can add a custom domain by going to Publish → Custom Domain and clicking the ➕ Add Domain buttonThe publishing process is free and takes about 30 seconds to deploy",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to open the AI Assistant in the Codepup CMS?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific reasons for errors when opening the AI Assistant in the Codepup CMS. You may need to check for issues such as internet connectivity, browser compatibility, or software updates.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/cms"
+      ],
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": null,
+      "fin": {
+        "answer": "There are a few common reasons why the AI Assistant might not open in the CMS:First, make sure you're accessing it correctly:1. Open your project and click the database icon (cylinder with lightning bolt ⚡) in the top-right toolbar 2. In the CMS panel, look for &quot;AI Assistant&quot; at the top of the left sidebar and click itIf you're still getting an error, try these troubleshooting steps:1. Break down what you're trying to do into smaller steps 2. Try rephrasing your request 3. Ask our AI directly: &quot;Why is this error happening?&quot; or &quot;Fix this error&quot;For better debugging, it helps to provide:1. The exact error message you're seeing 2. What page or section you're on when it happens 3. What you expected vs what actually happenedCan you share the specific error message you're seeing? That'll help pinpoint the exact issue.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What image formats can I upload to CodePup AI, and what functionalities can I utilize with these images?",
+      "question_type": "multi_part",
+      "gold_answer": "The context does not specify the image formats that can be uploaded to CodePup AI. However, it indicates that users can utilize various functionalities related to image understanding and integration. For specific image formats, please refer to the official documentation.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/use-images"
+      ],
+      "source_url": "https://docs.codepup.ai/features/use-images",
+      "rag": null,
+      "fin": {
+        "answer": "You can upload PNG, JPG, JPEG, SVG, and ICO formats to our platform. For portfolios, we also support WebP and GIF files up to 10MB each.Here's what you can do with these images:Extract Color Palettes - We analyze your images for dominant colors and create theme-friendly palettes for your UI components or entire design system.Read Text from Images - Whether it's screenshots, scanned documents, or resumes, we extract text and make it usable in your projects.Process Vector Files - SVG and ICO files are fully supported. We interpret SVG structure and icons for UI integration.Direct Image Placement - You can request images be placed into galleries, hero sections, profile areas, or custom layouts during project modifications.Design Inspiration - Upload reference images for color schemes, layouts, or typography styles, and we'll analyze and apply similar aesthetics to your project.All uploaded images are automatically optimized for web display and stored securely.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What should I never share in prompts while using CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "You should never share secrets in prompts while using CodePup AI.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/security"
+      ],
+      "source_url": "https://docs.codepup.ai/features/security",
+      "rag": null,
+      "fin": {
+        "answer": "Never include these sensitive items directly in your prompts:• Passwords• API keys• Access tokens• Database connection strings• Secrets embedded in code blocksInstead, use our secure dialog boxes that appear before generation starts - these safely handle API keys for services like Stripe, Supabase, and Resend without exposing them in your prompt.If you put secrets directly in prompts, you're responsible for any potential misuse since we can't protect credentials manually included there.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What can Codepup AI AI do with natural-language prompts?",
+      "question_type": "simple",
+      "gold_answer": "Codepup AI AI can generate any type of website using simple natural-language prompts.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/chat-and-create"
+      ],
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": null,
+      "fin": {
+        "answer": "",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are some free traffic sources for marketing my dropshipping store?",
+      "question_type": "simple",
+      "gold_answer": "Some free traffic sources for marketing your dropshipping store include Instagram Organic, where you can post product photos/videos daily, use trending hashtags in your niche, engage with potential customers, and include a link to your store in your bio.",
+      "gold_sources": [
+        "https://docs.codepup.ai/use-cases/dropshipping-site"
+      ],
+      "source_url": "https://docs.codepup.ai/use-cases/dropshipping-site",
+      "rag": null,
+      "fin": {
+        "answer": "",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I unable to connect my project to GitHub even though I'm on a paid plan?",
+      "question_type": "troubleshoot",
+      "gold_answer": "GitHub export is only available on paid plans; if you still can't connect, re-run the Connect with GitHub flow (open your project → Connect with GitHub → sign in via GitHub OAuth → confirm your GitHub account), then enter a repository name and export; if the issue persists, capture any error message and contact support for assistance.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/github-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/github-integration",
+      "rag": null,
+      "fin": {
+        "answer": "I'm routing you to our human team now. They'll be able to assist you better.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What does automation testing cover?",
+      "question_type": "simple",
+      "gold_answer": "Automation testing covers every major part of your project, specifically checking that every page loads without errors.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/automation-testing"
+      ],
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": null,
+      "fin": {
+        "answer": "Automation testing covers the key parts of your app to make sure it works end to end after a build or change.It checks things like: Pages load and routes navigate correctly Forms and UI interactions work Authentication (login, signup, sessions) Database reads and writes (Supabase) Payments (Stripe checkout and webhooks) Emails (Resend sending) Admin dashboard and profile pages It runs automatically on every significant build or modification, with no setup needed.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What steps do I need to follow to add a new product and manage users using the Codepup AI CMS?",
+      "question_type": "multi_part",
+      "gold_answer": "To add a new product and manage users using the Codepup AI CMS, follow these steps:\n\n1. Access the Codepup AI dashboard.\n2. Navigate to the CMS section.\n3. Use the visual interface to add a new product by filling in the required details.\n4. To manage users, go to the user management section within the CMS.\n5. Perform actions such as adding, editing, or removing users as needed.\n\nFor a detailed guide, consider watching the video walkthrough provided in the CMS documentation.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/cms"
+      ],
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": null,
+      "fin": {
+        "answer": "To add a new product and manage users, use our built-in CMS from your project dashboard. Steps: Open the CMS: click the database icon (cylinder with a lightning bolt) in the top right. Add a product (fastest): click AI Assistant and type something like “Add 5 products: laptops, mice, keyboards, monitors, webcams.” Review the plan, then Confirm. Add a product (manual): select the Products table, click Add New, fill the fields, then Add Row. Manage users: select the Profiles (or users) table and add or edit rows there (manual), or ask the AI Assistant to “Create 10 users with realistic names and emails.” New products and users show up live on your site right away.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I unable to add my custom domain after publishing my project?",
+      "question_type": "troubleshoot",
+      "gold_answer": "You may be unable to add your custom domain because you have not yet published your project. Ensure that you click **Generate sharable URL** from your project dashboard to deploy your project and enable domain support.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/custom-domain"
+      ],
+      "source_url": "https://docs.codepup.ai/features/custom-domain",
+      "rag": null,
+      "fin": {
+        "answer": "The most common reason is that your project needs to be fully deployed first. Custom domains can only be added after deployment, not just publishing.Here's what to check:1. Make sure you clicked &quot;Generate shareable URL&quot; - this actually deploys your project and enables domain support 2. Look for the error message - if your project isn't deployed yet, you'll see a message telling you to go back and generate the shareable URL first 3. Wait for deployment to complete - the custom domain option only appears after your project is fully deployedOnce deployed, you should be able to go to Publish → Custom Domain and click the ➕ Add Domain button.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "How can I open the Analytics Dashboard in CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "To open the Analytics Dashboard in CodePup AI, refer to the section titled \"How to Open Analytics\" in the documentation.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/analytics-dashboard"
+      ],
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": null,
+      "fin": {
+        "answer": "To open the Analytics Dashboard in your CodePup AI project:1. Open your CodePup AI project 2. Click the 📊 Analytics icon in the top toolbar 3. The Analytics Dashboard will openThat's it! The dashboard gives you real-time insights into your website traffic, visitor data, and user behavior.Keep in mind that analytics only work after your website is deployed or shared via a public link - preview mode won't track any data.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the key differences between using CodePup AI as a developer assistant versus traditional coding methods?",
+      "question_type": "comparison",
+      "gold_answer": "The key differences between using CodePup AI as a developer assistant and traditional coding methods include:\n\n1. **Speed**: CodePup AI can turn ideas into fully functional web applications in minutes, whereas traditional coding methods typically take much longer.\n2. **Automation**: CodePup AI automates the coding, design, and deployment processes, while traditional methods require manual coding and separate steps for design and deployment.\n3. **Ease of Use**: Users can simply describe their requirements to CodePup AI, making it more accessible for those without extensive coding knowledge, unlike traditional methods that require programming skills.\n4. **Seamless Workflow**: CodePup AI provides an integrated workflow, combining all aspects of development in one platform, whereas traditional methods often involve multiple tools and processes.",
+      "gold_sources": [
+        "https://docs.codepup.ai"
+      ],
+      "source_url": "https://docs.codepup.ai",
+      "rag": null,
+      "fin": {
+        "answer": "The main differences are speed and complexity handling. With traditional coding, you'd spend weeks setting up boilerplate code, configuring databases, and connecting services manually.CodePup AI lets you describe what you want in plain English and generates production-ready code instantly using React, Node.js, and TailwindCSS. Instead of writing everything from scratch, you can build full-stack apps with backend logic, database integration, and authentication automatically connected.For developers, it means skipping repetitive setup work and focusing on complex logic instead. You still get real, clean code that you can export and deploy anywhere - no vendor lock-in.Traditional development might take 2-6 months for internal tools, while CodePup AI builds them in 30-60 minutes.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What file types are supported by the CodePup AI Visualization Dashboard?",
+      "question_type": "simple",
+      "gold_answer": "The specific supported file types are not listed in the provided context. Please refer to the \"Supported File Types\" section in the documentation for detailed information.",
+      "gold_sources": [
+        "https://docs.codepup.ai/use-cases/visualization-dashboard"
+      ],
+      "source_url": "https://docs.codepup.ai/use-cases/visualization-dashboard",
+      "rag": null,
+      "fin": {
+        "answer": "Our Visualization Dashboard supports three file types:• .csv files• .xlsx files• .xls filesWe automatically clean and prepare your data - fixing column names, formatting issues, and trimming empty rows so your dashboard renders consistently.Keep in mind there's a limit of 1,000 records for optimal performance, so larger datasets might need trimming before upload.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the differences between using natural-language prompts for website generation and manually coding a website from scratch?",
+      "question_type": "comparison",
+      "gold_answer": "Using natural-language prompts for website generation allows for quicker and more intuitive creation, as users can describe their needs in plain language without needing coding skills. In contrast, manually coding a website from scratch requires technical knowledge, attention to detail, and can be more time-consuming. Natural-language prompts streamline the process, while manual coding offers greater control and customization.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/chat-and-create"
+      ],
+      "source_url": "https://docs.codepup.ai/features/chat-and-create",
+      "rag": null,
+      "fin": {
+        "answer": "The main differences are speed, complexity, and skill requirements:Natural-language prompts (like CodePup AI):1. Generate websites in minutes (15-30 minutes for most projects) 2. No coding knowledge needed - just describe what you want in plain English 3. Automatically handles backend, database, authentication, and integrations 4. Instant live preview and conversational editingManual coding from scratch:1. Takes weeks to months of development time 2. Requires extensive technical knowledge (HTML, CSS, JavaScript, backend languages) 3. Manual setup of hosting, security, databases, and third-party integrations 4. Costs $500-$50k in developmentWith natural-language generation, you simply chat to make changes like &quot;make the hero bigger&quot; or &quot;switch to dark theme&quot; and it updates automatically . Manual coding requires writing and debugging code for every change.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "How long does it take to build an ecommerce store with CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "Typically 30 minutes from initial prompt to a fully functional store.",
+      "gold_sources": [
+        "https://docs.codepup.ai/use-cases/ecommerce-store"
+      ],
+      "source_url": "https://docs.codepup.ai/use-cases/ecommerce-store",
+      "rag": null,
+      "fin": {
+        "answer": "It takes about 30 minutes to build a fully functional ecommerce store with CodePup AI.This includes everything you need - product catalog, shopping cart, checkout, payment processing with Stripe, user authentication, admin panel, and email notifications. You just describe your store vision in plain English and we handle all the technical setup automatically.If you want additional customization beyond the initial build, that might take a bit longer depending on what changes you need.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What is Resend?",
+      "question_type": "simple",
+      "gold_answer": "Resend is a service that allows users to send emails and manage email communications efficiently.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/resend-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/resend-integration",
+      "rag": null,
+      "fin": {
+        "answer": "Resend is a modern email API built for developers that focuses on excellent deliverability and a simple API.With our Resend integration, you can send reliable, production-ready emails from your Codepup AI project without any SMTP setup or extra infrastructure.You can use it to send:- Authentication emails (OTP, magic links)- Order confirmation emails- Contact form submissions- Notifications and alerts- System-generated emails from your appWe automatically connect your project to Resend's email delivery system - no boilerplate code needed.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the three project types supported by CodePup AI?",
+      "question_type": "simple",
+      "gold_answer": "The context does not specify the three project types supported by CodePup AI.",
+      "gold_sources": [
+        "https://docs.codepup.ai/introduction/getting-started"
+      ],
+      "source_url": "https://docs.codepup.ai/introduction/getting-started",
+      "rag": null,
+      "fin": {
+        "answer": "We support three project types:Simple Website - Frontend-only sites with no backend needed. Perfect for landing pages, portfolios, and marketing sites.Interactive Website - Full-stack sites with database functionality, authentication, and APIs. Ideal for SaaS platforms and dashboards.E-Commerce Store - Complete online stores with database, Stripe payment integration, and Resend email notifications.Each type is optimized for different use cases, so you can pick what fits your project best!",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What steps do I need to follow to use CodePup AI to turn my idea into a fully functional web application, and what types of users is it built for?",
+      "question_type": "multi_part",
+      "gold_answer": "To use CodePup AI to turn your idea into a fully functional web application, you simply need to describe what you want, and CodePup AI will handle the coding, design, and deployment in one seamless workflow. \n\nCodePup AI is built for everyone, making it accessible to a wide range of users.",
+      "gold_sources": [
+        "https://docs.codepup.ai"
+      ],
+      "source_url": "https://docs.codepup.ai",
+      "rag": null,
+      "fin": {
+        "answer": "Here's how to turn your idea into a web app with us:Steps to get started:1. Visit codepup.ai (https://codepup.ai) and sign up 2. Choose your project type - Simple Website (frontend only), Interactive Website (full-stack with database), or E-Commerce Store 3. Describe your idea in plain English - just type what you want 4. We instantly generate your first working version 5. Refine by chatting - say things like &quot;make the hero bigger&quot; or &quot;switch to dark theme&quot;Who we're built for:We're designed for everyone - from complete beginners to professional developers. Non-technical users can build and launch products without writing code, while developers use us to speed up development and focus on complex logic .Perfect for founders building MVPs, designers creating UIs, students learning web tech, and developers skipping boilerplate work. You can build anything from landing pages to SaaS products, e-commerce stores, and dashboards .No coding experience needed - just describe your vision and we handle the rest!",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the main ingredients needed to make a traditional lasagna?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "gold_sources": [
+        ""
+      ],
+      "source_url": "",
+      "rag": null,
+      "fin": {
+        "answer": "I'm sorry, but I couldn't find any information about the main ingredients for traditional lasagna in our resources. Could you please rephrase your question or let me know if there's anything else I can assist you with?",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I unable to restore an older version of my project using version control?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The context does not provide specific reasons for being unable to restore an older version of a project using version control. You may need to check the version control documentation or troubleshoot potential issues such as missing commits, incorrect branch selection, or lack of permissions.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/version-control"
+      ],
+      "source_url": "https://docs.codepup.ai/features/version-control",
+      "rag": null,
+      "fin": {
+        "answer": "There are a few reasons why you might not be able to restore an older version:Version limit: We only keep your latest 20 versions automatically - older ones get pruned, so if you're looking for something beyond that, it won't be available.Fullstack projects: Version control currently works for frontend projects only. If you're working on a fullstack project, versioning isn't fully supported yet.Access issue: Make sure you're looking in the Version Control panel in the left sidebar of your project. You should see a list of saved versions there that you can click to restore.If you can see the version you want but clicking it isn't working, try refreshing the page and attempting the restore again.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the nutritional benefits of incorporating quinoa into your diet?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "gold_sources": [
+        ""
+      ],
+      "source_url": "",
+      "rag": null,
+      "fin": {
+        "answer": "I'm sorry, but I couldn't find any information about the nutritional benefits of quinoa in our resources. Could you please rephrase your question or let me know if there's something else I can assist you with?",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the differences between using the AI Assistant to add data and manually inputting data in the Codepup AI CMS?",
+      "question_type": "comparison",
+      "gold_answer": "The context does not provide specific details on the differences between using the AI Assistant to add data and manually inputting data in the Codepup AI CMS. For accurate information, please refer to the relevant sections of the documentation.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/cms"
+      ],
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": null,
+      "fin": {
+        "answer": "The main differences are speed and control:AI Assistant:1. Fastest method - just describe what you want in plain English 2. Perfect for bulk data entry (like &quot;Add 10 products with realistic details&quot;) 3. Shows you a plan before making changes so you can review first 4. Great for test data and quick populationManual Entry:1. Full control over every single field 2. Add data one row at a time using forms 3. Better when you need precise control over specific records 4. Each field type works differently (text, dropdowns, numbers)Both methods update your live website instantly. Use AI Assistant when you need to add lots of data quickly, and manual entry when you want exact control over individual records.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What can you manage using the Codepup AI CMS?",
+      "question_type": "simple",
+      "gold_answer": "You can manage products, users, track orders, and seed test data using the Codepup AI CMS.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/cms"
+      ],
+      "source_url": "https://docs.codepup.ai/features/cms",
+      "rag": null,
+      "fin": {
+        "answer": "With our CMS, you can manage your website's entire database content through a clean visual interface - no SQL or coding needed.You can:1. Add and manage products for your store 2. Track and update orders 3. Manage user accounts and data 4. View, edit, or delete any database records 5. Seed test data for developmentThe CMS offers two ways to work with your data:1. Manual entry through simple forms 2. AI Assistant where you describe what you want in plain English and it handles the bulk workEverything updates live on your website instantly, so you see changes right away.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the differences between using a sharable URL and a custom domain for publishing your project in CodePup AI?",
+      "question_type": "comparison",
+      "gold_answer": "The differences between using a sharable URL and a custom domain for publishing your project in CodePup AI include:\n\n1. **URL Format**: A sharable URL is typically a generic link provided by CodePup AI, while a custom domain allows you to use your own personalized web address.\n2. **Branding**: A custom domain enhances branding and professionalism, making it easier for users to remember and trust your project.\n3. **Control**: With a custom domain, you have more control over the domain name and can manage it independently, whereas a sharable URL is managed by CodePup AI.\n4. **SEO Benefits**: A custom domain can improve search engine optimization (SEO) compared to a generic sharable URL.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/custom-domain"
+      ],
+      "source_url": "https://docs.codepup.ai/features/custom-domain",
+      "rag": null,
+      "fin": {
+        "answer": "Here are the key differences:Sharable URL:1. Free automatic subdomain (like yourproject.codepup.ai) 2. Generated instantly when you publish 3. Includes CodePup AI branding 4. Perfect for testing and quick sharingCustom Domain:1. Your own professional domain (like yoursite.com) 2. Builds real brand identity and looks more trustworthy 3. Can remove CodePup AI branding (plan dependent) 4. Requires DNS setup and domain ownership 5. Better for client projects and production sitesBoth options include free SSL, automatic hosting, and the same deployment features. You start with a sharable URL, then can add a custom domain later for a more professional presence.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "How can I share my portfolio website?",
+      "question_type": "simple",
+      "gold_answer": "You can share your portfolio website by including the URL in your resume, adding it to your LinkedIn headline and featured section, linking it in your email signature, sharing it in your social media bio, including it with job applications and cover letters, and using a QR code or short URL on your business cards.",
+      "gold_sources": [
+        "https://docs.codepup.ai/use-cases/portfolio-website"
+      ],
+      "source_url": "https://docs.codepup.ai/use-cases/portfolio-website",
+      "rag": null,
+      "fin": {
+        "answer": "Once your portfolio is ready, click &quot;Publish&quot; in the dashboard to get a live, shareable link. You can also click the Share button and select Generate shareable URL to create your public link.Here are great ways to share it:1. Add the URL to your resume under contact info 2. Include it in your LinkedIn headline and featured section 3. Add to your email signature for all professional emails 4. Share in social media bio links 5. Include with job applications and cover letters 6. Add to business cards with a QR codeYour link stays the same even when you update your portfolio, so you won't need to reshare it.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What should I do if I'm getting an error when entering my Resend API Key in Codepup AI?",
+      "question_type": "troubleshoot",
+      "gold_answer": "If you're getting an error when entering your Resend API Key in Codepup AI, double-check that the key is correctly copied and pasted without any extra spaces or characters. If the issue persists, consult the documentation for troubleshooting tips or contact support for assistance.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/resend-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/resend-integration",
+      "rag": null,
+      "fin": {
+        "answer": "If you're getting an error with your Resend API key, here are a few things to check:Double-check your API key format - Make sure it starts with re_ and you copied the complete key. Resend only shows the key once after creation, so if you missed part of it, you'll need to create a new one.Try these troubleshooting steps:1. Break your request into smaller steps or rephrase it 2. Ask our AI directly &quot;Why is this error happening?&quot; or &quot;Fix this error&quot;Update your key if needed - Go to the Key tab in your project and paste your Resend API key in the Resend API Key field. Leave other fields empty to keep existing values.Verify your Resend setup - Make sure you have a verified sender email or domain in your Resend account before using the API key.If the error persists after checking these, try creating a fresh API key in your Resend dashboard.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I getting an error when trying to manage my data in the Codepup AI CMS?",
+      "question_type": "troubleshoot",
+      "gold_answer": "The error may be due to issues with your Codepup AI account or a temporary problem with the CMS. Since you don't need to access Supabase directly, ensure your Codepup AI account is active and check the CMS documentation for troubleshooting steps.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/supabase-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/supabase-integration",
+      "rag": null,
+      "fin": {
+        "answer": "CMS errors usually happen for a few common reasons. Try these steps:Break down your request - If you're using the AI assistant to add data, make your instructions smaller and more specific.Check table dependencies - Always populate parent tables first (like Categories, Profiles) before adding to child tables (like Products, Orders). Empty dropdowns mean the related table needs data first.Be more specific - Instead of vague requests, describe exactly what you're trying to do, which page/section you're on, and what error message you're seeing.You can also ask our AI directly: &quot;Why is this error happening?&quot; or &quot;Fix this error&quot; with the specific details.What specific error are you seeing and what were you trying to do when it happened?",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the steps to use version control in CodePup AI, and how can I update my live published site after making changes?",
+      "question_type": "multi_part",
+      "gold_answer": "To use version control in CodePup AI, follow these steps:\n\n1. **Overview**: Familiarize yourself with the version control features.\n2. **Why This Matters**: Understand the importance of version control for your projects.\n3. **How to Use Version Control**: Implement version control by following the specific guidelines provided in the documentation.\n4. **Work Fearlessly**: Utilize version control to make changes without fear of losing previous work.\n\nTo update your live published site after making changes, refer to the section on \"Updating Your Live Published Site\" in the documentation for detailed instructions.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/version-control"
+      ],
+      "source_url": "https://docs.codepup.ai/features/version-control",
+      "rag": null,
+      "fin": {
+        "answer": "Here's how to use version control and update your live site:Using Version Control:1. Open your project and find the Version Control panel in the left sidebar 2. Browse through your saved versions - we automatically store your latest 20 versions 3. Click on any older version you want to restore 4. Your entire project regenerates to that earlier state within secondsUpdating Your Live Published Site:If your project is already published, restoring a version won't automatically update your live link. To apply the restored version:1. After restoring your desired version, open the Publish or Share section 2. Click Generate Shareable URL 3. Your same live link updates with the newly selected version - the URL stays the sameEvery regeneration or code edit creates a new snapshot automatically, so you can experiment freely knowing you can always roll back!",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the differences between embedding videos from a valid URL and embedding videos specifically from YouTube in CodePup AI?",
+      "question_type": "comparison",
+      "gold_answer": "The differences between embedding videos from a valid URL and embedding videos specifically from YouTube in CodePup AI are not detailed in the provided context. For specific differences, one would need to refer to the sections on \"Supported Sources\" and \"Limitations\" in the documentation.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/embed-video"
+      ],
+      "source_url": "https://docs.codepup.ai/features/embed-video",
+      "rag": null,
+      "fin": {
+        "answer": "There's actually no functional difference between embedding YouTube videos and other valid video URLs in CodePup AI. We support embedding videos from any accessible URL - whether it's YouTube, Vimeo, cloud storage links, CDNs, or private blob storage.The process is identical for all sources: just paste any valid video URL in your prompt, specify where you want it placed, and we'll generate a responsive video component with the same customization options (autoplay, loop, mute, controls, etc.) regardless of the source.YouTube is just one of many supported platforms - there's no special treatment or different functionality for YouTube specifically compared to other video sources.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What video sources does CodePup AI support for embedding?",
+      "question_type": "simple",
+      "gold_answer": "CodePup AI supports embedding videos from YouTube, Vimeo, cloud and CDN video URLs, private blob storage links, internal media servers, and any public video payload with a valid MIME type.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/embed-video"
+      ],
+      "source_url": "https://docs.codepup.ai/features/embed-video",
+      "rag": null,
+      "fin": {
+        "answer": "We support embedding videos from any valid video URL! This includes:• YouTube and Vimeo• Cloud and CDN video URLs• Private blob storage links• Internal media servers• Any public video with a valid MIME typeJust paste any accessible video link into your prompt and we'll embed it directly into your project - whether it's a landing page, blog, dashboard, or full UI.The only requirement is that videos must be accessible via URL. We don't support direct uploads from your device yet, and private links behind authentication might not work unless they're publicly accessible.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What steps do I need to take to test my payment integration using the provided test card, and how can I switch from test payments to live payments after confirming the payment flow is working?",
+      "question_type": "multi_part",
+      "gold_answer": "To test your payment integration using the provided test card, follow these steps:\n\n1. **Integrate Stripe**: Ensure that you have integrated Stripe into your project as per the guidelines provided by CodePup AI.\n2. **Use Test Card**: On your checkout page, enter the test card number `4242 4242 4242 4242`, any future expiry date, and any 3-digit CVC.\n3. **Confirm Payment Flow**: Complete the checkout process to simulate a successful payment. Verify that the order is confirmed.\n\nAfter confirming that the payment flow is working:\n\n1. **Switch to Live Payments**: To switch from test payments to live payments, visit your Stripe dashboard and update your API keys from test to live mode.\n2. **Adjust Checkout Style**: If needed, you can ask CodePup AI in the chat to help switch or adjust the checkout style for live payments.",
+      "gold_sources": [
+        "https://docs.codepup.ai/integration/stripe-integration"
+      ],
+      "source_url": "https://docs.codepup.ai/integration/stripe-integration",
+      "rag": null,
+      "fin": {
+        "answer": "To test your payment integration, visit your published website and go through the checkout flow.Use this test card info:1. Card Number: 4242 4242 4242 4242 2. Expiry: Any future date 3. CVC: Any 3 digitsThis simulates a successful payment without charging real money.To switch to live payments:1. Go to your Stripe Dashboard and activate your account 2. Copy your Live Secret Key (starts with sk_live_...) 3. In our chat, click the Key tab 4. Replace your test key with the Live Secret KeyA successful test order confirms your entire payment flow works - from checkout to database to Stripe.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the specific areas that get tested during automation, and how does Codepup AI ensure that every page loads without errors?",
+      "question_type": "multi_part",
+      "gold_answer": "The specific area that gets tested during automation is **Pages & Routes**, where Codepup AI ensures that every page loads without errors by navigating through the site and checking each feature automatically in real-time.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/automation-testing"
+      ],
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": null,
+      "fin": {
+        "answer": "Our automation testing covers all the major areas of your project:Core Areas Tested:1. Pages &amp; Routes - Every page loads without errors 2. Frontend UI - Components render correctly across the site 3. Authentication - Login, signup, and session flows 4. Database - Data reads and writes to Supabase 5. Payments - Stripe checkout and webhook flows 6. Emails - Resend integration sends properly 7. Admin Dashboard - Data loads and displays correctly 8. Profile &amp; Account - User profile pages update and saveHow We Ensure Pages Load:The system runs automated checks on every route and page in your application. You can actually watch this happen live in the chat - there's a dedicated testing panel that shows the current page being tested (like /profile or /checkout) with a pass/fail count.If any page fails to load or has errors, our system automatically detects it, surfaces the error in chat, attempts to fix it, then re-runs the tests to confirm everything works.This all happens automatically after every build or modification - no manual testing needed on your end.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the steps to open the Analytics Dashboard, and what key insights can I find regarding traffic and audience?",
+      "question_type": "multi_part",
+      "gold_answer": "To open the Analytics Dashboard, follow these steps:\n\n1. Navigate to the CodePup AI platform.\n2. Locate the Analytics section in the menu.\n3. Click on the Analytics Dashboard option.\n\nIn the Analytics Dashboard, you can find key insights regarding traffic and audience, including metrics such as user engagement, visitor demographics, and traffic sources.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/analytics-dashboard"
+      ],
+      "source_url": "https://docs.codepup.ai/features/analytics-dashboard",
+      "rag": null,
+      "fin": {
+        "answer": "To open the Analytics Dashboard:1. Open your Codepup AI project 2. Click the 📊 Analytics icon in the top toolbar 3. The Analytics Dashboard will openTraffic insights you'll find:1. Pageviews over time 2. Visitor counts 3. Session tracking 4. Traffic spikes (helpful for seeing results after sharing on social media)Audience insights include:1. Device breakdown (mobile vs desktop usage) 2. Browser usage patternsThe dashboard also shows your overall performance with total pageviews, visitors, sessions, bounce rate, and average session duration. Plus you can see your top-performing pages and individual user journeys to understand where people drop off.Note that analytics only work after your website is deployed or shared via a public link - preview mode won't track any data.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why is my video not embedding even though I used a valid URL?",
+      "question_type": "troubleshoot",
+      "gold_answer": "Your video may not be embedding because it could be from a source that is not supported by CodePup AI, or it may not have a valid MIME type. Additionally, ensure that the video is not a private upload, as CodePup AI does not support video uploads.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/embed-video"
+      ],
+      "source_url": "https://docs.codepup.ai/features/embed-video",
+      "rag": null,
+      "fin": {
+        "answer": "Even with a valid URL, there are a few common reasons why video embedding might not work:Access restrictions - If your video is hosted behind authentication or uses temporary tokens, it needs to be publicly accessible for embedding to work.Private links - Videos on private blob storage or internal servers may not render unless they're publicly accessible without authentication.URL format - Make sure you're using the direct video URL, not a page URL. We support YouTube, Vimeo, CDN links, and any public video with a valid MIME type.Try testing your URL in a private browser window to see if it loads without any login prompts. If it requires authentication, you'll need a direct public link for embedding to work properly.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why am I getting an error related to API keys when I try to generate a project?",
+      "question_type": "troubleshoot",
+      "gold_answer": "You may be encountering an error related to API keys because they are required for validating service connections, setting up environment variables, or auto-configuring integrations. Ensure that you have entered the correct API keys and that they are properly configured before attempting to generate the project.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/security"
+      ],
+      "source_url": "https://docs.codepup.ai/features/security",
+      "rag": null,
+      "fin": {
+        "answer": "API key errors during project generation usually happen when keys are missing, incorrect, or entered in the wrong format.Here's what to check:For secure dialog boxes: Make sure you're entering keys in the dedicated secure dialogs that appear before generation starts, not in your main prompt. Never include API keys directly in your project description.Common key issues:1. Wrong Stripe key (test vs live) 2. Expired or revoked keys 3. Typos when copying from your dashboardWhere to find your keys:1. Stripe: Dashboard → Developers → API Keys 2. Resend: Your Resend Dashboard → API KeysTry re-entering your keys carefully, double-checking they're copied correctly from your service dashboards. If you're still getting errors, the key might be expired or you may need to generate a fresh one.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What steps should I take to ensure my API keys remain secure while using CodePup AI, and how does the platform handle sensitive information included in prompts?",
+      "question_type": "multi_part",
+      "gold_answer": "To ensure your API keys remain secure while using CodePup AI, follow these steps:\n\n1. **Use Dialog Boxes**: Enter your API keys in the dialog boxes that appear before generation begins, as this keeps them isolated from your main prompt.\n2. **Avoid Sharing Secrets**: Do not share sensitive information in prompts, as CodePup AI is not responsible for secrets shared in Pro.\n\nRegarding how the platform handles sensitive information, your API keys are used solely for validating service connections, setting up environment variables, and auto-configuring integrations. They are never logged or stored elsewhere, and are not included in analytics or training operations.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/security"
+      ],
+      "source_url": "https://docs.codepup.ai/features/security",
+      "rag": null,
+      "fin": {
+        "answer": "Here's how to keep your API keys secure with us:Never put secrets in prompts - avoid entering passwords, API keys, tokens, or database strings directly in your natural language prompts.Use our secure dialog boxes - when generating projects that need external services, we provide dedicated secure dialogs for entering secrets like Supabase tokens, Stripe keys, and Resend API keys. These appear before generation begins and keep secrets isolated from your main prompt.How we handle your keys:1. They're stored in encrypted Supabase Edge Function secrets, never in frontend code 2. Only used for validating connections and setting up environment variables 3. Never logged, stored elsewhere, or included in analyticsBest practices:1. Rotate keys periodically 2. Use development-only keys during testing 3. Keep separate keys for development and productionImportant: If you paste sensitive info directly in prompts despite our warnings, you're responsible for any exposure. We can't recover or protect credentials manually included in prompts.Your keys stay secure on the server and are never visible in browsers or committed to repositories.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the health benefits of incorporating more leafy greens into my diet?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "gold_sources": [
+        ""
+      ],
+      "source_url": "",
+      "rag": null,
+      "fin": {  
+        "answer": "I'm sorry, but I couldn't find any information related to the health benefits of leafy greens in our resources. Could you please rephrase your question or let me know if there's something else I can assist you with?",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "Why can't I see the task progress panel in the chat while Codepup AI is running my automation tests?",
+      "question_type": "troubleshoot",
+      "gold_answer": "You may not see the task progress panel in the chat if the automation testing is not currently running or if there is an issue with the Codepup AI chat panel. Ensure that the testing process is active and that you are in the correct chat panel where the project is built.",
+      "gold_sources": [
+        "https://docs.codepup.ai/features/automation-testing"
+      ],
+      "source_url": "https://docs.codepup.ai/features/automation-testing",
+      "rag": null,
+      "fin": {
+        "answer": "The task progress panel only shows up during the build phase, not during the automated testing run. \nSo if you’re watching while Codepup AI is running automation tests, you may not see the task panel anymore. Instead, for more complex builds, you'll see a dedicated Automation Testing panel that shows the live test run (current page, pass count, and a live preview).\nIf you tell me what you’re building (new project vs a specific integration like payments or email), I can help you confirm which view you should expect to see.",
+        "sources": [],
+        "latency": 0,
+        "error": null
+      }
+    },
+    {
+      "question": "What are the main ingredients needed to make a traditional Italian risotto?",
+      "question_type": "out_of_scope",
+      "gold_answer": "This question is out of scope for the documentation.",
+      "gold_sources": [
+        ""
+      ],
+      "source_url": "",
+      "rag": null,
+      "fin": null
+    }
+  ]
+}
