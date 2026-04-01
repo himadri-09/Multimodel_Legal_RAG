@@ -6,6 +6,8 @@ Complete flow:
   1.  Classify query intent
   2.  Selective decomposition (only multi_part / comparison)
   3.  Hybrid retrieval — dense (Pinecone) + keyword (BM25) in parallel
+      - pdf_name set  → single BM25 index
+      - pdf_name None → ALL BM25 indexes for the user merged before RRF
   4.  Score fusion — merge dense + BM25 results with RRF
   5.  Threshold filter — drop low-confidence chunks
   6.  Cross-encoder reranker (Cohere) → top RERANK_TOP_N chunks
@@ -24,16 +26,16 @@ from config import (
     AZURE_API_VERSION, AZURE_DEPLOYMENT_NAME,
 )
 from utils.auth import get_supabase_client
-from utils.bm25_store import get_bm25_store
+from utils.bm25_store import BM25Store, get_bm25_store
 from utils.reranker import get_reranker
 
 # ── Tunable constants ─────────────────────────────────────────────────────────
-MIN_SIMILARITY_SCORE = 0.70   # drop dense chunks below this — tune against eval
-BM25_TOP_K           = 20     # keyword candidates per query
-CANDIDATE_TOP_K      = 25     # dense candidates per query
-RRF_K                = 60     # Reciprocal Rank Fusion constant (standard = 60)
-RERANK_TOP_N         = 6      # final chunks after reranking → sent to LLM
-MAX_MERGED_WORDS     = 600    # cap merged adjacent chunk size in words
+MIN_SIMILARITY_SCORE = 0.70
+BM25_TOP_K           = 20
+CANDIDATE_TOP_K      = 25
+RRF_K                = 60
+RERANK_TOP_N         = 6
+MAX_MERGED_WORDS     = 600
 # ─────────────────────────────────────────────────────────────────────────────
 
 QUERY_TYPES = {
@@ -45,13 +47,6 @@ QUERY_TYPES = {
 
 
 class WebQueryProcessor:
-    """
-    Full docs RAG pipeline. Use as async context manager.
-
-    Primary entry point:
-        result = await wqp.run(query, pdf_name, user_id, vector_store, history)
-    """
-
     def __init__(self):
         self.client = AsyncAzureOpenAI(
             api_key=AZURE_OPENAI_API_KEY,
@@ -67,39 +62,25 @@ class WebQueryProcessor:
     async def run(
         self,
         query:                str,
-        pdf_name:             str,
+        pdf_name:             str,       # None = search ALL user content
         user_id:              str,
         vector_store,
         conversation_history: List[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """
-        Run the complete web RAG pipeline end-to-end.
-
-        Returns:
-            {
-                "answer":     str,
-                "sources":    List[Dict],
-                "abstained":  bool,
-                "query_type": str,
-                "chunks_used": int,
-            }
-        """
         print(f"\n{'='*55}")
         print(f"WEB RAG PIPELINE")
         print(f"Query : {query[:80]}")
+        print(f"Source: {pdf_name or 'ALL user content'}")
         print(f"{'='*55}")
 
-        # 1. Classify
         query_type = await self.classify_query(query)
 
-        # 3. Get search queries (single or decomposed)
         search_queries = await self.get_search_queries(
             query=query,
             query_type=query_type,
             conversation_history=conversation_history,
         )
 
-        # 4. Hybrid retrieval (dense + BM25 + RRF fusion)
         candidates = await self._hybrid_retrieve(
             queries=search_queries,
             pdf_name=pdf_name,
@@ -107,7 +88,6 @@ class WebQueryProcessor:
             vector_store=vector_store,
         )
 
-        # 5. Threshold filter
         filtered = self.threshold_filter(candidates)
 
         if not filtered:
@@ -122,17 +102,14 @@ class WebQueryProcessor:
                 "chunks_used": 0,
             }
 
-        # 6. Cross-encoder reranker
         reranked = self.reranker.rerank(
             query=query,
             chunks=filtered,
             top_k=RERANK_TOP_N,
         )
 
-        # 7. Adjacent chunk merging
         final_chunks = self._merge_adjacent_chunks(reranked)
 
-        # 8. Grounded generation
         gen_result = await self.generate_grounded_answer(
             query=query,
             chunks=final_chunks,
@@ -151,7 +128,7 @@ class WebQueryProcessor:
         return {
             "answer":      gen_result["answer"],
             "sources":     sources,
-            "raw_chunks":  final_chunks,        # needed for PDF image extraction
+            "raw_chunks":  final_chunks,
             "abstained":   gen_result["abstained"],
             "query_type":  query_type,
             "chunks_used": len(final_chunks),
@@ -276,39 +253,49 @@ JSON array:"""
     async def _hybrid_retrieve(
         self,
         queries:      List[str],
-        pdf_name:     str,
+        pdf_name:     str,          # None = search all user content
         user_id:      str,
         vector_store,
     ) -> List[Dict[str, Any]]:
-        print(f"Hybrid retrieval — {len(queries)} queries")
+        print(f"Hybrid retrieval — {len(queries)} queries  source={pdf_name or 'ALL'}")
 
-        # Dense retrieval (async)
+        # ── Dense retrieval (always async) ────────────────────────────────────
         dense_task = vector_store.search_web_candidates(
             queries=queries,
-            pdf_name=pdf_name,
+            pdf_name=pdf_name,      # None → Pinecone searches across all user vectors
             user_id=user_id,
             candidate_top_k=CANDIDATE_TOP_K,
         )
 
-        # BM25 retrieval (sync in executor to avoid blocking)
-        bm25_results = []
-        bm25_store   = get_bm25_store(pdf_name)
+        # ── BM25 retrieval ────────────────────────────────────────────────────
+        bm25_results: List[Dict[str, Any]] = []
+        supabase = get_supabase_client()
 
-        if not bm25_store.is_ready:
-            # not in memory — try loading from Supabase blob storage
-            supabase = get_supabase_client()
-            bm25_store.load_from_blob(supabase)
-
-        if bm25_store.is_ready:
-            loop = asyncio.get_event_loop()
-            for q in queries:
-                results = await loop.run_in_executor(
-                    None, bm25_store.search, q, BM25_TOP_K
-                )
-                bm25_results.extend(results)
-            print(f"BM25 results: {len(bm25_results)} across {len(queries)} queries")
+        if pdf_name:
+            # Single site — load one index
+            bm25_store = get_bm25_store(pdf_name, user_id=user_id)
+            if not bm25_store.is_ready:
+                bm25_store.load_from_blob(supabase)
+            bm25_stores = [bm25_store] if bm25_store.is_ready else []
         else:
-            print("BM25 not available — dense only")
+            # No filter — load ALL BM25 indexes for this user
+            bm25_stores = await self._load_all_bm25_for_user(user_id, supabase)
+
+        loop = asyncio.get_event_loop()
+        for store in bm25_stores:
+            if not store.is_ready:
+                continue
+            for q in queries:
+                results = await loop.run_in_executor(None, store.search, q, BM25_TOP_K)
+                bm25_results.extend(results)
+
+        if bm25_results:
+            print(
+                f"BM25 results: {len(bm25_results)} total from "
+                f"{len(bm25_stores)} index(es) across {len(queries)} query(ies)"
+            )
+        else:
+            print("BM25 not available or no results — dense only")
 
         dense_results = await dense_task
         fused = self._rrf_fusion(dense_results, bm25_results)
@@ -320,15 +307,109 @@ JSON array:"""
         )
         return fused
 
+    # =========================================================================
+    # BM25 MULTI-INDEX LOADER
+    # =========================================================================
+
+    async def _load_all_bm25_for_user(
+        self,
+        user_id:  str,
+        supabase,
+    ) -> List[BM25Store]:
+        """
+        Load ALL BM25 indexes that belong to this user.
+
+        Strategy:
+          1. One DB query to get all (pdf_name, bm25_blob_url) rows for the
+             user where source_type='web' and bm25_blob_url is set.
+          2. For each slug call get_bm25_store() — in-memory cache hit is O(1)
+             after the first load; blob download happens only once per
+             (user, slug) per process lifetime.
+          3. We pre-set store._blob_url from the DB row so load_from_blob()
+             skips its own DB lookup entirely (saves one round-trip per store).
+
+        Cost after warm-up: pure RAM — no network, no DB calls.
+        """
+        stores: List[BM25Store] = []
+
+        try:
+            response = (
+                supabase.table("user_pdfs")
+                .select("pdf_name, bm25_blob_url")
+                .eq("user_id", user_id)
+                .eq("source_type", "web")
+                .eq("upload_status", "completed")
+                .not_.is_("bm25_blob_url", "null")
+                .execute()
+            )
+            rows = response.data or []
+        except Exception as e:
+            print(f"⚠️  Could not fetch BM25 slugs for user {user_id}: {e}")
+            return stores
+
+        if not rows:
+            print(f"ℹ️  No BM25 indexes found for user {user_id} — dense only for all-source query")
+            return stores
+
+        print(f"ℹ️  Found {len(rows)} BM25 index(es) for user — loading...")
+
+        for row in rows:
+            slug     = row.get("pdf_name")
+            blob_url = row.get("bm25_blob_url")
+            if not slug:
+                continue
+
+            store = get_bm25_store(slug, user_id=user_id)
+
+            if store.is_ready:
+                # Already in RAM from a previous request — free
+                print(f"   ⚡ BM25 cache hit: '{slug}'")
+                stores.append(store)
+                continue
+
+            # Pre-set the URL so load_from_blob skips its own DB round-trip
+            if blob_url:
+                store._blob_url = blob_url
+
+            ok = store.load_from_blob(supabase)
+            if ok:
+                print(f"   ✅ BM25 loaded:    '{slug}'")
+                stores.append(store)
+            else:
+                print(f"   ⚠️  BM25 failed:   '{slug}' — skipping")
+
+        print(f"ℹ️  {len(stores)}/{len(rows)} BM25 indexes ready")
+        return stores
+
+    # =========================================================================
+    # 5. THRESHOLD FILTER
+    # =========================================================================
+
+    def threshold_filter(
+        self,
+        chunks:    List[Dict[str, Any]],
+        min_score: float = MIN_SIMILARITY_SCORE,
+    ) -> List[Dict[str, Any]]:
+        before   = len(chunks)
+        filtered = [
+            c for c in chunks
+            if c.get('similarity_score', 0) >= min_score
+            or (c.get('similarity_score', 0) == 0 and c.get('rrf_score', 0) > 0)
+        ]
+        dropped = before - len(filtered)
+        if dropped:
+            print(f"Threshold filter: dropped {dropped}/{before} chunks")
+        return filtered
+
+    # =========================================================================
+    # RRF FUSION
+    # =========================================================================
+
     def _rrf_fusion(
         self,
         dense_results: List[Dict[str, Any]],
         bm25_results:  List[Dict[str, Any]],
     ) -> List[Dict[str, Any]]:
-        """
-        Reciprocal Rank Fusion.
-        score = 1/(RRF_K + rank_dense) + 1/(RRF_K + rank_bm25)
-        """
         chunk_map:  Dict[str, Dict[str, Any]] = {}
         rrf_scores: Dict[str, float]          = {}
 
@@ -360,31 +441,6 @@ JSON array:"""
         return fused
 
     # =========================================================================
-    # 5. THRESHOLD FILTER
-    # =========================================================================
-
-    def threshold_filter(
-        self,
-        chunks:    List[Dict[str, Any]],
-        min_score: float = MIN_SIMILARITY_SCORE,
-    ) -> List[Dict[str, Any]]:
-        """
-        Drop chunks below similarity threshold.
-        BM25-only chunks (similarity_score == 0) kept if rrf_score > 0 —
-        they matched on exact keyword terms which is a valid signal.
-        """
-        before   = len(chunks)
-        filtered = [
-            c for c in chunks
-            if c.get('similarity_score', 0) >= min_score
-            or (c.get('similarity_score', 0) == 0 and c.get('rrf_score', 0) > 0)
-        ]
-        dropped = before - len(filtered)
-        if dropped:
-            print(f"Threshold filter: dropped {dropped}/{before} chunks")
-        return filtered
-
-    # =========================================================================
     # 7. ADJACENT CHUNK MERGING
     # =========================================================================
 
@@ -392,11 +448,6 @@ JSON array:"""
         self,
         chunks: List[Dict[str, Any]],
     ) -> List[Dict[str, Any]]:
-        """
-        Merge consecutive chunks from the same source URL and adjacent
-        page_number (chunk_index in WebChunker).
-        Restores procedural context split across chunk boundaries.
-        """
         if not chunks:
             return chunks
 
@@ -417,7 +468,6 @@ JSON array:"""
                 result.extend(group)
                 continue
 
-            # Sort by page_number (= chunk_index from WebChunker)
             group_sorted = sorted(group, key=lambda c: c.get('page_number', 0))
             current = dict(group_sorted[0])
 
@@ -427,7 +477,6 @@ JSON array:"""
                 curr_words = len(current['content'].split())
 
                 if next_idx == curr_idx + 1 and curr_words < MAX_MERGED_WORDS:
-                    # Adjacent — merge
                     current['content'] = (
                         current['content'].rstrip() + "\n\n" +
                         nxt['content'].lstrip()
@@ -467,19 +516,16 @@ JSON array:"""
                 "abstained": True,
             }
 
-        # ── Build numbered context ────────────────────────────────────────────
         context_parts = []
         for i, chunk in enumerate(chunks):
             content    = chunk.get('content', '').strip()
             source_url = chunk.get('source_url', '')
             page_title = chunk.get('page_title', '')
             label      = page_title or source_url or f"Source {i+1}"
-            rerank_score = chunk.get('rerank_score', chunk.get('similarity_score', 0))
             context_parts.append(f"[{i+1}] {label}\n{content}")
 
         context_text = "\n\n---\n\n".join(context_parts)
 
-        # ── LangSmith debug trace — logs exact chunks sent to LLM ────────────
         print(f"\n{'─'*55}")
         print(f"LLM INPUT — query: {query[:80]}")
         print(f"Chunks sent: {len(chunks)}")
@@ -491,7 +537,6 @@ JSON array:"""
             print(f"       preview: {chunk.get('content', '')[:120].strip()!r}")
         print(f"{'─'*55}\n")
 
-        # ── Conversation context ──────────────────────────────────────────────
         conv_ctx = ""
         if conversation_history:
             parts = []
@@ -500,11 +545,6 @@ JSON array:"""
                 parts.append(f"{role}: {msg.get('content', '')[:300]}")
             conv_ctx = "Conversation so far:\n" + "\n".join(parts) + "\n\n"
 
-        # ── FIX: relaxed grounding prompt ─────────────────────────────────────
-        # Old prompt told LLM to say "I couldn't find" whenever context was
-        # incomplete — even when context had partial answers. This caused false
-        # abstentions. New prompt instructs partial answers when possible and
-        # reserves "not found" only for truly missing information.
         system_prompt = """You are a documentation assistant for CodePup AI. Answer questions using the provided documentation context.
 
 Rules:
@@ -534,12 +574,6 @@ Answer based on the documentation above. If the context has relevant information
             )
             answer = response.choices[0].message.content.strip()
 
-            # ── FIX: smarter abstention detection ─────────────────────────────
-            # Only mark as abstained if:
-            # 1. Answer contains abstention phrase AND
-            # 2. Answer is short (< 60 words) — a real answer with a caveat
-            #    like "while the docs don't cover X, they do say Y" should NOT
-            #    be marked as abstained
             abstention_phrases = [
                 "couldn't find that",
                 "not in the documentation",
@@ -548,11 +582,10 @@ Answer based on the documentation above. If the context has relevant information
                 "no information about",
                 "not mentioned in the documentation",
             ]
-            answer_words     = len(answer.split())
-            has_abstention   = any(p in answer.lower() for p in abstention_phrases)
-            abstained        = has_abstention and answer_words < 60
+            answer_words   = len(answer.split())
+            has_abstention = any(p in answer.lower() for p in abstention_phrases)
+            abstained      = has_abstention and answer_words < 60
 
-            # Debug log
             print(f"LLM OUTPUT — words={answer_words} has_abstention={has_abstention} abstained={abstained}")
             print(f"  Answer preview: {answer[:200]!r}")
 
@@ -582,8 +615,6 @@ Answer based on the documentation above. If the context has relevant information
                 "score":           round(chunk.get('similarity_score', 0), 3),
             })
         return sources
-
-    # ── Context manager ───────────────────────────────────────────────────────
 
     async def __aenter__(self):
         return self

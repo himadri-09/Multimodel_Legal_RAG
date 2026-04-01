@@ -113,17 +113,24 @@ async def _process_crawl_job(
         print(f"\n[STEP 2/4] ✅ DONE  text_chunks={len(text_chunks)}  ({t_chunk:.1f}s elapsed)")
 
         # ── Step 3: Build BM25 index (keyword search) ─────────────────
-        # This runs alongside vector storage so hybrid retrieval works
-        # at query time without any extra latency.
+        # Build in memory and upload to blob.
+        # We capture the blob URL here but do NOT write it to user_pdfs
+        # yet — that row doesn't exist until after log_pdf_upload() below.
+        # The URL is passed to update_pdf_status() at the end.
         print(f"\n[STEP 3/4] BUILDING BM25 KEYWORD INDEX")
         await _update_job(db, job_id, stage="Building keyword index", progress=0.55)
 
+        bm25_blob_url: str | None = None
         try:
-            bm25_store = BM25Store(site_slug, user_id=user_id)  # pass user_id
+            bm25_store = BM25Store(site_slug, user_id=user_id)
             bm25_store.build(text_chunks)
             supabase = get_supabase_client()
-            bm25_store.save_to_blob(supabase)                    # save to blob storage
-            print(f"[STEP 3/4] ✅ BM25 index saved to Supabase blob")
+            # save_to_blob returns the URL — we persist it to DB later
+            bm25_blob_url = bm25_store.save_to_blob(supabase)
+            if bm25_blob_url:
+                print(f"[STEP 3/4] ✅ BM25 blob uploaded: {bm25_blob_url}")
+            else:
+                print(f"[STEP 3/4] ⚠️  BM25 blob upload returned no URL")
         except Exception as e:
             # BM25 failure is non-fatal — dense search still works
             print(f"[STEP 3/4] ⚠️  BM25 build failed (non-fatal): {e}")
@@ -133,10 +140,6 @@ async def _process_crawl_job(
 
         # ── Step 4: Store in Pinecone ─────────────────────────────────
         print(f"\n[STEP 4/4] STORING IN VECTOR DB")
-        print(f"   Text chunks : {len(text_chunks)}")
-        print(f"   site_slug   : {site_slug}")
-        print(f"   user_id     : {user_id}")
-
         await _update_job(db, job_id,
                           stage=f"Storing {len(text_chunks)} chunks in vector DB",
                           progress=0.65)
@@ -147,7 +150,9 @@ async def _process_crawl_job(
         t_store = time.time() - pipeline_start
         print(f"\n[STEP 4/4] ✅ DONE  ({t_store:.1f}s elapsed)")
 
-        # ── Persist to Supabase user_pdfs ────────────────────────────
+        # ── Persist to Supabase user_pdfs ─────────────────────────────
+        # Create the row first, then update status + bm25_blob_url.
+        # This ordering guarantees update_pdf_status() finds an existing row.
         await db.log_pdf_upload(
             user_id=user_id,
             pdf_name=site_slug,
@@ -157,12 +162,19 @@ async def _process_crawl_job(
             source_type="web",
             source_url=start_url,
         )
+
         await db.update_pdf_status(
             user_id=user_id,
             pdf_name=site_slug,
             status="completed",
             chunks_count=len(text_chunks),
+            bm25_blob_url=bm25_blob_url,   # ← persisted here, row exists now
         )
+
+        if bm25_blob_url:
+            print(f"✅ bm25_blob_url saved to user_pdfs: {bm25_blob_url}")
+        else:
+            print(f"⚠️  bm25_blob_url not saved (BM25 step failed or skipped)")
 
         # ── Final summary ─────────────────────────────────────────────
         total_elapsed = time.time() - pipeline_start
@@ -187,7 +199,7 @@ async def _process_crawl_job(
         print(f"🎉 PIPELINE COMPLETE  job={job_id}")
         print(f"   Pages crawled  : {len(pages)}")
         print(f"   Text chunks    : {len(text_chunks)}")
-        print(f"   Total stored   : {len(text_chunks)}")
+        print(f"   BM25 URL       : {bm25_blob_url or 'not saved'}")
         print(f"   Total time     : {total_elapsed:.1f}s")
         print(f"{'#'*60}\n")
 
@@ -306,16 +318,14 @@ async def delete_crawled_site(
         raise HTTPException(status_code=404,
                             detail="Site not found or no permission to delete it.")
     try:
-        # Delete vectors from Pinecone
         async with PineconeVectorStore() as vs:
             await vs.delete_pdf_vectors(site_slug, user_id)
 
-        # Delete BM25 index from disk + memory cache
-        bm25_store = BM25Store(site_slug)
-        bm25_store.delete()
-        invalidate_bm25_cache(site_slug)
+        supabase   = get_supabase_client()
+        bm25_store = BM25Store(site_slug, user_id=user_id)
+        bm25_store.delete_from_blob(supabase)
+        invalidate_bm25_cache(site_slug, user_id=user_id)
 
-        # Delete DB record
         await db.delete_user_pdf(user_id, site_slug)
 
         print(f"🗑️  Deleted site '{site_slug}' for user {user_id}")
